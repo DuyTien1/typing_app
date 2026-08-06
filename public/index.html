@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>CYBER TYPING ARENA 24/7</title>
+		<link rel="stylesheet" href="style.css" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&family=Roboto+Mono:wght@500;700&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<!-- MODAL ĐĂNG NHẬP -->
+		<div id="login-modal" class="modal">
+			<div class="modal-content cyber-box">
+				<h1 class="glitch-title">CYBER TYPER</h1>
+				<p class="subtitle">SINGLE WORD SPEEDWAY</p>
+
+				<div class="input-group">
+					<label>BIỆT DANH</label>
+					<input
+						type="text"
+						id="username-input"
+						placeholder="Nhập biệt danh..."
+						maxlength="15"
+						required
+					/>
+				</div>
+
+				<div class="input-group">
+					<label>CHẾ ĐỘ NGUÔN NGỮ</label>
+					<select id="lang-select">
+						<option value="vi_dau">🇻🇳 Tiếng Việt (Có dấu)</option>
+						<option value="vi_nodau">🇻🇳 Tiếng Việt (Không dấu)</option>
+						<option value="en">🇬🇧 English Speed</option>
+					</select>
+				</div>
+
+				<button id="join-btn" class="cyber-btn">VÀO PHÒNG ĐUA 🔥</button>
+			</div>
+		</div>
+
+		<!-- PHÒNG CHỜ (LOBBY VIEW) -->
+		<div id="lobby-screen" class="screen hidden">
+			<div class="cyber-box lobby-box">
+				<h2 class="lobby-title">PHÒNG CHỜ TRẬN ĐẤU</h2>
+				<div class="lobby-timer">TRẬN ĐẤU BẮT ĐẦU SAU: <span id="lobby-countdown">15</span>S</div>
+				<div class="lobby-players-title">
+					DANH SÁCH RACER TRONG PHÒNG (<span id="lobby-count">0/7</span>)
+				</div>
+				<div id="lobby-players-grid"></div>
+			</div>
+		</div>
+
+		<!-- MÀN HÌNH ĐUA CHÍNH -->
+		<div id="game-container" class="screen hidden">
+			<header class="cyber-box">
+				<div class="logo">⚡ CYBER TYPER</div>
+				<div id="status-box">ĐANG ĐUA!</div>
+				<div id="timer-box">THỜI GIAN: <span id="timer">0.0</span>s / 300s</div>
+			</header>
+
+			<section id="leaderboard" class="cyber-box">
+				<h3>TIẾN TRÌNH TRẬN ĐẤU</h3>
+				<div id="players-list"></div>
+			</section>
+
+			<section id="typing-area" class="cyber-box">
+				<div id="words-display"></div>
+				<div class="input-wrapper">
+					<input
+						type="text"
+						id="type-input"
+						placeholder="Nhập từ chính xác và gõ Space..."
+						disabled
+						autocomplete="off"
+					/>
+				</div>
+			</section>
+
+			<section id="chat-container" class="hidden cyber-box">
+				<input
+					type="text"
+					id="chat-input"
+					placeholder="Chat sau khi hoàn thành (Nhấn Enter để gửi)..."
+				/>
+			</section>
+
+			<!-- Khu vực bong bóng Chat ở Góc Trên Bên Phải -->
+			<div id="chat-popups"></div>
+		</div>
+
+		<!-- MODAL BẢNG TỔNG KẾT -->
+		<div id="summary-modal" class="modal hidden">
+			<div class="modal-content cyber-box summary-box">
+				<h2 class="glitch-title">BẢNG TỔNG KẾT</h2>
+				<table id="summary-table">
+					<thead>
+						<tr>
+							<th>HẠNG</th>
+							<th>RACER</th>
+							<th>THỜI GIAN</th>
+							<th>TỐC ĐỘ</th>
+						</tr>
+					</thead>
+					<tbody id="summary-tbody"></tbody>
+				</table>
+				<button onclick="location.reload()" class="cyber-btn" style="margin-top: 20px">
+					CHƠI LẠI TRẬN MỚI 🔄
+				</button>
+			</div>
+		</div>
+
+		<canvas id="fireworks-canvas"></canvas>
+
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="app.js"></script>
+	</body>
+</html>

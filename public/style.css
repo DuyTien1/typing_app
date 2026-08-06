@@ -1,0 +1,388 @@
+:root {
+	--bg-color: #05050a;
+	--panel-bg: #0d0d1a;
+	--primary: #00f0ff;
+	--secondary: #ff0055;
+	--accent: #ffe600;
+	--text-main: #f0f6fc;
+	--text-muted: #6e7681;
+	--correct: #00ff66;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	font-family: "Rajdhani", sans-serif;
+}
+body {
+	background: var(--bg-color);
+	color: var(--text-main);
+	display: flex;
+	justify-content: center;
+	min-height: 100vh;
+	overflow-x: hidden;
+}
+
+.hidden {
+	display: none !important;
+}
+
+.cyber-box {
+	background: var(--panel-bg);
+	border: 1px solid rgba(0, 240, 255, 0.3);
+	box-shadow:
+		0 0 20px rgba(0, 0, 0, 0.9),
+		inset 0 0 10px rgba(0, 240, 255, 0.1);
+	border-radius: 8px;
+	position: relative;
+}
+
+.modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(2, 2, 5, 0.95);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 100;
+}
+.modal-content {
+	padding: 40px;
+	width: 420px;
+	text-align: center;
+	border-color: var(--primary);
+}
+
+.glitch-title {
+	font-family: "Orbitron", sans-serif;
+	font-size: 32px;
+	font-weight: 900;
+	color: var(--primary);
+	text-shadow: 0 0 12px var(--primary);
+}
+.subtitle {
+	font-size: 13px;
+	color: var(--secondary);
+	letter-spacing: 4px;
+	font-weight: bold;
+	margin-bottom: 25px;
+}
+
+.input-group {
+	text-align: left;
+	margin-bottom: 20px;
+}
+.input-group label {
+	display: block;
+	font-size: 12px;
+	color: var(--primary);
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+.input-group input,
+.input-group select {
+	width: 100%;
+	padding: 12px;
+	background: #040408;
+	border: 1px solid #1f2338;
+	color: #fff;
+	font-size: 16px;
+	border-radius: 4px;
+	outline: none;
+}
+.input-group input:focus,
+.input-group select:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.cyber-btn {
+	width: 100%;
+	padding: 14px;
+	background: linear-gradient(45deg, var(--secondary), #b0003a);
+	border: none;
+	color: #fff;
+	font-family: "Orbitron", sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+	cursor: pointer;
+	border-radius: 4px;
+	text-shadow: 0 0 5px #000;
+	box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+	transition: 0.2s;
+}
+.cyber-btn:hover {
+	filter: brightness(1.2);
+	transform: translateY(-2px);
+}
+
+.screen {
+	width: 100%;
+	max-width: 900px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	justify-content: center;
+}
+.lobby-box {
+	padding: 30px;
+	text-align: center;
+}
+.lobby-title {
+	font-family: "Orbitron", sans-serif;
+	color: var(--primary);
+	margin-bottom: 10px;
+	font-size: 24px;
+}
+.lobby-timer {
+	font-family: "Orbitron", sans-serif;
+	font-size: 20px;
+	color: var(--accent);
+	margin-bottom: 25px;
+	text-shadow: 0 0 8px var(--accent);
+}
+.lobby-players-title {
+	font-size: 14px;
+	color: var(--text-muted);
+	margin-bottom: 15px;
+	text-align: left;
+	font-weight: bold;
+}
+#lobby-players-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 15px;
+}
+.lobby-player-card {
+	background: #05050d;
+	border: 1px solid #1a1d33;
+	padding: 15px;
+	border-radius: 6px;
+	font-weight: bold;
+	color: var(--primary);
+	text-align: left;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px 25px;
+}
+header .logo {
+	font-family: "Orbitron", sans-serif;
+	font-weight: 900;
+	color: var(--primary);
+	font-size: 20px;
+}
+#status-box {
+	font-family: "Orbitron", sans-serif;
+	font-size: 16px;
+	font-weight: bold;
+	color: var(--accent);
+}
+#timer-box {
+	font-family: "Orbitron", sans-serif;
+	font-size: 16px;
+	color: var(--correct);
+}
+
+#leaderboard {
+	padding: 20px;
+}
+#leaderboard h3 {
+	font-family: "Orbitron", sans-serif;
+	font-size: 14px;
+	color: var(--text-muted);
+	margin-bottom: 15px;
+}
+.player-row {
+	margin-bottom: 12px;
+}
+.player-info {
+	display: flex;
+	justify-content: space-between;
+	font-size: 15px;
+	font-weight: bold;
+	margin-bottom: 6px;
+}
+.player-info .name {
+	color: var(--primary);
+}
+.player-info .stats {
+	color: var(--accent);
+}
+.player-info .time-tag {
+	color: var(--correct);
+	font-size: 13px;
+	margin-left: 8px;
+}
+
+.progress-bar-bg {
+	background: #05050a;
+	height: 16px;
+	border-radius: 4px;
+	overflow: hidden;
+	border: 1px solid #1a1d33;
+}
+.progress-bar-fill {
+	background: linear-gradient(90deg, var(--primary), var(--correct));
+	height: 100%;
+	width: 0%;
+	transition: width 0.15s linear;
+}
+
+#typing-area {
+	padding: 25px;
+}
+#words-display {
+	font-family: "Roboto Mono", monospace;
+	font-size: 22px;
+	line-height: 1.8;
+	height: 150px;
+	overflow-y: auto;
+	padding: 15px;
+	background: #030307;
+	border-radius: 6px;
+	border: 1px solid #1f2338;
+	margin-bottom: 20px;
+	user-select: none;
+}
+.word {
+	display: inline-block;
+	margin-right: 12px;
+	color: var(--text-muted);
+}
+.word.correct {
+	color: var(--correct);
+	text-shadow: 0 0 5px var(--correct);
+}
+.word.current {
+	background: rgba(0, 240, 255, 0.15);
+	border-bottom: 2px solid var(--primary);
+	color: #fff;
+	padding: 0 4px;
+}
+
+#type-input {
+	width: 100%;
+	padding: 16px;
+	font-family: "Roboto Mono", monospace;
+	font-size: 20px;
+	background: #030307;
+	border: 2px solid #1f2338;
+	color: #fff;
+	border-radius: 6px;
+	outline: none;
+	transition: 0.2s;
+}
+#type-input:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+#type-input.flash-red {
+	animation: flashRed 0.2s ease-in-out;
+	border-color: var(--secondary) !important;
+}
+
+@keyframes flashRed {
+	0%,
+	100% {
+		background: #030307;
+	}
+	50% {
+		background: #3d0014;
+	}
+}
+
+.summary-box {
+	width: 500px;
+}
+#summary-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 15px;
+}
+#summary-table th,
+#summary-table td {
+	padding: 12px;
+	border-bottom: 1px solid #1f2338;
+	text-align: center;
+}
+#summary-table th {
+	color: var(--primary);
+	font-family: "Orbitron", sans-serif;
+	font-size: 13px;
+}
+
+#chat-container {
+	padding: 15px;
+}
+#chat-input {
+	width: 100%;
+	padding: 12px;
+	background: #030307;
+	border: 1px solid var(--primary);
+	color: #fff;
+	border-radius: 4px;
+	outline: none;
+}
+
+/* =======================================================
+   3. BONG BÓNG CHAT MỚI: TO HƠN & Ở GÓC TRÊN BÊN PHẢI
+   ======================================================= */
+#chat-popups {
+	position: fixed;
+	top: 30px; /* Đưa lên phía trên */
+	right: 30px; /* Đặt ở góc phải */
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	z-index: 999; /* Luôn nổi trên các phần khác */
+	pointer-events: none;
+}
+
+.chat-bubble {
+	background: rgba(13, 13, 26, 0.95);
+	border: 2px solid var(--primary);
+	color: #fff;
+	padding: 16px 22px; /* Tăng kích thước padding */
+	border-radius: 12px;
+	min-width: 280px; /* Tăng độ rộng tối thiểu */
+	max-width: 400px; /* Tăng độ rộng tối đa */
+	font-size: 18px; /* Font chữ nội dung to rõ hơn */
+	line-height: 1.4;
+	box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+	animation: slideInRight 0.4s ease-out;
+}
+
+.chat-bubble .sender {
+	font-size: 14px;
+	color: var(--accent);
+	display: block;
+	font-weight: bold;
+	font-family: "Orbitron", sans-serif;
+	margin-bottom: 6px;
+	border-bottom: 1px solid rgba(255, 230, 0, 0.3);
+	padding-bottom: 3px;
+}
+
+@keyframes slideInRight {
+	from {
+		opacity: 0;
+		transform: translateX(50px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+#fireworks-canvas {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 80;
+}

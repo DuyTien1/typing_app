@@ -1,0 +1,66 @@
+const BIG_WORD_BANKS = {
+  vi_dau: [
+    // Từ đơn
+    "ngày", "đêm", "mưa", "nắng", "gió", "mây", "sông", "núi", "biển", "rừng",
+    "trời", "đất", "lửa", "nước", "cây", "hoa", "lá", "cỏ", "chim", "cá",
+    "hổ", "báo", "sói", "thỏ", "mèo", "chó", "trâu", "bò", "ngựa", "dê",
+    "nhà", "cửa", "sách", "bút", "bàn", "ghế", "máy", "xe", "tàu", "thuyền",
+    "chạy", "nhảy", "bơi", "bay", "đi", "đứng", "ngồi", "nằm", "ăn", "uống",
+    "ngủ", "thức", "nghe", "nhìn", "nói", "cười", "khóc", "nghĩ", "yêu", "ghét",
+    "nhanh", "chậm", "mạnh", "yếu", "cao", "thấp", "dài", "ngắn", "to", "nhỏ",
+    "đỏ", "xanh", "vàng", "trắng", "đen", "tím", "hồng", "cam", "xám", "nâu",
+    "sáng", "tối", "sớm", "muộn", "mới", "cũ", "đẹp", "xấu", "đúng", "sai",
+
+    // Cụm 2 từ ghép nối dấu gạch ngang (Từ dễ & Từ phổ thông)
+    "hà-nội", "sài-gòn", "đà-nẵng", "phú-quốc", "việt-nam", "thái-lan", "nhật-bản", "hàn-quốc", "mỹ-tho", "cần-thơ",
+    "công-nghe", "máy-tính", "lập-trình", "mạng-lưới", "dữ-liệu", "bảo-mật", "giao-diện", "máy-chủ", "ứng-dụng", "hệ-thống",
+    "trí-tuệ", "nhân-tạo", "kỹ-thuật", "sáng-tạo", "phát-triển", "tương-lai", "hiện-đại", "tự-động", "quy-trình", "giải-pháp",
+    "học-sinh", "sinh-viên", "thầy-co", "trường-học", "lớp-học", "bài-tập", "kiến-thức", "kỹ-năng", "tư-duy", "sách-vở",
+    "gia-đình", "bố-mẹ", "ông-bà", "anh-em", "con-cái", "bạn-bè", "đồng-nghiệp", "hàng-xóm", "tình-yêu", "hạnh-phúc",
+    "sức-khỏe", "thể-thao", "bóng-đá", "chạy-bộ", "bơi-lội", "âm-nhạc", "hội-họa", "du-lịch", "ẩm-thực", "thời-trang",
+    "mặt-trời", "mặt-trăng", "ngôi-sao", "vũ-trụ", "hành-tinh", "thiên-nhiên", "môi-trường", "thời-tiết", "khí-hậu", "phong-cảnh",
+    "thành-phố", "nông-thôn", "mặt-đất", "bầu-trời", "đại-dương", "con-suối", "ngọn-núi", "cánh-đồng", "bờ-biển", "rừng-rậm",
+    "thời-gian", "quá-khứ", "hiện-tại", "tương-lai", "bắt-đầu", "kết-thúc", "thành-công", "thất-bại", "cơ-hội", "thử-thách",
+    "suy-nghĩ", "hành-động", "mục-tiêu", "kế-hoạch", "ước-mơ", "khát-vọng", "động-lực", "năng-lượng", "sức-mạnh", "niềm-tin",
+
+    // Cụm 2 từ ghép nối dấu gạch ngang (Từ khó & Từ dài nâng cao)
+    "chuyên-nghiệp", "nghiêm-túc", "nghiêm-ngặt", "khoảng-cách", "khoảnh-khắc", "suy-ngẫm", "trải-nghiệm", "phấn-đấu", "đột-phá",
+    "chuyển-đổi", "linh-hoạt", "tương-tác", "trung-thực", "trách-nhiệm", "kiên-trì", "nhẫn-nại", "sáng-tạo", "tiềm-năng",
+    "phát-minh", "nghiên-cứu", "phân-tích", "tối-ưu", "tích-hợp", "đồng-bộ", "xác-thực", "mã-hóa", "khởi-động", "vận-hành"
+  ],
+
+  vi_nodau: [
+    // Tu don
+    "ngay", "dem", "mua", "nang", "gio", "may", "song", "nui", "bien", "rung",
+    "troi", "dat", "lua", "nuoc", "cay", "hoa", "la", "co", "chim", "ca",
+    "ho", "bao", "soi", "tho", "meo", "cho", "trau", "bo", "ngua", "de",
+    "nha", "cua", "sach", "but", "ban", "ghe", "may", "xe", "tau", "thuyen",
+    "chay", "nhay", "boi", "bay", "di", "dung", "ngoi", "nam", "an", "uong",
+    "ngu", "thuc", "nghe", "nhin", "noi", "cuoi", "khoc", "nghi", "yeu", "ghet",
+
+    // Cum 2 tu ghep noi dau gach ngang
+    "ha-noi", "sai-gon", "da-nang", "phu-quoc", "viet-nam", "thai-lan", "nhat-ban", "han-quoc",
+    "cong-nghe", "may-tinh", "lap-trinh", "mang-luoi", "du-lieu", "bao-mat", "giao-dien", "may-chu",
+    "tri-tue", "nhan-tao", "ky-thuat", "sang-tao", "phat-trien", "tuong-lai", "hien-dai", "tu-dong",
+    "hoc-sinh", "sinh-vien", "thay-co", "truong-hoc", "lop-hoc", "bai-tap", "kien-thuc", "ky-nang",
+    "gia-dinh", "bo-me", "ong-ba", "anh-em", "con-cai", "ban-be", "dong-nghiep", "hanh-phuc",
+    "suc-khoe", "the-thao", "bong-da", "chay-bo", "boi-loi", "am-nhac", "hoi-hoa", "du-lich",
+    "mat-troi", "mat-trang", "ngoi-sao", "vu-tru", "hanh-tinh", "thien-nhien", "moi-truong", "thoi-tiet",
+    "thanh-pho", "nong-thon", "mat-dat", "bau-troi", "dai-duong", "con-suoi", "ngon-nui", "canh-dong",
+    "thoi-gian", "qua-khu", "hien-tai", "bat-dau", "ket-thuc", "thanh-cong", "that-bai", "co-hoi",
+    "chuyen-nghiep", "nghiem-tuc", "nghiem-ngat", "khoang-cach", "khoanh-khac", "suy-nghi", "trai-nghiem"
+  ],
+
+  en: [
+    // Single Words
+    "speed", "code", "fast", "type", "data", "byte", "loop", "node", "time", "web",
+    "cloud", "link", "text", "file", "port", "disk", "cpu", "ram", "task", "run",
+    "core", "net", "host", "test", "grid", "main", "flow", "key", "dash", "sync",
+    "light", "sound", "space", "power", "cyber", "pixel", "laser", "radar", "signal",
+
+    // Hyphenated Compound Words (2 Words)
+    "new-york", "hong-kong", "full-stack", "front-end", "back-end", "real-time", "high-tech", "open-source",
+    "multi-task", "auto-scale", "peer-to-peer", "cloud-native", "data-base", "user-friendly", "cross-platform",
+    "ultra-fast", "cyber-space", "micro-service", "hyper-link", "super-computer", "zero-trust", "dry-run"
+  ]
+};
