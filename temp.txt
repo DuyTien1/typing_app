@@ -1,66 +1,99 @@
-const BIG_WORD_BANKS = {
-  vi_dau: [
-    // Từ đơn
-    "ngày", "đêm", "mưa", "nắng", "gió", "mây", "sông", "núi", "biển", "rừng",
-    "trời", "đất", "lửa", "nước", "cây", "hoa", "lá", "cỏ", "chim", "cá",
-    "hổ", "báo", "sói", "thỏ", "mèo", "chó", "trâu", "bò", "ngựa", "dê",
-    "nhà", "cửa", "sách", "bút", "bàn", "ghế", "máy", "xe", "tàu", "thuyền",
-    "chạy", "nhảy", "bơi", "bay", "đi", "đứng", "ngồi", "nằm", "ăn", "uống",
-    "ngủ", "thức", "nghe", "nhìn", "nói", "cười", "khóc", "nghĩ", "yêu", "ghét",
-    "nhanh", "chậm", "mạnh", "yếu", "cao", "thấp", "dài", "ngắn", "to", "nhỏ",
-    "đỏ", "xanh", "vàng", "trắng", "đen", "tím", "hồng", "cam", "xám", "nâu",
-    "sáng", "tối", "sớm", "muộn", "mới", "cũ", "đẹp", "xấu", "đúng", "sai",
+vi_dau: {
+    // 300 từ dễ
+    easy: [
+        "ngày", "đêm", "mưa", "nắng", "gió", "mây", "sông", "núi", "biển", "rừng",
+        "trời", "đất", "lửa", "nước", "cây", "hoa", "lá", "cỏ", "chim", "cá",
+        "nhà", "xe", "cơm", "áo", "tiền", "sách", "bút", "bàn", "ghế", "đèn",
+        "tay", "chân", "mắt", "mũi", "tai", "miệng", "tóc", "răng", "mặt", "lưng",
+        "anh", "em", "ông", "bà", "cha", "mẹ", "con", "chú", "bác", "cô",
+        "thầy", "bạn", "người", "bé", "trẻ", "già", "nam", "nữ", "tôi", "ta",
+        "mình", "bạn", "họ", "ai", "gì", "đâu", "đây", "đó", "này", "kia",
+        "sáng", "trưa", "chiều", "tối", "hôm", "mai", "nay", "sớm", "muộn", "lúc",
+        "giờ", "năm", "tháng", "tuần", "phút", "mùa", "xuân", "hè", "thu", "đông",
+        "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín", "mười",
+        "lớn", "nhỏ", "cao", "thấp", "dài", "ngắn", "to", "bé", "mới", "cũ",
+        "tốt", "xấu", "đẹp", "hay", "dở", "nhanh", "chậm", "đúng", "sai", "dễ",
+        "khó", "vui", "buồn", "yêu", "ghét", "thích", "sợ", "lo", "tin", "nhớ",
+        "quên", "cười", "khóc", "nói", "nghe", "đọc", "viết", "xem", "ăn", "uống",
+        "ngủ", "đi", "đến", "về", "ra", "vào", "lên", "xuống", "qua", "lại",
+        "chạy", "đi", "đứng", "ngồi", "nằm", "bay", "bơi", "nhảy", "đánh", "đá",
+        "mở", "đóng", "bật", "tắt", "đưa", "nhận", "cho", "lấy", "giữ", "mất",
+        "tìm", "gặp", "gọi", "hỏi", "trả", "mua", "bán", "dùng", "làm", "học",
+        "dạy", "làm", "sống", "chết", "sinh", "giúp", "cần", "muốn", "có", "không",
+        "rất", "cũng", "đã", "đang", "sẽ", "vẫn", "chỉ", "còn", "được", "bị",
+        "và", "hay", "hoặc", "nhưng", "vì", "nên", "nếu", "khi", "mà", "để",
+        "với", "cho", "từ", "theo", "trên", "dưới", "trong", "ngoài", "trước", "sau",
+        "bên", "giữa", "gần", "xa", "cùng", "khác", "mỗi", "mọi", "nhiều", "ít",
+        "đủ", "thiếu", "hết", "thêm", "bớt", "đầu", "cuối", "giữa", "trái", "phải",
+        "trong", "ngoài", "sau", "trước", "bóng", "hình", "màu", "âm", "ánh", "sáng",
+        "đường", "phố", "làng", "chợ", "trường", "lớp", "phòng", "cửa", "tường", "sân",
+        "vườn", "ruộng", "đồng", "bãi", "bờ", "cầu", "sách", "vở", "giấy", "mực",
+        "kim", "đồng", "vàng", "bạc", "đá", "gỗ", "sắt", "vải", "da", "len",
+        "bát", "đĩa", "cốc", "ly", "nồi", "chén", "dao", "kéo", "muỗng", "thìa",
+        "bánh", "kẹo", "đường", "muối", "cá", "thịt", "trứng", "rau", "quả", "gạo"
+    ],
 
-    // Cụm 2 từ ghép nối dấu gạch ngang (Từ dễ & Từ phổ thông)
-    "hà-nội", "sài-gòn", "đà-nẵng", "phú-quốc", "việt-nam", "thái-lan", "nhật-bản", "hàn-quốc", "mỹ-tho", "cần-thơ",
-    "công-nghe", "máy-tính", "lập-trình", "mạng-lưới", "dữ-liệu", "bảo-mật", "giao-diện", "máy-chủ", "ứng-dụng", "hệ-thống",
-    "trí-tuệ", "nhân-tạo", "kỹ-thuật", "sáng-tạo", "phát-triển", "tương-lai", "hiện-đại", "tự-động", "quy-trình", "giải-pháp",
-    "học-sinh", "sinh-viên", "thầy-co", "trường-học", "lớp-học", "bài-tập", "kiến-thức", "kỹ-năng", "tư-duy", "sách-vở",
-    "gia-đình", "bố-mẹ", "ông-bà", "anh-em", "con-cái", "bạn-bè", "đồng-nghiệp", "hàng-xóm", "tình-yêu", "hạnh-phúc",
-    "sức-khỏe", "thể-thao", "bóng-đá", "chạy-bộ", "bơi-lội", "âm-nhạc", "hội-họa", "du-lịch", "ẩm-thực", "thời-trang",
-    "mặt-trời", "mặt-trăng", "ngôi-sao", "vũ-trụ", "hành-tinh", "thiên-nhiên", "môi-trường", "thời-tiết", "khí-hậu", "phong-cảnh",
-    "thành-phố", "nông-thôn", "mặt-đất", "bầu-trời", "đại-dương", "con-suối", "ngọn-núi", "cánh-đồng", "bờ-biển", "rừng-rậm",
-    "thời-gian", "quá-khứ", "hiện-tại", "tương-lai", "bắt-đầu", "kết-thúc", "thành-công", "thất-bại", "cơ-hội", "thử-thách",
-    "suy-nghĩ", "hành-động", "mục-tiêu", "kế-hoạch", "ước-mơ", "khát-vọng", "động-lực", "năng-lượng", "sức-mạnh", "niềm-tin",
+    // 100 từ khó
+    hard: [
+        "khoảnh", "nghiêng", "khuếch", "khuỵu", "ngoéo", "thuở", "ngoằn", "ngoèo", "nghiến", "nguyện",
+        "truyền", "khuyến", "chuyện", "quyển", "quỷ", "nghễu", "nghiễu", "soạn", "duyệt", "chuộng",
+        "hoảng", "khoảng", "nghèo", "xoắn", "ngoắc", "khoác", "hoắt", "hoẵng", "thuần", "khuần",
+        "ngoài", "quệt", "nghiêm", "nghiệm", "nghiệp", "nghiêng", "nguyễn", "quyết", "quyền", "quýnh",
+        "quỳnh", "quyến", "quyện", "uyển", "uyển", "uyết", "huyễn", "huyền", "huyện", "chuyển",
+        "chuyến", "chuyện", "chuyễn", "tuyển", "tuyến", "tuyệt", "tuyên", "duyên", "duyệt", "duy trì",
+        "khuyết", "khuyến", "khuyên", "khuyển", "khuya", "khuây", "khuất", "khuẩn", "khuếch", "khuôn",
+        "nguệch", "nguẩy", "nguẩy", "nguyện", "nguyệt", "nguyền", "nguyền", "nghịch", "nghiệt", "nghiễm",
+        "nghĩa", "nghễnh", "nghệch", "nghênh", "nghiêm", "nghiễm", "nguyễn", "ngoảnh", "ngoặt", "ngoằn",
+        "ngoẵng", "ngoẹo", "ngoét", "xoẹt", "xoắn", "xoạc", "xoạch", "quạnh", "quẫy", "quệt"
+    ]
+},
 
-    // Cụm 2 từ ghép nối dấu gạch ngang (Từ khó & Từ dài nâng cao)
-    "chuyên-nghiệp", "nghiêm-túc", "nghiêm-ngặt", "khoảng-cách", "khoảnh-khắc", "suy-ngẫm", "trải-nghiệm", "phấn-đấu", "đột-phá",
-    "chuyển-đổi", "linh-hoạt", "tương-tác", "trung-thực", "trách-nhiệm", "kiên-trì", "nhẫn-nại", "sáng-tạo", "tiềm-năng",
-    "phát-minh", "nghiên-cứu", "phân-tích", "tối-ưu", "tích-hợp", "đồng-bộ", "xác-thực", "mã-hóa", "khởi-động", "vận-hành"
-  ],
+vi_nodau: {
+    // 300 từ dễ — đồng bộ 1:1 với vi_dau.easy
+    easy: [
+        "ngay", "dem", "mua", "nang", "gio", "may", "song", "nui", "bien", "rung",
+        "troi", "dat", "lua", "nuoc", "cay", "hoa", "la", "co", "chim", "ca",
+        "nha", "xe", "com", "ao", "tien", "sach", "but", "ban", "ghe", "den",
+        "tay", "chan", "mat", "mui", "tai", "mieng", "toc", "rang", "mat", "lung",
+        "anh", "em", "ong", "ba", "cha", "me", "con", "chu", "bac", "co",
+        "thay", "ban", "nguoi", "be", "tre", "gia", "nam", "nu", "toi", "ta",
+        "minh", "ban", "ho", "ai", "gi", "dau", "day", "do", "nay", "kia",
+        "sang", "trua", "chieu", "toi", "hom", "mai", "nay", "som", "muon", "luc",
+        "gio", "nam", "thang", "tuan", "phut", "mua", "xuan", "he", "thu", "dong",
+        "mot", "hai", "ba", "bon", "nam", "sau", "bay", "tam", "chin", "muoi",
+        "lon", "nho", "cao", "thap", "dai", "ngan", "to", "be", "moi", "cu",
+        "tot", "xau", "dep", "hay", "do", "nhanh", "cham", "dung", "sai", "de",
+        "kho", "vui", "buon", "yeu", "ghet", "thich", "so", "lo", "tin", "nho",
+        "quen", "cuoi", "khoc", "noi", "nghe", "doc", "viet", "xem", "an", "uong",
+        "ngu", "di", "den", "ve", "ra", "vao", "len", "xuong", "qua", "lai",
+        "chay", "di", "dung", "ngoi", "nam", "bay", "boi", "nhay", "danh", "da",
+        "mo", "dong", "bat", "tat", "dua", "nhan", "cho", "lay", "giu", "mat",
+        "tim", "gap", "goi", "hoi", "tra", "mua", "ban", "dung", "lam", "hoc",
+        "day", "lam", "song", "chet", "sinh", "giup", "can", "muon", "co", "khong",
+        "rat", "cung", "da", "dang", "se", "van", "chi", "con", "duoc", "bi",
+        "va", "hay", "hoac", "nhung", "vi", "nen", "neu", "khi", "ma", "de",
+        "voi", "cho", "tu", "theo", "tren", "duoi", "trong", "ngoai", "truoc", "sau",
+        "ben", "giua", "gan", "xa", "cung", "khac", "moi", "moi", "nhieu", "it",
+        "du", "thieu", "het", "them", "bot", "dau", "cuoi", "giua", "trai", "phai",
+        "trong", "ngoai", "sau", "truoc", "bong", "hinh", "mau", "am", "anh", "sang",
+        "duong", "pho", "lang", "cho", "truong", "lop", "phong", "cua", "tuong", "san",
+        "vuon", "ruong", "dong", "bai", "bo", "cau", "sach", "vo", "giay", "muc",
+        "kim", "dong", "vang", "bac", "da", "go", "sat", "vai", "da", "len",
+        "bat", "dia", "coc", "ly", "noi", "chen", "dao", "keo", "muong", "thia",
+        "banh", "keo", "duong", "muoi", "ca", "thit", "trung", "rau", "qua", "gao"
+    ],
 
-  vi_nodau: [
-    // Tu don
-    "ngay", "dem", "mua", "nang", "gio", "may", "song", "nui", "bien", "rung",
-    "troi", "dat", "lua", "nuoc", "cay", "hoa", "la", "co", "chim", "ca",
-    "ho", "bao", "soi", "tho", "meo", "cho", "trau", "bo", "ngua", "de",
-    "nha", "cua", "sach", "but", "ban", "ghe", "may", "xe", "tau", "thuyen",
-    "chay", "nhay", "boi", "bay", "di", "dung", "ngoi", "nam", "an", "uong",
-    "ngu", "thuc", "nghe", "nhin", "noi", "cuoi", "khoc", "nghi", "yeu", "ghet",
-
-    // Cum 2 tu ghep noi dau gach ngang
-    "ha-noi", "sai-gon", "da-nang", "phu-quoc", "viet-nam", "thai-lan", "nhat-ban", "han-quoc",
-    "cong-nghe", "may-tinh", "lap-trinh", "mang-luoi", "du-lieu", "bao-mat", "giao-dien", "may-chu",
-    "tri-tue", "nhan-tao", "ky-thuat", "sang-tao", "phat-trien", "tuong-lai", "hien-dai", "tu-dong",
-    "hoc-sinh", "sinh-vien", "thay-co", "truong-hoc", "lop-hoc", "bai-tap", "kien-thuc", "ky-nang",
-    "gia-dinh", "bo-me", "ong-ba", "anh-em", "con-cai", "ban-be", "dong-nghiep", "hanh-phuc",
-    "suc-khoe", "the-thao", "bong-da", "chay-bo", "boi-loi", "am-nhac", "hoi-hoa", "du-lich",
-    "mat-troi", "mat-trang", "ngoi-sao", "vu-tru", "hanh-tinh", "thien-nhien", "moi-truong", "thoi-tiet",
-    "thanh-pho", "nong-thon", "mat-dat", "bau-troi", "dai-duong", "con-suoi", "ngon-nui", "canh-dong",
-    "thoi-gian", "qua-khu", "hien-tai", "bat-dau", "ket-thuc", "thanh-cong", "that-bai", "co-hoi",
-    "chuyen-nghiep", "nghiem-tuc", "nghiem-ngat", "khoang-cach", "khoanh-khac", "suy-nghi", "trai-nghiem"
-  ],
-
-  en: [
-    // Single Words
-    "speed", "code", "fast", "type", "data", "byte", "loop", "node", "time", "web",
-    "cloud", "link", "text", "file", "port", "disk", "cpu", "ram", "task", "run",
-    "core", "net", "host", "test", "grid", "main", "flow", "key", "dash", "sync",
-    "light", "sound", "space", "power", "cyber", "pixel", "laser", "radar", "signal",
-
-    // Hyphenated Compound Words (2 Words)
-    "new-york", "hong-kong", "full-stack", "front-end", "back-end", "real-time", "high-tech", "open-source",
-    "multi-task", "auto-scale", "peer-to-peer", "cloud-native", "data-base", "user-friendly", "cross-platform",
-    "ultra-fast", "cyber-space", "micro-service", "hyper-link", "super-computer", "zero-trust", "dry-run"
-  ]
-};
+    // 100 từ khó — đồng bộ 1:1 với vi_dau.hard
+    hard: [
+        "khoanh", "nghieng", "khuech", "khuyu", "ngoeo", "thuo", "ngoan", "ngheo", "nghien", "nguyen",
+        "truyen", "khuyen", "chuyen", "quyen", "quy", "ngheu", "nghieu", "soan", "duyet", "chuong",
+        "hoang", "khoang", "ngheo", "xoan", "ngoac", "khoac", "hoat", "hoang", "thuan", "khuan",
+        "ngoai", "quet", "nghiem", "nghiem", "nghiep", "nghieng", "nguyen", "quyet", "quyen", "quynh",
+        "quynh", "quyen", "quyen", "uyen", "uyen", "uyet", "huyen", "huyen", "huyen", "chuyen",
+        "chuyen", "chuyen", "chuyen", "tuyen", "tuyen", "tuyet", "tuyen", "duyen", "duyet", "duy tri",
+        "khuyet", "khuyen", "khuyen", "khuyen", "khuya", "khuay", "khuat", "khuan", "khuech", "khuon",
+        "nguech", "nguy", "nguy", "nguyen", "nguyet", "nguyen", "nguyen", "nghich", "nghiet", "nghiem",
+        "nghia", "nghenh", "nghech", "nghenh", "nghiem", "nghiem", "nguyen", "ngoanh", "ngoat", "ngoan",
+        "ngoang", "ngoeo", "ngoet", "xoet", "xoan", "xoac", "xoach", "quanh", "quay", "quet"
+    ]
+},
