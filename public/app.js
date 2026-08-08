@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// 6. Khung Chat Toàn Cục
+	// 6. Khung Chat Toàn Cục (Đã tối ưu hóa bắt sự kiện gửi)
 	setupGlobalChat();
 
 	// 7. Ô gõ chữ chính
@@ -261,7 +261,6 @@ function renderWords() {
 	currentWords.forEach((word, idx) => {
 		const span = document.createElement("span");
 		span.className = "word";
-		// Từ hiện tại ban đầu gán lớp Focus Xanh Lá
 		if (idx === wordIndex) span.className = "word current correct-typing";
 		span.innerText = word;
 		wordsDisplay.appendChild(span);
@@ -292,47 +291,35 @@ function handleTypingInput(e) {
 		const typedWord = val.trim();
 
 		if (typedWord === targetWord) {
-			// --- ĐÚNG TỪ ---
-			correctChars += targetWord.length + 1; // +1 cho phím cách
+			correctChars += targetWord.length + 1;
 			markWordStatus(wordIndex, "correct");
 
 			wordIndex++;
 			typeInput.value = "";
 			typeInput.classList.remove("input-error");
 
-			// Kiểm tra nếu gõ xong toàn bộ danh sách từ
 			if (wordIndex >= currentWords.length) {
 				finishGame();
 				return;
 			} else {
-				// Chuyển Focus xanh lá sang từ kế tiếp
 				markWordStatus(wordIndex, "current correct-typing");
 				scrollCurrentWordIntoView();
 			}
 
 			sendProgressUpdate();
 		} else {
-			// --- SAI TỪ -> NHÁY ĐỎ BAN ĐẦU, XÓA CHỮ, GIỮ FOCUS ĐỎ YÊU CẦU GÕ LẠI ---
 			totalErrors++;
-
 			flashInputError(typeInput);
-
 			typeInput.value = "";
 			typeInput.classList.remove("input-error");
-
-			// Trả lại Focus Xanh Lá ban đầu cho từ hiện tại bắt đầu gõ lại
 			markWordStatus(wordIndex, "current correct-typing");
-
 			typeInput.focus();
 		}
 	} else {
-		// Realtime feedback trong lúc đang gõ từng ký tự dở dang
 		if (!targetWord.startsWith(val)) {
-			// Gõ SAI ký tự -> GIỮ FOCUS + CHUYỂN MÀU ĐỎ
 			typeInput.classList.add("input-error");
 			markWordStatus(wordIndex, "current incorrect-typing");
 		} else {
-			// Gõ ĐÚNG ký tự -> GIỮ FOCUS + CHUYỂN MÀU XANH LÁ
 			typeInput.classList.remove("input-error");
 			markWordStatus(wordIndex, "current correct-typing");
 		}
@@ -445,29 +432,40 @@ socket.on("game_over", (leaderboard) => {
 	triggerFireworks();
 });
 
-// Chat Global
+// =========================================================================
+// CHAT GLOBAL (Đã sửa lỗi không phát hiện đúng Input & Nút Gửi)
+// =========================================================================
 function setupGlobalChat() {
 	const globalChatInputs = document.querySelectorAll(".global-chat-input");
 	const globalChatSendBtns = document.querySelectorAll(".global-chat-send-btn");
 
 	function sendMsg(inputEl) {
+		if (!inputEl) return;
 		const msg = inputEl.value.trim();
 		if (msg) {
-			socket.emit("send_global_chat", { message: msg });
+			socket.emit("send_global_chat", {
+				message: msg,
+				username: myUsername,
+			});
 			inputEl.value = "";
 		}
 	}
 
 	globalChatSendBtns.forEach((btn) => {
 		btn.addEventListener("click", (e) => {
-			const wrapper = e.target.closest(".global-chat-input-wrapper");
-			sendMsg(wrapper.querySelector(".global-chat-input"));
+			const wrapper = e.currentTarget.closest(".global-chat-input-wrapper");
+			if (wrapper) {
+				sendMsg(wrapper.querySelector(".global-chat-input"));
+			}
 		});
 	});
 
 	globalChatInputs.forEach((input) => {
 		input.addEventListener("keydown", (e) => {
-			if (e.key === "Enter") sendMsg(input);
+			if (e.key === "Enter") {
+				e.preventDefault();
+				sendMsg(input);
+			}
 		});
 	});
 }
