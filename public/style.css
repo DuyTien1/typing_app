@@ -469,9 +469,8 @@ header .logo {
 	z-index: 10;
 }
 
-/* =========================================================================
-   KHU VỰC GÕ CHỮ & QUẢN LÝ TẮT/MỞ FOCUS TẠI ĐÂY
-   ========================================================================= */
+/* KHU VỰC GÕ CHỮ & QUẢN LÝ TẮT/MỞ FOCUS TẠI ĐÂY */
+
 #typing-area {
 	padding: 25px;
 }
@@ -663,14 +662,14 @@ header .logo {
 }
 
 .race-title {
-	text-align: center; /* Căn chữ ra chính giữa */
-	font-family: "Orbitron", sans-serif; /* Font chuẩn phong cách Sci-Fi/Cyberpunk */
-	font-size: 20px; /* Tăng kích thước chữ */
-	font-weight: 800; /* Làm đậm chữ */
-	color: var(--primary); /* Màu xanh Neon tươi sáng */
-	text-transform: uppercase; /* Viết hoa toàn bộ */
-	letter-spacing: 2px; /* Nối rộng khoảng cách các chữ */
-	margin-bottom: 15px; /* Tạo khoảng cách phía dưới */
+	text-align: center;
+	font-family: "Orbitron", sans-serif;
+	font-size: 20px;
+	font-weight: 800;
+	color: var(--primary);
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	margin-bottom: 15px;
 
 	/* Hiệu ứng phát sáng Neon (Glow Effect) */
 	text-shadow:

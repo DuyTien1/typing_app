@@ -1,6 +1,4 @@
-// =========================================================================
 // KHỞI TẠO SOCKET & BIẾN TOÀN CỤC
-// =========================================================================
 const socket = io();
 
 let currentLanguage = "vi_dau";
@@ -16,9 +14,8 @@ let timerInterval = null;
 // Avatar đua xe
 const runnerIcons = ["🏎️", "🏎️‍💥", "🚀", "⚡", "🛸", "🏍️", "🏎️", "🏎️‍💥"];
 
-// =========================================================================
 // QUẢN LÝ GIAO DIỆN SÁNG / TỐI (LIGHT / DARK THEME)
-// =========================================================================
+
 function initTheme() {
 	const savedTheme = localStorage.getItem("racer_theme") || "dark";
 	applyTheme(savedTheme);
@@ -36,11 +33,10 @@ function applyTheme(theme) {
 	localStorage.setItem("racer_theme", theme);
 }
 
-// =========================================================================
 // SỰ KIỆN KHỞI TẠO DOM
-// =========================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
-	// 1. Khởi tạo Theme & User Profile
+	// Khởi tạo Theme & User Profile
 	initTheme();
 	initUserProfile();
 
@@ -52,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// 2. Chuyển đổi Mode thi đấu
+	// Chuyển đổi Mode thi đấu
 	const modeCards = document.querySelectorAll(".mode-card");
 	modeCards.forEach((card) => {
 		card.addEventListener("click", () => {
@@ -62,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// 3. Nút Vào Phòng Chờ
+	// Nút Vào Phòng Chờ
 	const joinBtn = document.getElementById("join-btn");
 	if (joinBtn) {
 		joinBtn.addEventListener("click", () => {
@@ -74,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// 4. Nút Bắt Đầu Trận Đấu Ngay
+	// Nút Bắt Đầu Trận Đấu Ngay
 	const startGameNowBtn = document.getElementById("start-game-now-btn");
 	if (startGameNowBtn) {
 		startGameNowBtn.addEventListener("click", () => {
@@ -82,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// 5. Popup đổi tên
+	// Popup đổi tên
 	const btnChangeName = document.getElementById("btn-change-name");
 	const renamePopup = document.getElementById("rename-popup");
 	const popupNameInput = document.getElementById("popup-name-input");
@@ -114,16 +110,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// 6. Khung Chat Toàn Cục (Đã tối ưu hóa bắt sự kiện gửi)
+	// Khung Chat Toàn Cục (Đã tối ưu hóa bắt sự kiện gửi)
 	setupGlobalChat();
 
-	// 7. Ô gõ chữ chính
+	// Ô gõ chữ chính
 	const typeInput = document.getElementById("type-input");
 	if (typeInput) {
 		typeInput.addEventListener("input", handleTypingInput);
 	}
 
-	// 8. Chơi lại & Về trang chủ
+	// Chơi lại & Về trang chủ
 	document.getElementById("btn-play-again")?.addEventListener("click", () => {
 		document.getElementById("summary-modal").classList.add("hidden");
 		document.getElementById("game-container").classList.add("hidden");
@@ -138,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("login-modal").classList.remove("hidden");
 	});
 
-	// 9. Chat Nhanh In-Game
+	// Chat Nhanh In-Game
 	const chatInput = document.getElementById("chat-input");
 	if (chatInput) {
 		chatInput.addEventListener("keydown", (e) => {
@@ -164,9 +160,8 @@ function initUserProfile() {
 	if (profileName) profileName.innerText = myUsername;
 }
 
-// =========================================================================
 // LẮNG NGHE SỰ KIỆN TỪ SERVER (SOCKET.IO)
-// =========================================================================
+
 socket.on("update_online_count", (count) => {
 	const onlineCount = document.getElementById("online-count");
 	if (onlineCount) onlineCount.innerText = count;
@@ -212,9 +207,8 @@ socket.on("game_start", (data) => {
 	startCountdown(data.countdown || 3);
 });
 
-// =========================================================================
 // LOGIC ĐẾM NGƯỢC & THI ĐẤU
-// =========================================================================
+
 function startCountdown(seconds) {
 	const timerEl = document.getElementById("timer");
 	const statusBox = document.getElementById("status-box");
@@ -276,9 +270,8 @@ function scrollCurrentWordIntoView() {
 	}
 }
 
-// =========================================================================
 // XỬ LÝ SỰ KIỆN GÕ CHỮ (LUÔN GIỮ FOCUS TẠI MỌI THỜI ĐIỂM)
-// =========================================================================
+
 function handleTypingInput(e) {
 	if (!isPlaying) return;
 
@@ -432,9 +425,8 @@ socket.on("game_over", (leaderboard) => {
 	triggerFireworks();
 });
 
-// =========================================================================
-// CHAT GLOBAL (Đã sửa lỗi không phát hiện đúng Input & Nút Gửi)
-// =========================================================================
+// CHAT GLOBAL
+
 function setupGlobalChat() {
 	const globalChatInputs = document.querySelectorAll(".global-chat-input");
 	const globalChatSendBtns = document.querySelectorAll(".global-chat-send-btn");

@@ -15,12 +15,10 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// =========================================================================
 // DANH SÁCH TỪ VỰNG (70% DỄ - 30% KHÓ)
-// =========================================================================
+
 const BIG_WORD_BANKS = {
 	vi_dau: {
-		// 300 từ dễ
 		easy: [
 			"ngày",
 			"đêm",
@@ -324,7 +322,6 @@ const BIG_WORD_BANKS = {
 			"gạo",
 		],
 
-		// 100 từ khó
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -385,7 +382,6 @@ const BIG_WORD_BANKS = {
 			"tuyên",
 			"duyên",
 			"duyệt",
-			"duy trì",
 			"khuyết",
 			"khuyến",
 			"khuyên",
@@ -430,7 +426,6 @@ const BIG_WORD_BANKS = {
 	},
 
 	vi_nodau: {
-		// 300 từ dễ — đồng bộ 1:1 với vi_dau.easy
 		easy: [
 			"ngay",
 			"dem",
@@ -734,7 +729,6 @@ const BIG_WORD_BANKS = {
 			"gao",
 		],
 
-		// 100 từ khó — đồng bộ 1:1 với vi_dau.hard
 		hard: [
 			"khoanh",
 			"nghieng",
@@ -795,7 +789,6 @@ const BIG_WORD_BANKS = {
 			"tuyen",
 			"duyen",
 			"duyet",
-			"duy tri",
 			"khuyet",
 			"khuyen",
 			"khuyen",
@@ -900,9 +893,8 @@ function getOrCreateRoom(lang) {
 	return room;
 }
 
-// =========================================================================
 // XỬ LÝ KẾT NỐI REALTIME (SOCKET.IO)
-// =========================================================================
+
 io.on("connection", (socket) => {
 	totalOnlineUsers++;
 	io.emit("update_online_count", totalOnlineUsers);
@@ -910,7 +902,7 @@ io.on("connection", (socket) => {
 	let currentRoom = null;
 	let player = null;
 
-	// 1. NGƯỜI CHƠI VÀO PHÒNG CHỜ
+	// NGƯỜI CHƠI VÀO PHÒNG CHỜ
 	socket.on("join_lobby", ({ username, language }) => {
 		const selectedLang = language || "vi_dau";
 		currentRoom = getOrCreateRoom(selectedLang);
@@ -934,7 +926,7 @@ io.on("connection", (socket) => {
 		});
 	});
 
-	// 2. BẤM NÚT "BẮT ĐẦU TRẬN ĐẤU NGAY"
+	// BẤM NÚT "BẮT ĐẦU TRẬN ĐẤU NGAY"
 	socket.on("force_start_game", () => {
 		if (currentRoom && currentRoom.state === "waiting") {
 			currentRoom.state = "racing";
@@ -946,7 +938,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// 3. ĐỔI TÊN NGƯỜI CHƠI
+	// ĐỔI TÊN NGƯỜI CHƠI
 	socket.on("update_username", ({ username }) => {
 		if (player) {
 			player.username = username;
@@ -958,7 +950,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// 4. CẬP NHẬT TIẾN ĐỘ DẠY THI ĐẤU (REALTIME RACE)
+	// CẬP NHẬT TIẾN ĐỘ DẠY THI ĐẤU (REALTIME RACE)
 	socket.on("update_progress", (data) => {
 		if (!currentRoom || currentRoom.state !== "racing" || !player) return;
 
@@ -970,7 +962,7 @@ io.on("connection", (socket) => {
 		io.to(currentRoom.id).emit("race_update", currentRoom.players);
 	});
 
-	// 5. NGƯỜI CHƠI HOÀN THÀNH
+	// NGƯỜI CHƠI HOÀN THÀNH
 	socket.on("player_finished", (data) => {
 		if (!currentRoom || !player || player.isFinished) return;
 
@@ -987,7 +979,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// 6. GLOBAL CHAT & IN-GAME CHAT (Xử lý toàn diện kể cả khi user chưa vào phòng chờ)
+	// GLOBAL CHAT & IN-GAME CHAT (Xử lý toàn diện kể cả khi user chưa vào phòng chờ)
 	socket.on("send_global_chat", ({ message, username }) => {
 		if (!message || !message.trim()) return;
 
@@ -1009,7 +1001,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// 7. XỬ LÝ NGẮT KẾT NỐI
+	// XỬ LÝ NGẮT KẾT NỐI
 	socket.on("disconnect", () => {
 		totalOnlineUsers = Math.max(0, totalOnlineUsers - 1);
 		io.emit("update_online_count", totalOnlineUsers);
@@ -1040,7 +1032,7 @@ function finishMatch(room) {
 	io.to(room.id).emit("game_over", leaderboard);
 }
 
-// Keep-Alive Service
+// Giữ cho server luôn hoạt động (Keep-Alive) khi triển khai trên Render.com
 const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
 if (RENDER_EXTERNAL_URL) {
 	setInterval(
