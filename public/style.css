@@ -469,7 +469,7 @@ header .logo {
 	z-index: 10;
 }
 
-/* KHU VỰC GÕ CHỮ & QUẢN LÝ TẮT/MỞ FOCUS TẠI ĐÂY */
+/* KHU VỰC GÕ CHỮ & QUẢN LÝ TẮT/MỞ FOCUS (ĐÃ SỬA CHỐNG NHẢY DÒNG) */
 
 #typing-area {
 	padding: 25px;
@@ -480,8 +480,8 @@ header .logo {
 	font-size: 24px;
 	font-weight: 500;
 	letter-spacing: 0.5px;
-	line-height: 1.8;
-	height: 150px;
+	line-height: 1.6;
+	height: 140px; /* Cố định chiều cao dòng hiển thị */
 	overflow-y: auto;
 	padding: 15px;
 	background: var(--input-bg);
@@ -489,16 +489,25 @@ header .logo {
 	border: 1px solid var(--border-color);
 	margin-bottom: 20px;
 	user-select: none;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	gap: 8px 12px;
+	box-sizing: border-box;
 }
 
 .word {
 	display: inline-block;
-	margin-right: 12px;
+	white-space: nowrap;
 	color: var(--text-muted);
-	padding: 0 6px;
+	padding: 2px 6px;
 	border-radius: 4px;
 	border-bottom: 3px solid transparent;
-	transition: all 0.15s ease;
+	transition:
+		background-color 0.1s ease,
+		color 0.1s ease,
+		border-color 0.1s ease;
+	box-sizing: border-box;
 }
 
 /* Đã gõ xong đúng từ */
@@ -515,6 +524,7 @@ header .logo {
 	background: rgba(255, 255, 255, 0.08);
 	border-bottom: 3px solid var(--primary);
 	color: var(--text-main);
+	scroll-margin-top: 10px;
 }
 
 /* 1. Gõ ĐÚNG ký tự dở dang -> FOCUS MÀU XANH LÁ */

@@ -266,7 +266,7 @@ function scrollCurrentWordIntoView() {
 	const wordsDisplay = document.getElementById("words-display");
 	const currentSpan = wordsDisplay.children[wordIndex];
 	if (currentSpan) {
-		currentSpan.scrollIntoView({ behavior: "smooth", block: "nearest" });
+		currentSpan.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
 	}
 }
 

@@ -3,21 +3,86 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>niTe TYPING RACER</title>
+
+		<!-- SEO CƠ BẢN -->
+		<title>FASTTYPING GAME - Luyện Đánh Máy & NumPad Online</title>
+		<meta
+			name="description"
+			content="Chơi FastTyping Game - Trò chơi luyện gõ phím 10 ngón và gõ bàn phím số NumPad tốc độ cao trực tuyến. Thách đấu đánh máy thời gian thực hoàn toàn miễn phí."
+		/>
+		<meta
+			name="keywords"
+			content="fasttyping, game danh may, luyen go phim, test toc do go phim, go numpad, typing race online"
+		/>
+		<meta name="robots" content="index, follow" />
+		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
+		<link rel="canonical" href="https://fasttyping.vn/" />
+
+		<!-- OPEN GRAPH (FACEBOOK, ZALO) -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://fasttyping.vn/" />
+		<meta property="og:title" content="FASTTYPING GAME - Luyện Đánh Máy & NumPad Online" />
+		<meta
+			property="og:description"
+			content="Trò chơi luyện gõ phím 10 ngón và gõ bàn phím số NumPad tốc độ cao trực tuyến."
+		/>
+		<meta property="og:image" content="https://fasttyping.vn/og-image.jpg" />
+		<meta property="og:locale" content="vi_VN" />
+
+		<!-- TWITTER CARDS -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="FASTTYPING GAME - Luyện Đánh Máy & NumPad Online" />
+		<meta
+			name="twitter:description"
+			content="Trò chơi luyện gõ phím 10 ngón và gõ bàn phím số NumPad tốc độ cao trực tuyến."
+		/>
+		<meta name="twitter:image" content="https://fasttyping.vn/og-image.jpg" />
+
+		<!-- FAVICON -->
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
 		<link rel="stylesheet" href="style.css" />
 		<link
 			href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap"
 			rel="stylesheet"
 		/>
 		<script src="/socket.io/socket.io.js"></script>
+
+		<!-- SCHEMA.ORG (JSON-LD) DÀNH CHO GOOGLE GAME SEARCH -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "SoftwareApplication",
+				"name": "FASTTYPING GAME",
+				"operatingSystem": "ALL",
+				"applicationCategory": "GameApplication",
+				"offers": {
+					"@type": "Offer",
+					"price": "0",
+					"priceCurrency": "VND"
+				},
+				"author": {
+					"@type": "Person",
+					"name": "Nguyễn Duy Tiến (niTe)"
+				},
+				"description": "Thử thách gõ phím và NumPad tốc độ cao cùng nhiều người chơi trực tuyến."
+			}
+		</script>
 	</head>
 	<body>
 		<!-- TIỆN ÍCH TRÊN CÙNG: ĐỔI TÊN, THÊM NÚT ĐỔI THEME & ONLINE BADGE -->
 		<div id="user-profile-bar" class="left-bar">
 			<span>👤 <span id="profile-name">Vô danh</span></span>
-			<button id="btn-change-name" class="btn-small">ĐỔI TÊN</button>
+			<button id="btn-change-name" class="btn-small" aria-label="Đổi tên người chơi">
+				ĐỔI TÊN
+			</button>
 			<!-- Nút chuyển đổi Theme Sáng/Tối -->
-			<button id="theme-toggle-btn" class="btn-small theme-btn" title="Đổi Chế Độ Sáng/Tối">
+			<button
+				id="theme-toggle-btn"
+				class="btn-small theme-btn"
+				title="Đổi Chế Độ Sáng/Tối"
+				aria-label="Đổi Chế Độ Sáng Tối"
+			>
 				🌙 Tối
 			</button>
 		</div>
@@ -30,7 +95,7 @@
 		<!-- MODAL TRANG CHỦ -->
 		<div id="login-modal" class="modal">
 			<div class="cyber-box modal-content" style="max-width: 550px">
-				<h1 class="glitch-title">niTe TYPING RACER</h1>
+				<h1 class="glitch-title">FASTTYPING GAME</h1>
 				<p class="subtitle">Thử Thách Đánh Máy & NumPad</p>
 
 				<!-- KHU VỰC CHỌN NÚT CHẾ ĐỘ -->
@@ -71,6 +136,7 @@
 							placeholder="Nhập tin nhắn..."
 							maxlength="100"
 							autocomplete="off"
+							aria-label="Nhập tin nhắn chat toàn cục"
 						/>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
@@ -95,6 +161,7 @@
 					id="popup-name-input"
 					placeholder="Tên mới..."
 					maxlength="15"
+					aria-label="Tên biệt danh mới"
 					style="
 						width: 100%;
 						padding: 12px;
@@ -131,7 +198,7 @@
 			</div>
 		</div>
 
-		<!-- PHÒNG CHỜ -->
+		<!-- PHÒNG CHỜ GIỮ NGUYÊN HOÀN TOÀN TẤT CẢ CÁC THẺ -->
 		<div id="lobby-screen" class="screen hidden">
 			<div class="cyber-box lobby-box">
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
@@ -175,6 +242,7 @@
 							placeholder="Nhập tin nhắn..."
 							maxlength="100"
 							autocomplete="off"
+							aria-label="Nhập tin nhắn phòng chờ"
 						/>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
@@ -202,6 +270,7 @@
 					id="type-input"
 					autocomplete="off"
 					placeholder="Chờ bắt đầu..."
+					aria-label="Ô gõ chữ thi đấu"
 					disabled
 				/>
 			</div>
@@ -212,6 +281,7 @@
 					id="chat-input"
 					placeholder="Nhắn tin nhanh trong trận đấu (Enter)..."
 					maxlength="50"
+					aria-label="Tin nhắn nhanh trong trận"
 				/>
 			</div>
 		</div>

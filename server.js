@@ -859,7 +859,16 @@ const BIG_WORD_BANKS = {
 	},
 };
 
+// CẬP NHẬT LOGIC GENERATEWORDS HỖ TRỢ NUMPAD (ZIPCODE 5 CHỮ SỐ)
 function generateWords(lang, count = 100) {
+	if (lang === "numpad") {
+		const zipList = [];
+		for (let i = 0; i < 500; i++) {
+			zipList.push(Math.floor(10000 + Math.random() * 90000).toString());
+		}
+		return zipList;
+	}
+
 	const bank = BIG_WORD_BANKS[lang] || BIG_WORD_BANKS.vi_dau;
 	const result = [];
 	for (let i = 0; i < count; i++) {
@@ -871,7 +880,8 @@ function generateWords(lang, count = 100) {
 	return result;
 }
 
-const rooms = { en: [], vi_nodau: [], vi_dau: [] };
+// CẬP NHẬT MẢNG LƯU TRỮ PHÒNG CHƠI THÊM CHẾ ĐỘ 'NUMPAD'
+const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [] };
 let totalOnlineUsers = 0;
 
 function getOrCreateRoom(lang) {
@@ -886,6 +896,7 @@ function getOrCreateRoom(lang) {
 			players: [],
 			words: generateWords(lang),
 			matchInterval: null,
+			startTime: null,
 			finishedCount: 0,
 		};
 		roomList.push(room);
@@ -950,7 +961,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// CẬP NHẬT TIẾN ĐỘ DẠY THI ĐẤU (REALTIME RACE)
+	// CẬP NHẬT TIẾN ĐỘ THI ĐẤU (REALTIME RACE)
 	socket.on("update_progress", (data) => {
 		if (!currentRoom || currentRoom.state !== "racing" || !player) return;
 
@@ -958,6 +969,37 @@ io.on("connection", (socket) => {
 		player.wpm = data.wpm || 0;
 		player.correctChars = data.correctChars || 0;
 		player.errors = data.errors || 0;
+
+		// Bắt đầu đếm giờ trận đấu khi có tương tác đầu tiên
+		if (!currentRoom.startTime) {
+			currentRoom.startTime = Date.now();
+			io.to(currentRoom.id).emit("race_start_timer");
+
+			// CHẾ ĐỘ NUMPAD (90 GIÂY), CÁC MÀN KHÁC TỐI ĐA 5 PHÚT (300 GIÂY)
+			const DURATION_MS = currentRoom.lang === "numpad" ? 90 * 1000 : 5 * 60 * 1000;
+
+			currentRoom.matchInterval = setTimeout(() => {
+				finishMatch(currentRoom);
+			}, DURATION_MS);
+		}
+
+		// LOGIC RIÊNG CHO CHẾ ĐỘ NUMPAD (ZIPCODE)
+		if (currentRoom.lang === "numpad") {
+			const MAX_TRACK_CHARS = 600;
+			if (player.correctChars >= MAX_TRACK_CHARS) {
+				currentRoom.players.forEach((p) => {
+					p.correctChars = Math.floor((p.correctChars || 0) * (2 / 3));
+				});
+				io.to(currentRoom.id).emit("winner_celebration");
+				io.to(currentRoom.id).emit("progress_reset_tier", {
+					resetBy: player.username,
+					players: currentRoom.players,
+				});
+			} else {
+				io.to(currentRoom.id).emit("race_update", currentRoom.players);
+			}
+			return;
+		}
 
 		io.to(currentRoom.id).emit("race_update", currentRoom.players);
 	});
@@ -979,7 +1021,7 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// GLOBAL CHAT & IN-GAME CHAT (Xử lý toàn diện kể cả khi user chưa vào phòng chờ)
+	// GLOBAL CHAT & IN-GAME CHAT
 	socket.on("send_global_chat", ({ message, username }) => {
 		if (!message || !message.trim()) return;
 
@@ -1010,6 +1052,7 @@ io.on("connection", (socket) => {
 			currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
 
 			if (currentRoom.players.length === 0) {
+				if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
 				if (rooms[currentRoom.lang]) {
 					rooms[currentRoom.lang] = rooms[currentRoom.lang].filter((r) => r.id !== currentRoom.id);
 				}
@@ -1027,6 +1070,7 @@ io.on("connection", (socket) => {
 function finishMatch(room) {
 	if (room.state === "finished") return;
 	room.state = "finished";
+	if (room.matchInterval) clearTimeout(room.matchInterval);
 
 	const leaderboard = [...room.players].sort((a, b) => b.wpm - a.wpm);
 	io.to(room.id).emit("game_over", leaderboard);
