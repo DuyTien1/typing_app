@@ -1,6 +1,10 @@
 // KHỞI TẠO SOCKET & BIẾN TOÀN CỤC
 const socket = io();
 
+// THỜI GIAN THI ĐẤU (TÍNH BẰNG GIÂY)
+const ZIPCODE_TEST_DURATION = 10; // Thời gian cho màn Zipcode Test (Numpad)
+const NORMAL_RACE_DURATION = 300; // Thời gian cho các màn thi đấu thường (5 phút)
+
 let currentLanguage = "vi_dau";
 let myUsername = "Vô danh";
 let currentWords = [];
@@ -15,7 +19,6 @@ let timerInterval = null;
 const runnerIcons = ["🏎️", "🏎️‍💥", "🚀", "⚡", "🛸", "🏍️", "🏎️", "🏎️‍💥"];
 
 // QUẢN LÝ GIAO DIỆN SÁNG / TỐI (LIGHT / DARK THEME)
-
 function initTheme() {
 	const savedTheme = localStorage.getItem("racer_theme") || "dark";
 	applyTheme(savedTheme);
@@ -34,7 +37,6 @@ function applyTheme(theme) {
 }
 
 // SỰ KIỆN KHỞI TẠO DOM
-
 document.addEventListener("DOMContentLoaded", () => {
 	// Khởi tạo Theme & User Profile
 	initTheme();
@@ -58,12 +60,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Nút Vào Phòng Chờ
+	// Nút Vào Phòng Chờ (Ẩn Canvas bàn phím)
 	const joinBtn = document.getElementById("join-btn");
 	if (joinBtn) {
 		joinBtn.addEventListener("click", () => {
 			document.getElementById("login-modal").classList.add("hidden");
 			document.getElementById("lobby-screen").classList.remove("hidden");
+
+			// Ẩn bàn phím nền khi rời trang chủ
+			const bgCanvas = document.getElementById("keyboard-bg-canvas");
+			if (bgCanvas) bgCanvas.style.display = "none";
 
 			// Gửi yêu cầu tham gia tới server
 			socket.emit("join_lobby", { username: myUsername, language: currentLanguage });
@@ -110,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Khung Chat Toàn Cục (Đã tối ưu hóa bắt sự kiện gửi)
+	// Khung Chat Toàn Cục
 	setupGlobalChat();
 
 	// Ô gõ chữ chính
@@ -132,6 +138,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("game-container").classList.add("hidden");
 		document.getElementById("lobby-screen").classList.add("hidden");
 		document.getElementById("login-modal").classList.remove("hidden");
+
+		// Hiện lại bàn phím nền khi trở về trang chủ
+		const bgCanvas = document.getElementById("keyboard-bg-canvas");
+		if (bgCanvas) bgCanvas.style.display = "block";
 	});
 
 	// Chat Nhanh In-Game
@@ -161,7 +171,6 @@ function initUserProfile() {
 }
 
 // LẮNG NGHE SỰ KIỆN TỪ SERVER (SOCKET.IO)
-
 socket.on("update_online_count", (count) => {
 	const onlineCount = document.getElementById("online-count");
 	if (onlineCount) onlineCount.innerText = count;
@@ -208,7 +217,6 @@ socket.on("game_start", (data) => {
 });
 
 // LOGIC ĐẾM NGƯỢC & THI ĐẤU
-
 function startCountdown(seconds) {
 	const timerEl = document.getElementById("timer");
 	const statusBox = document.getElementById("status-box");
@@ -222,14 +230,19 @@ function startCountdown(seconds) {
 			timerEl.innerText = count;
 		} else {
 			clearInterval(cdInterval);
-			timerEl.innerText = "300";
+
+			// Xác định thời gian thi đấu dựa trên chế độ Zipcode Test (Numpad) hoặc thường
+			const raceDuration =
+				currentLanguage === "numpad" ? ZIPCODE_TEST_DURATION : NORMAL_RACE_DURATION;
+
+			timerEl.innerText = raceDuration;
 			statusBox.innerText = "ĐANG THI ĐẤU";
 			typeInput.disabled = false;
 			typeInput.placeholder = "Gõ chữ vào đây...";
 			typeInput.focus();
 			isPlaying = true;
 			startTime = Date.now();
-			startRaceTimer(300);
+			startRaceTimer(raceDuration);
 		}
 	}, 1000);
 }
@@ -270,8 +283,7 @@ function scrollCurrentWordIntoView() {
 	}
 }
 
-// XỬ LÝ SỰ KIỆN GÕ CHỮ (LUÔN GIỮ FOCUS TẠI MỌI THỜI ĐIỂM)
-
+// XỬ LÝ SỰ KIỆN GÕ CHỮ
 function handleTypingInput(e) {
 	if (!isPlaying) return;
 
@@ -426,7 +438,6 @@ socket.on("game_over", (leaderboard) => {
 });
 
 // CHAT GLOBAL
-
 function setupGlobalChat() {
 	const globalChatInputs = document.querySelectorAll(".global-chat-input");
 	const globalChatSendBtns = document.querySelectorAll(".global-chat-send-btn");
@@ -553,3 +564,201 @@ function animateFireworks() {
 		requestAnimationFrame(animateFireworks);
 	}
 }
+
+// BÀN PHÍM NỀN LED RGB
+(function initStealthKeyboardBG() {
+	const bgCanvas = document.getElementById("keyboard-bg-canvas");
+	if (!bgCanvas) return;
+	const bgCtx = bgCanvas.getContext("2d");
+
+	const baseKeyLayout = [
+		["Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Del"],
+		["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace"],
+		["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+		["Caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"],
+		["Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Shift"],
+		["Ctrl", "Win", "Alt", "Space", "Alt", "Fn", "Ctrl"],
+	];
+
+	let keysList = [];
+
+	function resizeBgCanvas() {
+		bgCanvas.width = window.innerWidth;
+		bgCanvas.height = window.innerHeight;
+		buildKeyboardGrid();
+	}
+
+	function buildKeyboardGrid() {
+		keysList = [];
+		const screenW = bgCanvas.width;
+		const screenH = bgCanvas.height;
+
+		const centerMarginX = 320;
+		const centerMarginY = 320;
+		const centerX = screenW / 2;
+		const centerY = screenH / 2;
+
+		const padding = 12;
+		const baseKeyWidth = 80;
+		const keyHeight = 60;
+
+		const rowCount = baseKeyLayout.length;
+		const totalBlockH = rowCount * (keyHeight + padding);
+		const startY = (screenH % totalBlockH) / 2;
+
+		for (let yPtr = startY - totalBlockH; yPtr < screenH + totalBlockH; yPtr += totalBlockH) {
+			baseKeyLayout.forEach((row, rIdx) => {
+				const currentY = yPtr + rIdx * (keyHeight + padding);
+
+				let baseRowWidth = 0;
+				row.forEach((keyText) => {
+					let mult = 1;
+					if (keyText === "Space") mult = 4;
+					else if (keyText === "Backspace" || keyText === "Shift" || keyText === "Enter")
+						mult = 1.8;
+					else if (keyText === "Tab" || keyText === "Caps") mult = 1.3;
+					baseRowWidth += baseKeyWidth * mult + padding;
+				});
+
+				const startX = (screenW % baseRowWidth) / 2;
+				for (
+					let xPtr = startX - baseRowWidth;
+					xPtr < screenW + baseRowWidth;
+					xPtr += baseRowWidth
+				) {
+					let currentX = xPtr;
+
+					row.forEach((keyText) => {
+						let wMultiplier = 1;
+						if (keyText === "Space") wMultiplier = 4;
+						else if (keyText === "Backspace" || keyText === "Shift" || keyText === "Enter")
+							wMultiplier = 1.8;
+						else if (keyText === "Tab" || keyText === "Caps") wMultiplier = 1.3;
+
+						const actualWidth = baseKeyWidth * wMultiplier;
+						const keyCenterX = currentX + actualWidth / 2;
+						const keyCenterY = currentY + keyHeight / 2;
+
+						const isInsideCenterBox =
+							Math.abs(keyCenterX - centerX) < centerMarginX &&
+							Math.abs(keyCenterY - centerY) < centerMarginY;
+
+						if (!isInsideCenterBox) {
+							keysList.push({
+								text: keyText,
+								x: currentX,
+								y: currentY,
+								w: actualWidth,
+								h: keyHeight,
+								alpha: 0,
+								hue: 0,
+							});
+						}
+
+						currentX += actualWidth + padding;
+					});
+				}
+			});
+		}
+	}
+
+	function triggerRandomKey() {
+		if (keysList.length === 0) return;
+		for (let i = 0; i < 3; i++) {
+			const randIndex = Math.floor(Math.random() * keysList.length);
+			const key = keysList[randIndex];
+			if (key.alpha <= 0.2) {
+				key.hue = Math.floor(Math.random() * 360);
+				key.alpha = 1.0;
+			}
+		}
+	}
+
+	function animateKeyboardBG() {
+		bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+		const isLight = document.documentElement.getAttribute("data-theme") === "light";
+
+		const defaultStroke = isLight ? "rgba(0, 0, 0, 0.12)" : "rgba(255, 255, 255, 0.08)";
+		const defaultFill = isLight ? "rgba(240, 242, 245, 0.85)" : "rgba(10, 10, 18, 0.4)";
+		const defaultText = isLight ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.2)";
+
+		keysList.forEach((key) => {
+			bgCtx.lineWidth = 1.5;
+			bgCtx.strokeStyle = defaultStroke;
+			bgCtx.fillStyle = defaultFill;
+
+			bgCtx.beginPath();
+			bgCtx.roundRect(key.x, key.y, key.w, key.h, 8);
+			bgCtx.fill();
+			bgCtx.stroke();
+
+			bgCtx.fillStyle = defaultText;
+			bgCtx.font = "bold 13px Orbitron, sans-serif";
+			bgCtx.textAlign = "center";
+			bgCtx.textBaseline = "middle";
+			bgCtx.fillText(key.text, key.x + key.w / 2, key.y + key.h / 2);
+
+			if (key.alpha > 0) {
+				bgCtx.save();
+
+				if (isLight) {
+					const strokeColor = `hsla(${key.hue}, 100%, 38%, ${key.alpha})`;
+					const fillColor = `hsla(${key.hue}, 100%, 65%, ${key.alpha * 0.7})`;
+					const textColor = `hsla(${key.hue}, 100%, 15%, ${key.alpha})`;
+
+					bgCtx.shadowColor = `hsl(${key.hue}, 100%, 45%)`;
+					bgCtx.shadowBlur = 20 * key.alpha;
+
+					bgCtx.fillStyle = fillColor;
+					bgCtx.strokeStyle = strokeColor;
+					bgCtx.lineWidth = 3;
+
+					bgCtx.beginPath();
+					bgCtx.roundRect(key.x, key.y, key.w, key.h, 8);
+					bgCtx.fill();
+					bgCtx.stroke();
+
+					bgCtx.fillStyle = textColor;
+					bgCtx.font = "bold 15px Orbitron, sans-serif";
+					bgCtx.fillText(key.text, key.x + key.w / 2, key.y + key.h / 2);
+				} else {
+					bgCtx.shadowColor = `hsl(${key.hue}, 100%, 55%)`;
+					bgCtx.shadowBlur = 40 * key.alpha;
+
+					bgCtx.fillStyle = `hsla(${key.hue}, 100%, 50%, ${key.alpha * 0.9})`;
+					bgCtx.strokeStyle = `hsla(${key.hue}, 100%, 85%, ${key.alpha})`;
+					bgCtx.lineWidth = 3;
+
+					bgCtx.beginPath();
+					bgCtx.roundRect(key.x, key.y, key.w, key.h, 8);
+					bgCtx.fill();
+					bgCtx.stroke();
+
+					bgCtx.shadowBlur = 15 * key.alpha;
+					bgCtx.shadowColor = "#ffffff";
+					bgCtx.fillStyle = `rgba(255, 255, 255, ${key.alpha})`;
+					bgCtx.font = "bold 16px Orbitron, sans-serif";
+					bgCtx.fillText(key.text, key.x + key.w / 2, key.y + key.h / 2);
+				}
+
+				bgCtx.restore();
+
+				key.alpha -= 0.008;
+			}
+		});
+
+		requestAnimationFrame(animateKeyboardBG);
+	}
+
+	function scheduleNextKeyPress() {
+		triggerRandomKey();
+		const nextDelay = Math.random() * 70 + 30;
+		setTimeout(scheduleNextKeyPress, nextDelay);
+	}
+
+	window.addEventListener("resize", resizeBgCanvas);
+	resizeBgCanvas();
+	animateKeyboardBG();
+	scheduleNextKeyPress();
+})();
