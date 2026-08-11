@@ -2,7 +2,7 @@
 const socket = io();
 
 // THỜI GIAN THI ĐẤU (TÍNH BẰNG GIÂY)
-const ZIPCODE_TEST_DURATION = 10; // Thời gian cho màn Zipcode Test (Numpad)
+const ZIPCODE_TEST_DURATION = 90; // Thời gian cho màn Zipcode Test (Numpad)
 const NORMAL_RACE_DURATION = 300; // Thời gian cho các màn thi đấu thường (5 phút)
 
 let currentLanguage = "vi_dau";
