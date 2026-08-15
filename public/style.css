@@ -521,7 +521,7 @@ header .logo {
 	color: var(--correct);
 }
 
-/* ĐƯỜNG ĐUA REALTIME - CẬP NHẬT KÍCH THƯỚC ICON NHỎ LẠI */
+/* ĐƯỜNG ĐUA REALTIME - ĐÃ FIX VỊ TRÍ ICON NẰM GỌN TRONG THANH */
 #race-tracks-container {
 	display: flex;
 	flex-direction: column;
@@ -544,33 +544,41 @@ header .logo {
 
 .track-line-bg {
 	width: 100%;
-	height: 24px;
+	height: 32px;
 	background: var(--track-bg);
 	border: 1px solid var(--border-color);
-	border-radius: 12px;
+	border-radius: 16px;
 	position: relative;
+	overflow: hidden;
+	padding: 0 2px;
+	box-sizing: border-box;
 }
 
 .track-line-bg::after {
 	content: "🏁";
 	position: absolute;
-	right: 4px;
-	top: -2px;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
 	font-size: 16px;
 	opacity: 0.8;
+	z-index: 1;
 }
 
 .track-line-fill {
 	height: 100%;
-	border-radius: 12px;
+	border-radius: 16px;
 	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
 	transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	max-width: calc(100% - 28px);
 }
 
 .runner-icon-badge {
 	position: absolute;
-	right: -10px;
-	top: -3px;
+	right: -27px;
 	width: 28px;
 	height: 28px;
 	background: var(--panel-bg);
@@ -582,6 +590,7 @@ header .logo {
 	font-size: 18px;
 	z-index: 10;
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+	box-sizing: border-box;
 }
 
 /* KHU VỰC GÕ CHỮ & QUẢN LÝ TẮT/MỞ FOCUS (ĐÃ SỬA CHỐNG NHẢY DÒNG) */
@@ -609,6 +618,8 @@ header .logo {
 	align-content: flex-start;
 	gap: 8px 12px;
 	box-sizing: border-box;
+	scroll-behavior: smooth;
+	scroll-padding-bottom: 35px; /* Giúp dòng tiếp theo được kéo lên tầm mắt sớm hơn */
 }
 
 .word {
@@ -622,6 +633,13 @@ header .logo {
 		background-color 0.1s ease,
 		color 0.1s ease,
 		border-color 0.1s ease;
+	box-sizing: border-box;
+}
+
+/* Tối ưu riêng cho chế độ Numpad hoặc các mã 5 số */
+.numpad-mode .word {
+	min-width: 80px; /* Đảm bảo tất cả mã 5 số chiếm diện tích như nhau */
+	text-align: center;
 	box-sizing: border-box;
 }
 

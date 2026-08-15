@@ -1,6 +1,6 @@
 const socket = io();
 
-const ZIPCODE_TEST_DURATION = 60;
+const ZIPCODE_TEST_DURATION = 90;
 const NORMAL_RACE_DURATION = 300;
 
 let currentLanguage = "vi_dau";
@@ -12,14 +12,23 @@ let totalErrors = 0;
 let isPlaying = false;
 let startTime = null;
 let timerInterval = null;
+let currentMatchPlayerCount = 0; // Biến lưu số lượng người chơi trong phòng đấu hiện tại
 
 const runnerIcons = ["🐶", "🐭", "🐷", "🐱", "🐨", "🐯", "🐺", "🐰", "🦝", "🐵"];
 
+// Bảng tra cứu tên hiển thị của từng chế độ chơi
+const modeNames = {
+	vi_dau: "🇻🇳 Tiếng Việt",
+	vi_nodau: "🔤 Không Dấu",
+	en: "🔠 English",
+	numpad: "🔢 Numpad",
+};
+
 /**
- * Lấy chuỗi ngày YYYY-MM-DD chính xác theo múi giờ Asia/Ho_Chi_Minh (GMT+7)*/
+ * Lấy chuỗi ngày YYYY-MM-DD chính xác theo múi giờ Asia/Ho_Chi_Minh (GMT+7)
+ */
 function getVNCurrentDateString() {
 	const now = new Date();
-	// Chuyển đổi thời gian hiện tại sang chuỗi ISO múi giờ Việt Nam
 	const vnTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" });
 	const vnDate = new Date(vnTimeStr);
 
@@ -37,7 +46,6 @@ function getValidHighScores() {
 	const todayStr = getVNCurrentDateString();
 	const savedData = JSON.parse(localStorage.getItem("racer_high_scores")) || {};
 
-	// Kiểm tra nếu dữ liệu lưu trữ là của ngày hôm qua hoặc chưa có ngày
 	if (savedData.date !== todayStr) {
 		const freshData = {
 			date: todayStr,
@@ -72,12 +80,24 @@ function loadHighScores() {
 	});
 }
 
-function updateHighScore(lang, username, wpm, errors) {
+/**
+ * Cập nhật kỷ lục cá nhân. CHỈ LƯU khi số người chơi trong trận đấu >= 3.
+ */
+function updateHighScore(lang, username, wpm, errors, roomPlayerCount) {
+	// Yêu cầu phòng chơi phải có tối thiểu 3 người chơi
+	if (roomPlayerCount < 3) return;
+
 	const todayStr = getVNCurrentDateString();
 	let currentScores = getValidHighScores();
 	const currentRecord = currentScores[lang];
 
-	if (!currentRecord || wpm > currentRecord.wpm) {
+	// Kiểm tra điều kiện lập kỷ lục mới: WPM cao hơn HOẶC WPM bằng nhưng số lỗi ít hơn
+	const isNewRecord =
+		!currentRecord ||
+		wpm > currentRecord.wpm ||
+		(wpm === currentRecord.wpm && errors < currentRecord.errors);
+
+	if (isNewRecord) {
 		currentScores[lang] = {
 			username: username,
 			wpm: wpm,
@@ -94,8 +114,6 @@ function updateHighScore(lang, username, wpm, errors) {
 		loadHighScores();
 	}
 }
-
-//  Khởi tạo giao diện theo theme đã lưu trong localStorage
 
 function initTheme() {
 	const savedTheme = localStorage.getItem("racer_theme") || "dark";
@@ -167,7 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		socket.connect();
 	});
 
-	// Nút Đầu Hàng trong trận đấu
 	const btnSurrender = document.getElementById("btn-surrender");
 	const surrenderModal = document.getElementById("surrender-modal");
 	const btnConfirmSurrender = document.getElementById("btn-confirm-surrender");
@@ -230,6 +247,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	const typeInput = document.getElementById("type-input");
 	if (typeInput) {
 		typeInput.addEventListener("input", handleTypingInput);
+
+		// Thêm sự kiện bắt phím Dấu trừ (-) và NumpadMinus để thực hiện xóa ký tự tương tự phím Backspace
+		typeInput.addEventListener("keydown", (e) => {
+			if (e.key === "-" || e.code === "NumpadMinus") {
+				e.preventDefault();
+				typeInput.value = typeInput.value.slice(0, -1);
+				typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+			}
+		});
 	}
 
 	document.getElementById("btn-play-again")?.addEventListener("click", () => {
@@ -284,6 +310,13 @@ socket.on("update_online_count", (count) => {
 socket.on("update_lobby", (data) => {
 	const lobbyCount = document.getElementById("lobby-count");
 	const lobbyPlayersGrid = document.getElementById("lobby-players-grid");
+	const lobbyModeDisplay = document.getElementById("lobby-mode-display");
+
+	// Cập nhật tên hiển thị chế độ chơi trong phòng chờ
+	const activeLang = data.language || currentLanguage;
+	if (lobbyModeDisplay) {
+		lobbyModeDisplay.innerText = `CHẾ ĐỘ: ${modeNames[activeLang] || activeLang}`;
+	}
 
 	if (lobbyCount) lobbyCount.innerText = `${data.players.length}/10`;
 	if (lobbyPlayersGrid) {
@@ -304,6 +337,7 @@ socket.on("game_start", (data) => {
 	document.getElementById("chat-container").classList.remove("hidden");
 
 	currentWords = data.words;
+	currentMatchPlayerCount = data.players ? data.players.length : 0; // Lưu số người trong phòng
 	wordIndex = 0;
 	correctChars = 0;
 	totalErrors = 0;
@@ -370,6 +404,13 @@ function startRaceTimer(duration) {
 function renderWords() {
 	const wordsDisplay = document.getElementById("words-display");
 	wordsDisplay.innerHTML = "";
+
+	if (currentLanguage === "numpad") {
+		wordsDisplay.classList.add("numpad-mode");
+	} else {
+		wordsDisplay.classList.remove("numpad-mode");
+	}
+
 	currentWords.forEach((word, idx) => {
 		const span = document.createElement("span");
 		span.className = "word";
@@ -384,7 +425,7 @@ function scrollCurrentWordIntoView() {
 	const wordsDisplay = document.getElementById("words-display");
 	const currentSpan = wordsDisplay.children[wordIndex];
 	if (currentSpan) {
-		currentSpan.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+		currentSpan.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 	}
 }
 
@@ -505,9 +546,9 @@ function renderRaceTracks(players) {
 
 		let statusBadge = `<span class="wpm-tag" id="wpm-${p.id}">${p.wpm || 0} WPM</span>`;
 		if (p.isSurrendered) {
-			statusBadge = `<span class="status-tag surrendered" id="wpm-${p.id}">BỊ LOẠI</span>`;
+			statusBadge = `<span class="status-tag surrendered" id="wpm-${p.id}">GIẢNG HÒA</span>`;
 		} else if (p.isDisconnected) {
-			statusBadge = `<span class="status-tag disconnected" id="wpm-${p.id}">RỜI PHÒNG</span>`;
+			statusBadge = `<span class="status-tag disconnected" id="wpm-${p.id}">BẢY CHỌ</span>`;
 		}
 
 		trackRow.innerHTML = `
@@ -535,11 +576,11 @@ socket.on("race_update", (players) => {
 		if (wpmEl) {
 			if (p.isSurrendered) {
 				wpmEl.className = "status-tag surrendered";
-				wpmEl.innerText = "BỊ LOẠI";
+				wpmEl.innerText = "GIẢNG HÒA";
 				if (trackBg) trackBg.classList.add("disabled-track");
 			} else if (p.isDisconnected) {
 				wpmEl.className = "status-tag disconnected";
-				wpmEl.innerText = "RỜI PHÒNG";
+				wpmEl.innerText = "BẢY CHỌ";
 				if (trackBg) trackBg.classList.add("disabled-track");
 			} else {
 				wpmEl.innerText = `${p.wpm || 0} WPM`;
@@ -559,8 +600,8 @@ socket.on("game_over", (leaderboard) => {
 		else if (idx === 2) rankBadge = "🥉 3";
 
 		let statusText = `${p.wpm || 0} WPM`;
-		if (p.isSurrendered) statusText = "🏳️ BỊ LOẠI";
-		else if (p.isDisconnected) statusText = "❌ RỜI PHÒNG";
+		if (p.isSurrendered) statusText = "🏳️ GIẢNG HÒA";
+		else if (p.isDisconnected) statusText = "❌ BẢY CHỌ";
 
 		tr.innerHTML = `
 			<td style="font-weight: bold; color: var(--accent);">${rankBadge}</td>
@@ -571,8 +612,15 @@ socket.on("game_over", (leaderboard) => {
 		`;
 		summaryTbody.appendChild(tr);
 
+		// Truyền thêm currentMatchPlayerCount để kiểm tra điều kiện >= 3 người
 		if (!p.isSurrendered && !p.isDisconnected) {
-			updateHighScore(currentLanguage, p.username, p.wpm || 0, p.errors || 0);
+			updateHighScore(
+				currentLanguage,
+				p.username,
+				p.wpm || 0,
+				p.errors || 0,
+				currentMatchPlayerCount,
+			);
 		}
 	});
 
@@ -668,7 +716,7 @@ function triggerFireworks() {
 }
 
 function createExplosion(x, y) {
-	const count = 60;
+	const count = 90;
 	for (let i = 0; i < count; i++) {
 		const angle = ((Math.PI * 2) / count) * i;
 		const speed = Math.random() * 5 + 2;

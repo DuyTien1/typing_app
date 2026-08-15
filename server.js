@@ -1099,10 +1099,15 @@ function finishMatch(room) {
 	room.state = "finished";
 	if (room.matchInterval) clearTimeout(room.matchInterval);
 
+	// Xếp hạng: WPM cao hơn đứng trước -> Nếu WPM bằng nhau thì so sánh số lỗi (ít lỗi hơn đứng trước)
 	const leaderboard = [...room.players].sort((a, b) => {
 		if (a.isSurrendered || a.isDisconnected) return 1;
 		if (b.isSurrendered || b.isDisconnected) return -1;
-		return b.wpm - a.wpm;
+
+		if (b.wpm !== a.wpm) {
+			return b.wpm - a.wpm;
+		}
+		return a.errors - b.errors;
 	});
 	io.to(room.id).emit("game_over", leaderboard);
 }
