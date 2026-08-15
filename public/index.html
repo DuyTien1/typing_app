@@ -76,7 +76,6 @@
 			<button id="btn-change-name" class="btn-small" aria-label="Đổi tên người chơi">
 				ĐỔI TÊN
 			</button>
-			<!-- Nút chuyển đổi Theme Sáng/Tối -->
 			<button
 				id="theme-toggle-btn"
 				class="btn-small theme-btn"
@@ -94,36 +93,81 @@
 
 		<!-- MODAL TRANG CHỦ -->
 		<div id="login-modal" class="modal">
-			<div class="cyber-box modal-content" style="max-width: 550px">
+			<div class="cyber-box modal-content home-main-container">
 				<h1 class="glitch-title">FASTTYPING GAME</h1>
 				<p class="subtitle">Thử Thách Đánh Máy & NumPad</p>
 
-				<!-- KHU VỰC CHỌN NÚT CHẾ ĐỘ -->
-				<div class="input-group">
-					<label>CHỌN CHẾ ĐỘ THI ĐẤU</label>
-					<div class="mode-grid">
-						<div class="mode-card selected" data-lang="vi_dau">
-							<div class="icon">🇻🇳</div>
-							<div class="title">Tiếng Việt</div>
+				<div class="home-flex-row">
+					<!-- CỘT BÊN TRÁI: BẢNG CHỌN CHẾ ĐỘ THI ĐẤU -->
+					<div class="home-left-col">
+						<label class="section-label">CHỌN CHẾ ĐỘ THI ĐẤU</label>
+						<div class="mode-grid">
+							<div class="mode-card selected" data-lang="vi_dau">
+								<div class="icon">🇻🇳</div>
+								<div class="title">Tiếng Việt</div>
+							</div>
+							<div class="mode-card" data-lang="vi_nodau">
+								<div class="icon">🔤</div>
+								<div class="title">Không Dấu</div>
+							</div>
+							<div class="mode-card" data-lang="en">
+								<div class="icon">🔠</div>
+								<div class="title">English</div>
+							</div>
+							<div class="mode-card" data-lang="numpad">
+								<div class="icon">🔢</div>
+								<div class="title">Numpad</div>
+							</div>
 						</div>
-						<div class="mode-card" data-lang="vi_nodau">
-							<div class="icon">🔤</div>
-							<div class="title">Không Dấu</div>
-						</div>
-						<div class="mode-card" data-lang="en">
-							<div class="icon">🔠</div>
-							<div class="title">English</div>
-						</div>
-						<div class="mode-card" data-lang="numpad">
-							<div class="icon">🔢</div>
-							<div class="title">Numpad</div>
+					</div>
+
+					<!-- CỘT BÊN PHẢI: BẢNG XẾP HẠNG CAO ĐIỂM NHẤT LỊCH SỬ -->
+					<div class="home-right-col">
+						<label class="section-label">PHONG THẦN BẢNG</label>
+						<div class="high-score-board">
+							<table class="leaderboard-table">
+								<thead>
+									<tr>
+										<th>CHẾ ĐỘ</th>
+										<th>THẦN ĐẰNG</th>
+										<th>TỐC ĐỘ</th>
+										<th>LỖI</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>🇻🇳 Tiếng Việt</td>
+										<td id="hs-name-vi_dau">---</td>
+										<td id="hs-wpm-vi_dau" class="highlight-val">0</td>
+										<td id="hs-err-vi_dau">0</td>
+									</tr>
+									<tr>
+										<td>🔤 Không Dấu</td>
+										<td id="hs-name-vi_nodau">---</td>
+										<td id="hs-wpm-vi_nodau" class="highlight-val">0</td>
+										<td id="hs-err-vi_nodau">0</td>
+									</tr>
+									<tr>
+										<td>🔠 English</td>
+										<td id="hs-name-en">---</td>
+										<td id="hs-wpm-en" class="highlight-val">0</td>
+										<td id="hs-err-en">0</td>
+									</tr>
+									<tr>
+										<td>🔢 Numpad</td>
+										<td id="hs-name-numpad">---</td>
+										<td id="hs-wpm-numpad" class="highlight-val">0</td>
+										<td id="hs-err-numpad">0</td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>
 
 				<input type="hidden" id="username-input" />
 
-				<button id="join-btn" class="cyber-btn">VÀO PHÒNG CHỜ</button>
+				<button id="join-btn" class="cyber-btn" style="margin-top: 15px">VÀO PHÒNG CHỜ</button>
 
 				<!-- KHUNG CHAT TRANG CHỦ -->
 				<div class="global-chat-box">
@@ -198,9 +242,28 @@
 			</div>
 		</div>
 
-		<!-- PHÒNG CHỜ GIỮ NGUYÊN HOÀN TOÀN TẤT CẢ CÁC THẺ -->
+		<!-- MODAL XÁC NHẬN ĐẦU HÀNG CYBERPUNK -->
+		<div id="surrender-modal" class="custom-popup hidden">
+			<div class="popup-content surrender-popup-content">
+				<h3 class="surrender-title">🏳️ XÁC NHẬN ĐẦU HÀNG</h3>
+				<p class="surrender-desc">
+					Bạn có chắc chắn muốn giơ cờ trắng và chấp nhận bị loại khỏi trận đấu không?
+				</p>
+				<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px">
+					<button id="btn-confirm-surrender" class="cyber-btn surrender-btn-danger">
+						ĐẦU HÀNG
+					</button>
+					<button id="btn-cancel-surrender" class="cyber-btn surrender-btn-cancel">
+						TIẾP TỤC CHIẾN
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- PHÒNG CHỜ -->
 		<div id="lobby-screen" class="screen hidden">
-			<div class="cyber-box lobby-box">
+			<div class="cyber-box lobby-box" style="position: relative">
+				<button id="btn-lobby-home" class="cyber-btn btn-home-corner">TRỞ VỀ</button>
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
 				<p
 					style="
@@ -255,7 +318,16 @@
 			<header class="cyber-box">
 				<div class="logo">⚡ CYBER TYPING</div>
 				<div id="status-box">ĐANG THI ĐẤU</div>
-				<div id="timer-box">⏱️ <span id="timer">--</span>s</div>
+				<div style="display: flex; align-items: center; gap: 15px">
+					<button
+						id="btn-surrender"
+						class="btn-small btn-surrender-style"
+						title="Đầu hàng và chấp nhận bị loại"
+					>
+						🏳️ ĐẦU HÀNG
+					</button>
+					<div id="timer-box">⏱️ <span id="timer">--</span>s</div>
+				</div>
 			</header>
 
 			<div id="leaderboard" class="cyber-box">
@@ -291,7 +363,7 @@
 		<!-- BẢNG TỔNG KẾT -->
 		<div id="summary-modal" class="modal hidden">
 			<div class="cyber-box modal-content summary-box">
-				<h2 class="glitch-title" style="font-size: 22px">🏆 BẢNG TỔNG KẾT TRẬN ĐẤU</h2>
+				<h2 class="glitch-title summary-modal-title">🏆 BẢNG TỔNG KẾT TRẬN ĐẤU</h2>
 
 				<table id="summary-table">
 					<thead>

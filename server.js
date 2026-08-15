@@ -16,7 +16,6 @@ const io = new Server(server, {
 app.use(express.static(path.join(__dirname, "public")));
 
 // DANH SÁCH TỪ VỰNG (70% DỄ - 30% KHÓ)
-
 const BIG_WORD_BANKS = {
 	vi_dau: {
 		easy: [
@@ -321,7 +320,6 @@ const BIG_WORD_BANKS = {
 			"quả",
 			"gạo",
 		],
-
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -424,7 +422,6 @@ const BIG_WORD_BANKS = {
 			"quệt",
 		],
 	},
-
 	vi_nodau: {
 		easy: [
 			"ngay",
@@ -728,7 +725,6 @@ const BIG_WORD_BANKS = {
 			"qua",
 			"gao",
 		],
-
 		hard: [
 			"khoanh",
 			"nghieng",
@@ -859,7 +855,6 @@ const BIG_WORD_BANKS = {
 	},
 };
 
-// CẬP NHẬT LOGIC GENERATEWORDS HỖ TRỢ NUMPAD (ZIPCODE 5 CHỮ SỐ)
 function generateWords(lang, count = 100) {
 	if (lang === "numpad") {
 		const zipList = [];
@@ -880,7 +875,6 @@ function generateWords(lang, count = 100) {
 	return result;
 }
 
-// CẬP NHẬT MẢNG LƯU TRỮ PHÒNG CHƠI THÊM CHẾ ĐỘ 'NUMPAD'
 const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [] };
 let totalOnlineUsers = 0;
 
@@ -904,7 +898,14 @@ function getOrCreateRoom(lang) {
 	return room;
 }
 
-// XỬ LÝ KẾT NỐI REALTIME (SOCKET.IO)
+function checkMatchCompletion(room) {
+	const activeOrFinished = room.players.filter(
+		(p) => p.isFinished || p.isSurrendered || p.isDisconnected,
+	);
+	if (activeOrFinished.length >= room.players.length) {
+		finishMatch(room);
+	}
+}
 
 io.on("connection", (socket) => {
 	totalOnlineUsers++;
@@ -913,7 +914,6 @@ io.on("connection", (socket) => {
 	let currentRoom = null;
 	let player = null;
 
-	// NGƯỜI CHƠI VÀO PHÒNG CHỜ
 	socket.on("join_lobby", ({ username, language }) => {
 		const selectedLang = language || "vi_dau";
 		currentRoom = getOrCreateRoom(selectedLang);
@@ -926,6 +926,8 @@ io.on("connection", (socket) => {
 			correctChars: 0,
 			errors: 0,
 			isFinished: false,
+			isSurrendered: false,
+			isDisconnected: false,
 		};
 
 		currentRoom.players.push(player);
@@ -937,7 +939,6 @@ io.on("connection", (socket) => {
 		});
 	});
 
-	// BẤM NÚT "BẮT ĐẦU TRẬN ĐẤU NGAY"
 	socket.on("force_start_game", () => {
 		if (currentRoom && currentRoom.state === "waiting") {
 			currentRoom.state = "racing";
@@ -949,7 +950,6 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// ĐỔI TÊN NGƯỜI CHƠI
 	socket.on("update_username", ({ username }) => {
 		if (player) {
 			player.username = username;
@@ -961,21 +961,25 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// CẬP NHẬT TIẾN ĐỘ THI ĐẤU (REALTIME RACE)
 	socket.on("update_progress", (data) => {
-		if (!currentRoom || currentRoom.state !== "racing" || !player) return;
+		if (
+			!currentRoom ||
+			currentRoom.state !== "racing" ||
+			!player ||
+			player.isSurrendered ||
+			player.isDisconnected
+		)
+			return;
 
 		player.progress = data.progress || 0;
 		player.wpm = data.wpm || 0;
 		player.correctChars = data.correctChars || 0;
 		player.errors = data.errors || 0;
 
-		// Bắt đầu đếm giờ trận đấu khi có tương tác đầu tiên
 		if (!currentRoom.startTime) {
 			currentRoom.startTime = Date.now();
 			io.to(currentRoom.id).emit("race_start_timer");
 
-			// CHẾ ĐỘ NUMPAD (90 GIÂY), CÁC MÀN KHÁC TỐI ĐA 5 PHÚT (300 GIÂY)
 			const DURATION_MS = currentRoom.lang === "numpad" ? 90 * 1000 : 5 * 60 * 1000;
 
 			currentRoom.matchInterval = setTimeout(() => {
@@ -983,7 +987,6 @@ io.on("connection", (socket) => {
 			}, DURATION_MS);
 		}
 
-		// LOGIC RIÊNG CHO CHẾ ĐỘ NUMPAD (ZIPCODE)
 		if (currentRoom.lang === "numpad") {
 			const MAX_TRACK_CHARS = 600;
 			if (player.correctChars >= MAX_TRACK_CHARS) {
@@ -1004,9 +1007,15 @@ io.on("connection", (socket) => {
 		io.to(currentRoom.id).emit("race_update", currentRoom.players);
 	});
 
-	// NGƯỜI CHƠI HOÀN THÀNH
 	socket.on("player_finished", (data) => {
-		if (!currentRoom || !player || player.isFinished) return;
+		if (
+			!currentRoom ||
+			!player ||
+			player.isFinished ||
+			player.isSurrendered ||
+			player.isDisconnected
+		)
+			return;
 
 		player.isFinished = true;
 		player.wpm = data.wpm;
@@ -1016,12 +1025,26 @@ io.on("connection", (socket) => {
 
 		currentRoom.finishedCount++;
 
-		if (currentRoom.finishedCount >= currentRoom.players.length) {
-			finishMatch(currentRoom);
-		}
+		checkMatchCompletion(currentRoom);
 	});
 
-	// GLOBAL CHAT & IN-GAME CHAT
+	socket.on("surrender", () => {
+		if (
+			!currentRoom ||
+			!player ||
+			player.isFinished ||
+			player.isSurrendered ||
+			player.isDisconnected
+		)
+			return;
+
+		player.isSurrendered = true;
+		player.wpm = 0;
+
+		io.to(currentRoom.id).emit("race_update", currentRoom.players);
+		checkMatchCompletion(currentRoom);
+	});
+
 	socket.on("send_global_chat", ({ message, username }) => {
 		if (!message || !message.trim()) return;
 
@@ -1043,25 +1066,29 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// XỬ LÝ NGẮT KẾT NỐI
 	socket.on("disconnect", () => {
 		totalOnlineUsers = Math.max(0, totalOnlineUsers - 1);
 		io.emit("update_online_count", totalOnlineUsers);
 
 		if (currentRoom && player) {
-			currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
+			if (currentRoom.state === "waiting") {
+				currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
 
-			if (currentRoom.players.length === 0) {
-				if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
-				if (rooms[currentRoom.lang]) {
-					rooms[currentRoom.lang] = rooms[currentRoom.lang].filter((r) => r.id !== currentRoom.id);
-				}
-			} else {
-				if (currentRoom.state === "waiting") {
+				if (currentRoom.players.length === 0) {
+					if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
+					if (rooms[currentRoom.lang]) {
+						rooms[currentRoom.lang] = rooms[currentRoom.lang].filter(
+							(r) => r.id !== currentRoom.id,
+						);
+					}
+				} else {
 					io.to(currentRoom.id).emit("update_lobby", { players: currentRoom.players });
-				} else if (currentRoom.state === "racing") {
-					io.to(currentRoom.id).emit("race_update", currentRoom.players);
 				}
+			} else if (currentRoom.state === "racing") {
+				player.isDisconnected = true;
+				player.wpm = 0;
+				io.to(currentRoom.id).emit("race_update", currentRoom.players);
+				checkMatchCompletion(currentRoom);
 			}
 		}
 	});
@@ -1072,11 +1099,14 @@ function finishMatch(room) {
 	room.state = "finished";
 	if (room.matchInterval) clearTimeout(room.matchInterval);
 
-	const leaderboard = [...room.players].sort((a, b) => b.wpm - a.wpm);
+	const leaderboard = [...room.players].sort((a, b) => {
+		if (a.isSurrendered || a.isDisconnected) return 1;
+		if (b.isSurrendered || b.isDisconnected) return -1;
+		return b.wpm - a.wpm;
+	});
 	io.to(room.id).emit("game_over", leaderboard);
 }
 
-// Giữ cho server luôn hoạt động (Keep-Alive) khi triển khai trên Render.com
 const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
 if (RENDER_EXTERNAL_URL) {
 	setInterval(

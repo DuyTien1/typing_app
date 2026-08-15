@@ -1,9 +1,7 @@
-// KHỞI TẠO SOCKET & BIẾN TOÀN CỤC
 const socket = io();
 
-// THỜI GIAN THI ĐẤU (TÍNH BẰNG GIÂY)
-const ZIPCODE_TEST_DURATION = 90; // Thời gian cho màn Zipcode Test (Numpad)
-const NORMAL_RACE_DURATION = 300; // Thời gian cho các màn thi đấu thường (5 phút)
+const ZIPCODE_TEST_DURATION = 60;
+const NORMAL_RACE_DURATION = 300;
 
 let currentLanguage = "vi_dau";
 let myUsername = "Vô danh";
@@ -15,10 +13,90 @@ let isPlaying = false;
 let startTime = null;
 let timerInterval = null;
 
-// Avatar đua xe
-const runnerIcons = ["🏎️", "🏎️‍💥", "🚀", "⚡", "🛸", "🏍️", "🏎️", "🏎️‍💥"];
+const runnerIcons = ["🐶", "🐭", "🐷", "🐱", "🐨", "🐯", "🐺", "🐰", "🦝", "🐵"];
 
-// QUẢN LÝ GIAO DIỆN SÁNG / TỐI (LIGHT / DARK THEME)
+/**
+ * Lấy chuỗi ngày YYYY-MM-DD chính xác theo múi giờ Asia/Ho_Chi_Minh (GMT+7)*/
+function getVNCurrentDateString() {
+	const now = new Date();
+	// Chuyển đổi thời gian hiện tại sang chuỗi ISO múi giờ Việt Nam
+	const vnTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" });
+	const vnDate = new Date(vnTimeStr);
+
+	const year = vnDate.getFullYear();
+	const month = String(vnDate.getMonth() + 1).padStart(2, "0");
+	const day = String(vnDate.getDate()).padStart(2, "0");
+
+	return `${year}-${month}-${day}`;
+}
+
+/**
+ * Đọc dữ liệu HighScore. Nếu khác ngày GMT+7 hiện tại -> Tự động Reset dữ liệu.
+ */
+function getValidHighScores() {
+	const todayStr = getVNCurrentDateString();
+	const savedData = JSON.parse(localStorage.getItem("racer_high_scores")) || {};
+
+	// Kiểm tra nếu dữ liệu lưu trữ là của ngày hôm qua hoặc chưa có ngày
+	if (savedData.date !== todayStr) {
+		const freshData = {
+			date: todayStr,
+			scores: {},
+		};
+		localStorage.setItem("racer_high_scores", JSON.stringify(freshData));
+		return freshData.scores;
+	}
+
+	return savedData.scores || {};
+}
+
+function loadHighScores() {
+	const scores = getValidHighScores();
+	const modes = ["vi_dau", "vi_nodau", "en", "numpad"];
+
+	modes.forEach((mode) => {
+		const data = scores[mode];
+		const nameEl = document.getElementById(`hs-name-${mode}`);
+		const wpmEl = document.getElementById(`hs-wpm-${mode}`);
+		const errEl = document.getElementById(`hs-err-${mode}`);
+
+		if (data) {
+			if (nameEl) nameEl.innerText = data.username || "Vô danh";
+			if (wpmEl) wpmEl.innerText = `${data.wpm || 0} WPM`;
+			if (errEl) errEl.innerText = data.errors || 0;
+		} else {
+			if (nameEl) nameEl.innerText = "Chưa có";
+			if (wpmEl) wpmEl.innerText = "0";
+			if (errEl) errEl.innerText = "0";
+		}
+	});
+}
+
+function updateHighScore(lang, username, wpm, errors) {
+	const todayStr = getVNCurrentDateString();
+	let currentScores = getValidHighScores();
+	const currentRecord = currentScores[lang];
+
+	if (!currentRecord || wpm > currentRecord.wpm) {
+		currentScores[lang] = {
+			username: username,
+			wpm: wpm,
+			errors: errors,
+			timestamp: Date.now(),
+		};
+
+		const dataToSave = {
+			date: todayStr,
+			scores: currentScores,
+		};
+
+		localStorage.setItem("racer_high_scores", JSON.stringify(dataToSave));
+		loadHighScores();
+	}
+}
+
+//  Khởi tạo giao diện theo theme đã lưu trong localStorage
+
 function initTheme() {
 	const savedTheme = localStorage.getItem("racer_theme") || "dark";
 	applyTheme(savedTheme);
@@ -36,11 +114,10 @@ function applyTheme(theme) {
 	localStorage.setItem("racer_theme", theme);
 }
 
-// SỰ KIỆN KHỞI TẠO DOM
 document.addEventListener("DOMContentLoaded", () => {
-	// Khởi tạo Theme & User Profile
 	initTheme();
 	initUserProfile();
+	loadHighScores();
 
 	const themeToggleBtn = document.getElementById("theme-toggle-btn");
 	if (themeToggleBtn) {
@@ -50,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Chuyển đổi Mode thi đấu
 	const modeCards = document.querySelectorAll(".mode-card");
 	modeCards.forEach((card) => {
 		card.addEventListener("click", () => {
@@ -60,23 +136,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Nút Vào Phòng Chờ (Ẩn Canvas bàn phím)
 	const joinBtn = document.getElementById("join-btn");
 	if (joinBtn) {
 		joinBtn.addEventListener("click", () => {
 			document.getElementById("login-modal").classList.add("hidden");
 			document.getElementById("lobby-screen").classList.remove("hidden");
 
-			// Ẩn bàn phím nền khi rời trang chủ
 			const bgCanvas = document.getElementById("keyboard-bg-canvas");
 			if (bgCanvas) bgCanvas.style.display = "none";
 
-			// Gửi yêu cầu tham gia tới server
 			socket.emit("join_lobby", { username: myUsername, language: currentLanguage });
 		});
 	}
 
-	// Nút Bắt Đầu Trận Đấu Ngay
 	const startGameNowBtn = document.getElementById("start-game-now-btn");
 	if (startGameNowBtn) {
 		startGameNowBtn.addEventListener("click", () => {
@@ -84,7 +156,44 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Popup đổi tên
+	document.getElementById("btn-lobby-home")?.addEventListener("click", () => {
+		document.getElementById("lobby-screen").classList.add("hidden");
+		document.getElementById("login-modal").classList.remove("hidden");
+
+		loadHighScores();
+		const bgCanvas = document.getElementById("keyboard-bg-canvas");
+		if (bgCanvas) bgCanvas.style.display = "block";
+		socket.disconnect();
+		socket.connect();
+	});
+
+	// Nút Đầu Hàng trong trận đấu
+	const btnSurrender = document.getElementById("btn-surrender");
+	const surrenderModal = document.getElementById("surrender-modal");
+	const btnConfirmSurrender = document.getElementById("btn-confirm-surrender");
+	const btnCancelSurrender = document.getElementById("btn-cancel-surrender");
+
+	if (btnSurrender) {
+		btnSurrender.addEventListener("click", () => {
+			if (isPlaying && surrenderModal) {
+				surrenderModal.classList.remove("hidden");
+			}
+		});
+	}
+
+	if (btnCancelSurrender) {
+		btnCancelSurrender.addEventListener("click", () => {
+			if (surrenderModal) surrenderModal.classList.add("hidden");
+		});
+	}
+
+	if (btnConfirmSurrender) {
+		btnConfirmSurrender.addEventListener("click", () => {
+			if (surrenderModal) surrenderModal.classList.add("hidden");
+			surrenderGame();
+		});
+	}
+
 	const btnChangeName = document.getElementById("btn-change-name");
 	const renamePopup = document.getElementById("rename-popup");
 	const popupNameInput = document.getElementById("popup-name-input");
@@ -116,16 +225,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Khung Chat Toàn Cục
 	setupGlobalChat();
 
-	// Ô gõ chữ chính
 	const typeInput = document.getElementById("type-input");
 	if (typeInput) {
 		typeInput.addEventListener("input", handleTypingInput);
 	}
 
-	// Chơi lại & Về trang chủ
 	document.getElementById("btn-play-again")?.addEventListener("click", () => {
 		document.getElementById("summary-modal").classList.add("hidden");
 		document.getElementById("game-container").classList.add("hidden");
@@ -139,12 +245,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("lobby-screen").classList.add("hidden");
 		document.getElementById("login-modal").classList.remove("hidden");
 
-		// Hiện lại bàn phím nền khi trở về trang chủ
+		loadHighScores();
+
 		const bgCanvas = document.getElementById("keyboard-bg-canvas");
 		if (bgCanvas) bgCanvas.style.display = "block";
 	});
 
-	// Chat Nhanh In-Game
 	const chatInput = document.getElementById("chat-input");
 	if (chatInput) {
 		chatInput.addEventListener("keydown", (e) => {
@@ -170,7 +276,6 @@ function initUserProfile() {
 	if (profileName) profileName.innerText = myUsername;
 }
 
-// LẮNG NGHE SỰ KIỆN TỪ SERVER (SOCKET.IO)
 socket.on("update_online_count", (count) => {
 	const onlineCount = document.getElementById("online-count");
 	if (onlineCount) onlineCount.innerText = count;
@@ -211,12 +316,14 @@ socket.on("game_start", (data) => {
 	typeInput.placeholder = "Chuẩn bị...";
 	document.getElementById("status-box").innerText = "CHUẨN BỊ";
 
+	const btnSurrender = document.getElementById("btn-surrender");
+	if (btnSurrender) btnSurrender.disabled = false;
+
 	renderWords();
 	renderRaceTracks(data.players);
 	startCountdown(data.countdown || 3);
 });
 
-// LOGIC ĐẾM NGƯỢC & THI ĐẤU
 function startCountdown(seconds) {
 	const timerEl = document.getElementById("timer");
 	const statusBox = document.getElementById("status-box");
@@ -231,7 +338,6 @@ function startCountdown(seconds) {
 		} else {
 			clearInterval(cdInterval);
 
-			// Xác định thời gian thi đấu dựa trên chế độ Zipcode Test (Numpad) hoặc thường
 			const raceDuration =
 				currentLanguage === "numpad" ? ZIPCODE_TEST_DURATION : NORMAL_RACE_DURATION;
 
@@ -261,7 +367,6 @@ function startRaceTimer(duration) {
 	}, 1000);
 }
 
-// Render từ cần gõ
 function renderWords() {
 	const wordsDisplay = document.getElementById("words-display");
 	wordsDisplay.innerHTML = "";
@@ -283,7 +388,6 @@ function scrollCurrentWordIntoView() {
 	}
 }
 
-// XỬ LÝ SỰ KIỆN GÕ CHỮ
 function handleTypingInput(e) {
 	if (!isPlaying) return;
 
@@ -291,7 +395,6 @@ function handleTypingInput(e) {
 	const val = typeInput.value;
 	const targetWord = currentWords[wordIndex];
 
-	// Khi bấm phím cách (Space)
 	if (val.endsWith(" ")) {
 		const typedWord = val.trim();
 
@@ -376,7 +479,19 @@ function finishGame() {
 	});
 }
 
-// Render đường đua
+function surrenderGame() {
+	isPlaying = false;
+	const typeInput = document.getElementById("type-input");
+	typeInput.disabled = true;
+	if (timerInterval) clearInterval(timerInterval);
+	document.getElementById("status-box").innerText = "ĐÃ ĐẦU HÀNG";
+
+	const btnSurrender = document.getElementById("btn-surrender");
+	if (btnSurrender) btnSurrender.disabled = true;
+
+	socket.emit("surrender");
+}
+
 function renderRaceTracks(players) {
 	const raceTracksContainer = document.getElementById("race-tracks-container");
 	raceTracksContainer.innerHTML = "";
@@ -388,13 +503,20 @@ function renderRaceTracks(players) {
 		const icon = runnerIcons[idx % runnerIcons.length];
 		const colorHue = (idx * 137.5) % 360;
 
+		let statusBadge = `<span class="wpm-tag" id="wpm-${p.id}">${p.wpm || 0} WPM</span>`;
+		if (p.isSurrendered) {
+			statusBadge = `<span class="status-tag surrendered" id="wpm-${p.id}">BỊ LOẠI</span>`;
+		} else if (p.isDisconnected) {
+			statusBadge = `<span class="status-tag disconnected" id="wpm-${p.id}">RỜI PHÒNG</span>`;
+		}
+
 		trackRow.innerHTML = `
 			<div class="track-header">
 				<span>${p.username} ${p.id === socket.id ? " (Bạn)" : ""}</span>
-				<span class="wpm-tag" id="wpm-${p.id}">0 WPM</span>
+				${statusBadge}
 			</div>
-			<div class="track-line-bg">
-				<div class="track-line-fill" id="fill-${p.id}" style="width: 0%; background: hsl(${colorHue}, 80%, 50%);">
+			<div class="track-line-bg ${p.isSurrendered || p.isDisconnected ? "disabled-track" : ""}">
+				<div class="track-line-fill" id="fill-${p.id}" style="width: ${p.progress || 0}%; background: hsl(${colorHue}, 80%, 50%);">
 					<div class="runner-icon-badge" style="border-color: hsl(${colorHue}, 80%, 50%);">${icon}</div>
 				</div>
 			</div>
@@ -407,12 +529,25 @@ socket.on("race_update", (players) => {
 	players.forEach((p) => {
 		const fillEl = document.getElementById(`fill-${p.id}`);
 		const wpmEl = document.getElementById(`wpm-${p.id}`);
+		const trackBg = document.querySelector(`#track-${p.id} .track-line-bg`);
+
 		if (fillEl) fillEl.style.width = `${p.progress}%`;
-		if (wpmEl) wpmEl.innerText = `${p.wpm || 0} WPM`;
+		if (wpmEl) {
+			if (p.isSurrendered) {
+				wpmEl.className = "status-tag surrendered";
+				wpmEl.innerText = "BỊ LOẠI";
+				if (trackBg) trackBg.classList.add("disabled-track");
+			} else if (p.isDisconnected) {
+				wpmEl.className = "status-tag disconnected";
+				wpmEl.innerText = "RỜI PHÒNG";
+				if (trackBg) trackBg.classList.add("disabled-track");
+			} else {
+				wpmEl.innerText = `${p.wpm || 0} WPM`;
+			}
+		}
 	});
 });
 
-// Bảng kết quả & Pháo hoa
 socket.on("game_over", (leaderboard) => {
 	const summaryTbody = document.getElementById("summary-tbody");
 	summaryTbody.innerHTML = "";
@@ -423,21 +558,28 @@ socket.on("game_over", (leaderboard) => {
 		else if (idx === 1) rankBadge = "🥈 2";
 		else if (idx === 2) rankBadge = "🥉 3";
 
+		let statusText = `${p.wpm || 0} WPM`;
+		if (p.isSurrendered) statusText = "🏳️ BỊ LOẠI";
+		else if (p.isDisconnected) statusText = "❌ RỜI PHÒNG";
+
 		tr.innerHTML = `
 			<td style="font-weight: bold; color: var(--accent);">${rankBadge}</td>
 			<td style="font-weight: bold;">${p.username}</td>
 			<td style="color: var(--correct);">${p.correctChars || 0}</td>
-			<td style="font-weight: bold; color: var(--primary);">${p.wpm || 0} WPM</td>
+			<td style="font-weight: bold; color: ${p.isSurrendered || p.isDisconnected ? "var(--secondary)" : "var(--primary)"};">${statusText}</td>
 			<td style="color: var(--secondary);">${p.errors || 0}</td>
 		`;
 		summaryTbody.appendChild(tr);
+
+		if (!p.isSurrendered && !p.isDisconnected) {
+			updateHighScore(currentLanguage, p.username, p.wpm || 0, p.errors || 0);
+		}
 	});
 
 	document.getElementById("summary-modal").classList.remove("hidden");
 	triggerFireworks();
 });
 
-// CHAT GLOBAL
 function setupGlobalChat() {
 	const globalChatInputs = document.querySelectorAll(".global-chat-input");
 	const globalChatSendBtns = document.querySelectorAll(".global-chat-send-btn");
@@ -488,7 +630,6 @@ socket.on("receive_global_chat", (data) => {
 	});
 });
 
-// Pop-up Chat In-Game
 socket.on("receive_in_game_chat", (data) => {
 	const chatPopups = document.getElementById("chat-popups");
 	const bubble = document.createElement("div");
@@ -503,7 +644,6 @@ socket.on("receive_in_game_chat", (data) => {
 	}, 4000);
 });
 
-// Canvas Pháo hoa
 const canvas = document.getElementById("fireworks-canvas");
 const ctx = canvas ? canvas.getContext("2d") : null;
 let particles = [];
@@ -565,7 +705,6 @@ function animateFireworks() {
 	}
 }
 
-// BÀN PHÍM NỀN LED RGB
 (function initStealthKeyboardBG() {
 	const bgCanvas = document.getElementById("keyboard-bg-canvas");
 	if (!bgCanvas) return;
