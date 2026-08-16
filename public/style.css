@@ -848,7 +848,6 @@ header .logo {
 	text-align: center;
 }
 
-/* Nút Đổi Icon góc trên bên phải khung phòng chờ */
 .btn-icon-corner {
 	position: absolute;
 	top: 12px;
@@ -864,7 +863,6 @@ header .logo {
 	width: auto;
 }
 
-/* Bảng chọn Icon dạng Grid */
 .icon-picker-grid {
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
