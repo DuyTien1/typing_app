@@ -3,87 +3,19 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-		<!-- SEO CƠ BẢN -->
 		<title>FASTTYPING GAME - Luyện Đánh Máy & NumPad Online</title>
-		<meta
-			name="description"
-			content="Chơi FastTyping Game - Trò chơi luyện gõ phím 10 ngón và gõ bàn phím số NumPad tốc độ cao trực tuyến. Thách đấu đánh máy thời gian thực hoàn toàn miễn phí."
-		/>
-		<meta
-			name="keywords"
-			content="fasttyping, game danh may, luyen go phim, test toc do go phim, go numpad, typing race online"
-		/>
-		<meta name="robots" content="index, follow" />
-		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
-		<link rel="canonical" href="https://fasttyping.vn/" />
-
-		<!-- OPEN GRAPH (FACEBOOK, ZALO) -->
-		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://fasttyping.vn/" />
-		<meta property="og:title" content="FASTTYPING GAME - Luyện Đánh Máy & NumPad Online" />
-		<meta
-			property="og:description"
-			content="Trò chơi luyện gõ phím 10 ngón và gõ bàn phím số NumPad tốc độ cao trực tuyến."
-		/>
-		<meta property="og:image" content="https://fasttyping.vn/og-image.jpg" />
-		<meta property="og:locale" content="vi_VN" />
-
-		<!-- TWITTER CARDS -->
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content="FASTTYPING GAME - Luyện Đánh Máy & NumPad Online" />
-		<meta
-			name="twitter:description"
-			content="Trò chơi luyện gõ phím 10 ngón và gõ bàn phím số NumPad tốc độ cao trực tuyến."
-		/>
-		<meta name="twitter:image" content="https://fasttyping.vn/og-image.jpg" />
-
-		<!-- FAVICON -->
-		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
-
 		<link rel="stylesheet" href="style.css" />
 		<link
 			href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap"
 			rel="stylesheet"
 		/>
 		<script src="/socket.io/socket.io.js"></script>
-
-		<!-- SCHEMA.ORG (JSON-LD) DÀNH CHO GOOGLE GAME SEARCH -->
-		<script type="application/ld+json">
-			{
-				"@context": "https://schema.org",
-				"@type": "SoftwareApplication",
-				"name": "FASTTYPING GAME",
-				"operatingSystem": "ALL",
-				"applicationCategory": "GameApplication",
-				"offers": {
-					"@type": "Offer",
-					"price": "0",
-					"priceCurrency": "VND"
-				},
-				"author": {
-					"@type": "Person",
-					"name": "Nguyễn Duy Tiến (niTe)"
-				},
-				"description": "Thử thách gõ phím và NumPad tốc độ cao cùng nhiều người chơi trực tuyến."
-			}
-		</script>
 	</head>
 	<body>
-		<!-- TIỆN ÍCH TRÊN CÙNG: ĐỔI TÊN, THÊM NÚT ĐỔI THEME & ONLINE BADGE -->
 		<div id="user-profile-bar" class="left-bar">
-			<span>👤 <span id="profile-name">Vô danh</span></span>
-			<button id="btn-change-name" class="btn-small" aria-label="Đổi tên người chơi">
-				ĐỔI TÊN
-			</button>
-			<button
-				id="theme-toggle-btn"
-				class="btn-small theme-btn"
-				title="Đổi Chế Độ Sáng/Tối"
-				aria-label="Đổi Chế Độ Sáng Tối"
-			>
-				🌙 Tối
-			</button>
+			<span>🤖 <span id="profile-name">Vô danh</span></span>
+			<button id="btn-change-name" class="btn-small">ĐỔI TÊN</button>
+			<button id="theme-toggle-btn" class="btn-small theme-btn">🌙 Tối</button>
 		</div>
 
 		<div class="online-badge top-right-badge">
@@ -98,7 +30,6 @@
 				<p class="subtitle">Thử Thách Đánh Máy & NumPad</p>
 
 				<div class="home-flex-row">
-					<!-- CỘT BÊN TRÁI: BẢNG CHỌN CHẾ ĐỘ THI ĐẤU -->
 					<div class="home-left-col">
 						<label class="section-label">CHỌN CHẾ ĐỘ THI ĐẤU</label>
 						<div class="mode-grid">
@@ -121,7 +52,6 @@
 						</div>
 					</div>
 
-					<!-- CỘT BÊN PHẢI: BẢNG XẾP HẠNG CAO ĐIỂM NHẤT LỊCH SỬ -->
 					<div class="home-right-col">
 						<label class="section-label">PHONG THẦN BẢNG</label>
 						<div class="high-score-board">
@@ -165,11 +95,8 @@
 					</div>
 				</div>
 
-				<input type="hidden" id="username-input" />
-
 				<button id="join-btn" class="cyber-btn" style="margin-top: 15px">VÀO PHÒNG CHỜ</button>
 
-				<!-- KHUNG CHAT TRANG CHỦ -->
 				<div class="global-chat-box">
 					<div class="chat-header-title">💬 KHUNG SỦA DƠ</div>
 					<div class="global-chat-messages"></div>
@@ -179,8 +106,6 @@
 							class="global-chat-input"
 							placeholder="Nhập tin nhắn..."
 							maxlength="100"
-							autocomplete="off"
-							aria-label="Nhập tin nhắn chat toàn cục"
 						/>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
@@ -205,7 +130,6 @@
 					id="popup-name-input"
 					placeholder="Tên mới..."
 					maxlength="15"
-					aria-label="Tên biệt danh mới"
 					style="
 						width: 100%;
 						padding: 12px;
@@ -213,10 +137,7 @@
 						border: 1px solid var(--primary);
 						color: var(--text-main);
 						border-radius: 6px;
-						font-family: &quot;Rajdhani&quot;, sans-serif;
-						font-size: 16px;
 						margin-bottom: 20px;
-						box-sizing: border-box;
 					"
 				/>
 				<div style="display: flex; gap: 10px; justify-content: center">
@@ -242,31 +163,16 @@
 			</div>
 		</div>
 
-		<!-- MODAL XÁC NHẬN ĐẦU HÀNG CYBERPUNK -->
-		<div id="surrender-modal" class="custom-popup hidden">
-			<div class="popup-content surrender-popup-content">
-				<h3 class="surrender-title">🏳️ XÁC NHẬN ĐẦU HÀNG</h3>
-				<p class="surrender-desc">
-					Bạn có chắc chắn muốn giơ cờ trắng và chấp nhận bị loại khỏi trận đấu không?
-				</p>
-				<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px">
-					<button id="btn-confirm-surrender" class="cyber-btn surrender-btn-danger">
-						ĐẦU HÀNG
-					</button>
-					<button id="btn-cancel-surrender" class="cyber-btn surrender-btn-cancel">
-						TIẾP TỤC CHIẾN
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<!-- PHÒNG CHỜ -->
+		<!-- PHÒNG CHỜ (CÓ THÊM NÚT ĐỔI ICON BÊN PHẢI TÊN KHUNG) -->
 		<div id="lobby-screen" class="screen hidden">
 			<div class="cyber-box lobby-box" style="position: relative">
-				<button id="btn-lobby-home" class="cyber-btn btn-home-corner">TRỞ VỀ</button>
+				<button id="btn-lobby-home" class="cyber-btn btn-home-corner">TRỜ VỀ</button>
+
+				<!-- Nút Đổi Icon nằm ở góc phải trên của khung -->
+				<button id="btn-open-icon-select" class="cyber-btn btn-icon-corner">🎨 ĐỔI ICON</button>
+
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
 
-				<!-- CHẾ ĐỘ CHƠI CỦA PHÒNG CHỜ -->
 				<div
 					id="lobby-mode-display"
 					style="
@@ -298,7 +204,6 @@
 					🚀 BẮT ĐẦU TRẬN ĐẤU NGAY
 				</button>
 
-				<!-- KHUNG CHAT PHÒNG CHỜ -->
 				<div class="global-chat-box" style="margin-top: 20px">
 					<div class="chat-header-title">💬 KHUNG SỦA DƠ</div>
 					<div class="global-chat-messages"></div>
@@ -308,11 +213,56 @@
 							class="global-chat-input"
 							placeholder="Nhập tin nhắn..."
 							maxlength="100"
-							autocomplete="off"
-							aria-label="Nhập tin nhắn phòng chờ"
 						/>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP CHỌN ICON CẢI TIẾN -->
+		<div id="icon-select-popup" class="custom-popup hidden">
+			<div class="popup-content">
+				<h3
+					style="
+						font-family: &quot;Orbitron&quot;, sans-serif;
+						color: var(--primary);
+						margin-bottom: 15px;
+					"
+				>
+					🎨 CHỌN ICON NHÂN VẬT
+				</h3>
+				<div id="icon-picker-grid" class="icon-picker-grid"></div>
+				<div style="margin-top: 20px">
+					<button
+						id="btn-close-icon-popup"
+						class="cyber-btn"
+						style="
+							padding: 8px 20px;
+							font-size: 14px;
+							background: linear-gradient(45deg, #444, #222);
+						"
+					>
+						ĐÓNG
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL XÁC NHẬN ĐẦU HÀNG -->
+		<div id="surrender-modal" class="custom-popup hidden">
+			<div class="popup-content surrender-popup-content">
+				<h3 class="surrender-title">🏳️ XÁC NHẬN ĐẦU HÀNG</h3>
+				<p class="surrender-desc">
+					Bạn có chắc chắn muốn giơ cờ trắng và chấp nhận bị loại khỏi trận đấu không?
+				</p>
+				<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px">
+					<button id="btn-confirm-surrender" class="cyber-btn surrender-btn-danger">
+						ĐẦU HÀNG
+					</button>
+					<button id="btn-cancel-surrender" class="cyber-btn surrender-btn-cancel">
+						TIẾP TỤC CHIẾN
+					</button>
 				</div>
 			</div>
 		</div>
@@ -323,13 +273,7 @@
 				<div class="logo">⚡ CYBER TYPING</div>
 				<div id="status-box">ĐANG THI ĐẤU</div>
 				<div style="display: flex; align-items: center; gap: 15px">
-					<button
-						id="btn-surrender"
-						class="btn-small btn-surrender-style"
-						title="Đầu hàng và chấp nhận bị loại"
-					>
-						🏳️ ĐẦU HÀNG
-					</button>
+					<button id="btn-surrender" class="btn-small btn-surrender-style">🏳️ ĐẦU HÀNG</button>
 					<div id="timer-box">⏱️ <span id="timer">--</span>s</div>
 				</div>
 			</header>
@@ -346,7 +290,6 @@
 					id="type-input"
 					autocomplete="off"
 					placeholder="Chờ bắt đầu..."
-					aria-label="Ô gõ chữ thi đấu"
 					disabled
 				/>
 			</div>
@@ -357,7 +300,6 @@
 					id="chat-input"
 					placeholder="Nhắn tin nhanh trong trận đấu (Enter)..."
 					maxlength="50"
-					aria-label="Tin nhắn nhanh trong trận"
 				/>
 			</div>
 		</div>
@@ -368,7 +310,6 @@
 		<div id="summary-modal" class="modal hidden">
 			<div class="cyber-box modal-content summary-box">
 				<h2 class="glitch-title summary-modal-title">🏆 BẢNG TỔNG KẾT TRẬN ĐẤU</h2>
-
 				<table id="summary-table">
 					<thead>
 						<tr>
@@ -381,7 +322,6 @@
 					</thead>
 					<tbody id="summary-tbody"></tbody>
 				</table>
-
 				<div style="display: flex; gap: 10px; margin-top: 20px">
 					<button
 						id="btn-play-again"

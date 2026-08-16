@@ -15,7 +15,6 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// DANH SÁCH TỪ VỰNG (70% DỄ - 30% KHÓ)
 const BIG_WORD_BANKS = {
 	vi_dau: {
 		easy: [
@@ -1305,6 +1304,8 @@ const BIG_WORD_BANKS = {
 	},
 };
 
+const runnerIcons = ["🐶", "🐭", "🐷", "🐱", "🐨", "🐯", "🐺", "🐰", "🦝", "🐵"];
+
 function generateWords(lang, count = 100) {
 	if (lang === "numpad") {
 		const zipList = [];
@@ -1364,13 +1365,17 @@ io.on("connection", (socket) => {
 	let currentRoom = null;
 	let player = null;
 
-	socket.on("join_lobby", ({ username, language }) => {
+	socket.on("join_lobby", ({ username, language, selectedIcon }) => {
 		const selectedLang = language || "vi_dau";
 		currentRoom = getOrCreateRoom(selectedLang);
+
+		// Chọn icon mặc định ngẫu nhiên nếu không truyền selectedIcon
+		const defaultIcon = selectedIcon || runnerIcons[Math.floor(Math.random() * runnerIcons.length)];
 
 		player = {
 			id: socket.id,
 			username: username || "TayĐua_" + Math.floor(1000 + Math.random() * 9000),
+			icon: defaultIcon,
 			progress: 0,
 			wpm: 0,
 			correctChars: 0,
@@ -1387,6 +1392,20 @@ io.on("connection", (socket) => {
 			players: currentRoom.players,
 			lang: currentRoom.lang,
 		});
+	});
+
+	socket.on("select_icon", ({ icon }) => {
+		if (player && currentRoom && currentRoom.state === "waiting") {
+			// Kiểm tra xem icon này đã được người khác chọn chưa
+			const isTaken = currentRoom.players.some((p) => p.id !== player.id && p.icon === icon);
+			if (!isTaken) {
+				player.icon = icon;
+				io.to(currentRoom.id).emit("update_lobby", {
+					players: currentRoom.players,
+					lang: currentRoom.lang,
+				});
+			}
+		}
 	});
 
 	socket.on("force_start_game", () => {
@@ -1437,23 +1456,6 @@ io.on("connection", (socket) => {
 			}, DURATION_MS);
 		}
 
-		if (currentRoom.lang === "numpad") {
-			const MAX_TRACK_CHARS = 600;
-			if (player.correctChars >= MAX_TRACK_CHARS) {
-				currentRoom.players.forEach((p) => {
-					p.correctChars = Math.floor((p.correctChars || 0) * (2 / 3));
-				});
-				io.to(currentRoom.id).emit("winner_celebration");
-				io.to(currentRoom.id).emit("progress_reset_tier", {
-					resetBy: player.username,
-					players: currentRoom.players,
-				});
-			} else {
-				io.to(currentRoom.id).emit("race_update", currentRoom.players);
-			}
-			return;
-		}
-
 		io.to(currentRoom.id).emit("race_update", currentRoom.players);
 	});
 
@@ -1474,7 +1476,6 @@ io.on("connection", (socket) => {
 		player.progress = 100;
 
 		currentRoom.finishedCount++;
-
 		checkMatchCompletion(currentRoom);
 	});
 
@@ -1549,7 +1550,6 @@ function finishMatch(room) {
 	room.state = "finished";
 	if (room.matchInterval) clearTimeout(room.matchInterval);
 
-	// Xếp hạng: WPM cao hơn đứng trước -> Nếu WPM bằng nhau thì so sánh số lỗi (ít lỗi hơn đứng trước)
 	const leaderboard = [...room.players].sort((a, b) => {
 		if (a.isSurrendered || a.isDisconnected) return 1;
 		if (b.isSurrendered || b.isDisconnected) return -1;
@@ -1560,21 +1560,6 @@ function finishMatch(room) {
 		return a.errors - b.errors;
 	});
 	io.to(room.id).emit("game_over", leaderboard);
-}
-
-const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
-if (RENDER_EXTERNAL_URL) {
-	setInterval(
-		() => {
-			const protocol = RENDER_EXTERNAL_URL.startsWith("https") ? https : http;
-			protocol
-				.get(RENDER_EXTERNAL_URL, (res) => {
-					console.log(`[Keep-Alive] Ping Server: ${res.statusCode}`);
-				})
-				.on("error", (err) => console.error("[Keep-Alive] Lỗi:", err.message));
-		},
-		10 * 60 * 1000,
-	);
 }
 
 const PORT = process.env.PORT || 3000;

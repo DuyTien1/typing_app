@@ -1,6 +1,6 @@
 {
 	"name": "nite-typing-race",
-	"version": "2.3.0",
+	"version": "2.4.0",
 	"description": "Realtime Vietnamese, English and ZIPcode Typing Race",
 	"main": "server.js",
 	"scripts": {

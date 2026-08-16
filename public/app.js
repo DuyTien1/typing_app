@@ -2,9 +2,11 @@ const socket = io();
 
 const ZIPCODE_TEST_DURATION = 90;
 const NORMAL_RACE_DURATION = 300;
+const DEFAULT_ICON = "🤖"; // Icon mặc định khi ở Trang chủ
 
 let currentLanguage = "vi_dau";
-let myUsername = "Vô danh";
+let myUsername = "bot_1000";
+let mySelectedIcon = DEFAULT_ICON; // Luôn bắt đầu bằng icon mặc định
 let currentWords = [];
 let wordIndex = 0;
 let correctChars = 0;
@@ -12,11 +14,28 @@ let totalErrors = 0;
 let isPlaying = false;
 let startTime = null;
 let timerInterval = null;
-let currentMatchPlayerCount = 0; // Biến lưu số lượng người chơi trong phòng đấu hiện tại
+let currentMatchPlayerCount = 0;
+let currentLobbyPlayers = [];
 
-const runnerIcons = ["🐶", "🐭", "🐷", "🐱", "🐨", "🐯", "🐺", "🐰", "🦝", "🐵"];
+const runnerIcons = [
+	"🤖",
+	"🐶",
+	"🐭",
+	"🐷",
+	"🐱",
+	"🐨",
+	"🐯",
+	"🐺",
+	"🐰",
+	"🦝",
+	"🐵",
+	"🦁",
+	"🐸",
+	"🐧",
+	"🐻",
+	"🐼",
+];
 
-// Bảng tra cứu tên hiển thị của từng chế độ chơi
 const modeNames = {
 	vi_dau: "🇻🇳 Tiếng Việt",
 	vi_nodau: "🔤 Không Dấu",
@@ -24,9 +43,17 @@ const modeNames = {
 	numpad: "🔢 Numpad",
 };
 
-/**
- * Lấy chuỗi ngày YYYY-MM-DD chính xác theo múi giờ Asia/Ho_Chi_Minh (GMT+7)
- */
+// Hàm Reset Icon về mặc định
+function resetToDefaultIcon() {
+	mySelectedIcon = DEFAULT_ICON;
+	localStorage.removeItem("racer_icon");
+}
+
+function generateBotName() {
+	const randomNum = Math.floor(1000 + Math.random() * 9000);
+	return `bot_${randomNum}`;
+}
+
 function getVNCurrentDateString() {
 	const now = new Date();
 	const vnTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" });
@@ -39,9 +66,6 @@ function getVNCurrentDateString() {
 	return `${year}-${month}-${day}`;
 }
 
-/**
- * Đọc dữ liệu HighScore. Nếu khác ngày GMT+7 hiện tại -> Tự động Reset dữ liệu.
- */
 function getValidHighScores() {
 	const todayStr = getVNCurrentDateString();
 	const savedData = JSON.parse(localStorage.getItem("racer_high_scores")) || {};
@@ -80,18 +104,13 @@ function loadHighScores() {
 	});
 }
 
-/**
- * Cập nhật kỷ lục cá nhân. CHỈ LƯU khi số người chơi trong trận đấu >= 3.
- */
 function updateHighScore(lang, username, wpm, errors, roomPlayerCount) {
-	// Yêu cầu phòng chơi phải có tối thiểu 3 người chơi
 	if (roomPlayerCount < 3) return;
 
 	const todayStr = getVNCurrentDateString();
 	let currentScores = getValidHighScores();
 	const currentRecord = currentScores[lang];
 
-	// Kiểm tra điều kiện lập kỷ lục mới: WPM cao hơn HOẶC WPM bằng nhưng số lỗi ít hơn
 	const isNewRecord =
 		!currentRecord ||
 		wpm > currentRecord.wpm ||
@@ -163,7 +182,30 @@ document.addEventListener("DOMContentLoaded", () => {
 			const bgCanvas = document.getElementById("keyboard-bg-canvas");
 			if (bgCanvas) bgCanvas.style.display = "none";
 
-			socket.emit("join_lobby", { username: myUsername, language: currentLanguage });
+			// Gửi thông tin đăng nhập kèm theo icon hiện tại
+			socket.emit("join_lobby", {
+				username: myUsername,
+				language: currentLanguage,
+				selectedIcon: mySelectedIcon,
+			});
+		});
+	}
+
+	// SỰ KIỆN CHỌN ICON
+	const btnOpenIconSelect = document.getElementById("btn-open-icon-select");
+	const iconSelectPopup = document.getElementById("icon-select-popup");
+	const btnCloseIconPopup = document.getElementById("btn-close-icon-popup");
+
+	if (btnOpenIconSelect) {
+		btnOpenIconSelect.addEventListener("click", () => {
+			renderIconPicker();
+			iconSelectPopup.classList.remove("hidden");
+		});
+	}
+
+	if (btnCloseIconPopup) {
+		btnCloseIconPopup.addEventListener("click", () => {
+			iconSelectPopup.classList.add("hidden");
 		});
 	}
 
@@ -174,7 +216,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	// NÚT VỀ TRANG CHỦ TỪ PHÒNG CHỜ
 	document.getElementById("btn-lobby-home")?.addEventListener("click", () => {
+		resetToDefaultIcon(); // Reset icon về mặc định 🤖
+
 		document.getElementById("lobby-screen").classList.add("hidden");
 		document.getElementById("login-modal").classList.remove("hidden");
 
@@ -247,8 +292,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const typeInput = document.getElementById("type-input");
 	if (typeInput) {
 		typeInput.addEventListener("input", handleTypingInput);
-
-		// Thêm sự kiện bắt phím Dấu trừ (-) và NumpadMinus để thực hiện xóa ký tự tương tự phím Backspace
 		typeInput.addEventListener("keydown", (e) => {
 			if (e.key === "-" || e.code === "NumpadMinus") {
 				e.preventDefault();
@@ -258,14 +301,22 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	// NÚT CHƠI TIẾP -> GIỮ NGUYÊN ICON HIỆN TẠI
 	document.getElementById("btn-play-again")?.addEventListener("click", () => {
 		document.getElementById("summary-modal").classList.add("hidden");
 		document.getElementById("game-container").classList.add("hidden");
 		document.getElementById("lobby-screen").classList.remove("hidden");
-		socket.emit("join_lobby", { username: myUsername, language: currentLanguage });
+		socket.emit("join_lobby", {
+			username: myUsername,
+			language: currentLanguage,
+			selectedIcon: mySelectedIcon, // Giữ nguyên icon đã chọn
+		});
 	});
 
+	// NÚT TRANG CHỦ TỪ BẢNG TỔNG KẾT
 	document.getElementById("btn-home")?.addEventListener("click", () => {
+		resetToDefaultIcon(); // Reset icon về mặc định 🤖
+
 		document.getElementById("summary-modal").classList.add("hidden");
 		document.getElementById("game-container").classList.add("hidden");
 		document.getElementById("lobby-screen").classList.add("hidden");
@@ -294,12 +345,53 @@ document.addEventListener("DOMContentLoaded", () => {
 function initUserProfile() {
 	let savedName = localStorage.getItem("racer_username");
 	if (!savedName) {
-		savedName = "TayĐua_" + Math.floor(1000 + Math.random() * 9000);
+		savedName = generateBotName();
 		localStorage.setItem("racer_username", savedName);
 	}
 	myUsername = savedName;
+
+	// Reset về icon mặc định khi khởi tạo trang
+	resetToDefaultIcon();
+
 	const profileName = document.getElementById("profile-name");
 	if (profileName) profileName.innerText = myUsername;
+}
+
+// Render lưới icon trong Modal chọn Icon
+function renderIconPicker() {
+	const grid = document.getElementById("icon-picker-grid");
+	if (!grid) return;
+	grid.innerHTML = "";
+
+	// Tìm các icon đã được người khác chọn
+	const takenIcons = currentLobbyPlayers.filter((p) => p.id !== socket.id).map((p) => p.icon);
+
+	runnerIcons.forEach((icon) => {
+		const btn = document.createElement("button");
+		btn.className = "icon-picker-btn";
+		btn.innerText = icon;
+
+		const me = currentLobbyPlayers.find((p) => p.id === socket.id);
+		const isMyCurrentIcon = me && me.icon === icon;
+		const isTaken = takenIcons.includes(icon);
+
+		if (isMyCurrentIcon) {
+			btn.classList.add("active");
+		}
+
+		if (isTaken) {
+			btn.classList.add("disabled");
+			btn.disabled = true;
+		} else {
+			btn.addEventListener("click", () => {
+				mySelectedIcon = icon; // Chỉ cập nhật biến tạm trong bộ nhớ, KHÔNG lưu localStorage
+				socket.emit("select_icon", { icon: icon });
+				document.getElementById("icon-select-popup").classList.add("hidden");
+			});
+		}
+
+		grid.appendChild(btn);
+	});
 }
 
 socket.on("update_online_count", (count) => {
@@ -308,11 +400,16 @@ socket.on("update_online_count", (count) => {
 });
 
 socket.on("update_lobby", (data) => {
+	currentLobbyPlayers = data.players || [];
 	const lobbyCount = document.getElementById("lobby-count");
 	const lobbyPlayersGrid = document.getElementById("lobby-players-grid");
 	const lobbyModeDisplay = document.getElementById("lobby-mode-display");
 
-	// Cập nhật tên hiển thị chế độ chơi trong phòng chờ
+	const me = currentLobbyPlayers.find((p) => p.id === socket.id);
+	if (me) {
+		mySelectedIcon = me.icon;
+	}
+
 	const activeLang = data.language || currentLanguage;
 	if (lobbyModeDisplay) {
 		lobbyModeDisplay.innerText = `CHẾ ĐỘ: ${modeNames[activeLang] || activeLang}`;
@@ -324,7 +421,7 @@ socket.on("update_lobby", (data) => {
 		data.players.forEach((p) => {
 			const card = document.createElement("div");
 			card.className = "lobby-player-card";
-			card.innerText = `🏎️ ${p.username}`;
+			card.innerText = `${p.icon || DEFAULT_ICON} ${p.username} ${p.id === socket.id ? "(Bạn)" : ""}`;
 			lobbyPlayersGrid.appendChild(card);
 		});
 	}
@@ -337,7 +434,7 @@ socket.on("game_start", (data) => {
 	document.getElementById("chat-container").classList.remove("hidden");
 
 	currentWords = data.words;
-	currentMatchPlayerCount = data.players ? data.players.length : 0; // Lưu số người trong phòng
+	currentMatchPlayerCount = data.players ? data.players.length : 0;
 	wordIndex = 0;
 	correctChars = 0;
 	totalErrors = 0;
@@ -541,7 +638,7 @@ function renderRaceTracks(players) {
 		trackRow.className = "track-row";
 		trackRow.id = `track-${p.id}`;
 
-		const icon = runnerIcons[idx % runnerIcons.length];
+		const icon = p.icon || DEFAULT_ICON;
 		const colorHue = (idx * 137.5) % 360;
 
 		let statusBadge = `<span class="wpm-tag" id="wpm-${p.id}">${p.wpm || 0} WPM</span>`;
@@ -612,7 +709,6 @@ socket.on("game_over", (leaderboard) => {
 		`;
 		summaryTbody.appendChild(tr);
 
-		// Truyền thêm currentMatchPlayerCount để kiểm tra điều kiện >= 3 người
 		if (!p.isSurrendered && !p.isDisconnected) {
 			updateHighScore(
 				currentLanguage,
@@ -752,200 +848,3 @@ function animateFireworks() {
 		requestAnimationFrame(animateFireworks);
 	}
 }
-
-(function initStealthKeyboardBG() {
-	const bgCanvas = document.getElementById("keyboard-bg-canvas");
-	if (!bgCanvas) return;
-	const bgCtx = bgCanvas.getContext("2d");
-
-	const baseKeyLayout = [
-		["Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Del"],
-		["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace"],
-		["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
-		["Caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"],
-		["Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Shift"],
-		["Ctrl", "Win", "Alt", "Space", "Alt", "Fn", "Ctrl"],
-	];
-
-	let keysList = [];
-
-	function resizeBgCanvas() {
-		bgCanvas.width = window.innerWidth;
-		bgCanvas.height = window.innerHeight;
-		buildKeyboardGrid();
-	}
-
-	function buildKeyboardGrid() {
-		keysList = [];
-		const screenW = bgCanvas.width;
-		const screenH = bgCanvas.height;
-
-		const centerMarginX = 320;
-		const centerMarginY = 320;
-		const centerX = screenW / 2;
-		const centerY = screenH / 2;
-
-		const padding = 12;
-		const baseKeyWidth = 80;
-		const keyHeight = 60;
-
-		const rowCount = baseKeyLayout.length;
-		const totalBlockH = rowCount * (keyHeight + padding);
-		const startY = (screenH % totalBlockH) / 2;
-
-		for (let yPtr = startY - totalBlockH; yPtr < screenH + totalBlockH; yPtr += totalBlockH) {
-			baseKeyLayout.forEach((row, rIdx) => {
-				const currentY = yPtr + rIdx * (keyHeight + padding);
-
-				let baseRowWidth = 0;
-				row.forEach((keyText) => {
-					let mult = 1;
-					if (keyText === "Space") mult = 4;
-					else if (keyText === "Backspace" || keyText === "Shift" || keyText === "Enter")
-						mult = 1.8;
-					else if (keyText === "Tab" || keyText === "Caps") mult = 1.3;
-					baseRowWidth += baseKeyWidth * mult + padding;
-				});
-
-				const startX = (screenW % baseRowWidth) / 2;
-				for (
-					let xPtr = startX - baseRowWidth;
-					xPtr < screenW + baseRowWidth;
-					xPtr += baseRowWidth
-				) {
-					let currentX = xPtr;
-
-					row.forEach((keyText) => {
-						let wMultiplier = 1;
-						if (keyText === "Space") wMultiplier = 4;
-						else if (keyText === "Backspace" || keyText === "Shift" || keyText === "Enter")
-							wMultiplier = 1.8;
-						else if (keyText === "Tab" || keyText === "Caps") wMultiplier = 1.3;
-
-						const actualWidth = baseKeyWidth * wMultiplier;
-						const keyCenterX = currentX + actualWidth / 2;
-						const keyCenterY = currentY + keyHeight / 2;
-
-						const isInsideCenterBox =
-							Math.abs(keyCenterX - centerX) < centerMarginX &&
-							Math.abs(keyCenterY - centerY) < centerMarginY;
-
-						if (!isInsideCenterBox) {
-							keysList.push({
-								text: keyText,
-								x: currentX,
-								y: currentY,
-								w: actualWidth,
-								h: keyHeight,
-								alpha: 0,
-								hue: 0,
-							});
-						}
-
-						currentX += actualWidth + padding;
-					});
-				}
-			});
-		}
-	}
-
-	function triggerRandomKey() {
-		if (keysList.length === 0) return;
-		for (let i = 0; i < 3; i++) {
-			const randIndex = Math.floor(Math.random() * keysList.length);
-			const key = keysList[randIndex];
-			if (key.alpha <= 0.2) {
-				key.hue = Math.floor(Math.random() * 360);
-				key.alpha = 1.0;
-			}
-		}
-	}
-
-	function animateKeyboardBG() {
-		bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-
-		const isLight = document.documentElement.getAttribute("data-theme") === "light";
-
-		const defaultStroke = isLight ? "rgba(0, 0, 0, 0.12)" : "rgba(255, 255, 255, 0.08)";
-		const defaultFill = isLight ? "rgba(240, 242, 245, 0.85)" : "rgba(10, 10, 18, 0.4)";
-		const defaultText = isLight ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.2)";
-
-		keysList.forEach((key) => {
-			bgCtx.lineWidth = 1.5;
-			bgCtx.strokeStyle = defaultStroke;
-			bgCtx.fillStyle = defaultFill;
-
-			bgCtx.beginPath();
-			bgCtx.roundRect(key.x, key.y, key.w, key.h, 8);
-			bgCtx.fill();
-			bgCtx.stroke();
-
-			bgCtx.fillStyle = defaultText;
-			bgCtx.font = "bold 13px Orbitron, sans-serif";
-			bgCtx.textAlign = "center";
-			bgCtx.textBaseline = "middle";
-			bgCtx.fillText(key.text, key.x + key.w / 2, key.y + key.h / 2);
-
-			if (key.alpha > 0) {
-				bgCtx.save();
-
-				if (isLight) {
-					const strokeColor = `hsla(${key.hue}, 100%, 38%, ${key.alpha})`;
-					const fillColor = `hsla(${key.hue}, 100%, 65%, ${key.alpha * 0.7})`;
-					const textColor = `hsla(${key.hue}, 100%, 15%, ${key.alpha})`;
-
-					bgCtx.shadowColor = `hsl(${key.hue}, 100%, 45%)`;
-					bgCtx.shadowBlur = 20 * key.alpha;
-
-					bgCtx.fillStyle = fillColor;
-					bgCtx.strokeStyle = strokeColor;
-					bgCtx.lineWidth = 3;
-
-					bgCtx.beginPath();
-					bgCtx.roundRect(key.x, key.y, key.w, key.h, 8);
-					bgCtx.fill();
-					bgCtx.stroke();
-
-					bgCtx.fillStyle = textColor;
-					bgCtx.font = "bold 15px Orbitron, sans-serif";
-					bgCtx.fillText(key.text, key.x + key.w / 2, key.y + key.h / 2);
-				} else {
-					bgCtx.shadowColor = `hsl(${key.hue}, 100%, 55%)`;
-					bgCtx.shadowBlur = 40 * key.alpha;
-
-					bgCtx.fillStyle = `hsla(${key.hue}, 100%, 50%, ${key.alpha * 0.9})`;
-					bgCtx.strokeStyle = `hsla(${key.hue}, 100%, 85%, ${key.alpha})`;
-					bgCtx.lineWidth = 3;
-
-					bgCtx.beginPath();
-					bgCtx.roundRect(key.x, key.y, key.w, key.h, 8);
-					bgCtx.fill();
-					bgCtx.stroke();
-
-					bgCtx.shadowBlur = 15 * key.alpha;
-					bgCtx.shadowColor = "#ffffff";
-					bgCtx.fillStyle = `rgba(255, 255, 255, ${key.alpha})`;
-					bgCtx.font = "bold 16px Orbitron, sans-serif";
-					bgCtx.fillText(key.text, key.x + key.w / 2, key.y + key.h / 2);
-				}
-
-				bgCtx.restore();
-
-				key.alpha -= 0.008;
-			}
-		});
-
-		requestAnimationFrame(animateKeyboardBG);
-	}
-
-	function scheduleNextKeyPress() {
-		triggerRandomKey();
-		const nextDelay = Math.random() * 70 + 30;
-		setTimeout(scheduleNextKeyPress, nextDelay);
-	}
-
-	window.addEventListener("resize", resizeBgCanvas);
-	resizeBgCanvas();
-	animateKeyboardBG();
-	scheduleNextKeyPress();
-})();
