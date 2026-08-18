@@ -3,6 +3,7 @@ const http = require("http");
 const https = require("https");
 const { Server } = require("socket.io");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,109 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, "public")));
 
+// ==========================================
+// QUẢN LÝ HIGH SCORES & TỰ ĐỘNG RESET 0H GMT+7
+// ==========================================
+const HIGHSCORES_FILE = path.join(__dirname, "highscores.json");
+
+let highScores = {
+	vi_dau: null,
+	vi_nodau: null,
+	en: null,
+	numpad: null,
+};
+
+function loadHighScoresFromFile() {
+	try {
+		if (fs.existsSync(HIGHSCORES_FILE)) {
+			const data = fs.readFileSync(HIGHSCORES_FILE, "utf8");
+			highScores = JSON.parse(data);
+		}
+	} catch (err) {
+		console.log("Lỗi load high scores:", err.message);
+	}
+}
+
+function saveHighScoresToFile() {
+	try {
+		fs.writeFileSync(HIGHSCORES_FILE, JSON.stringify(highScores, null, 2), "utf8");
+	} catch (err) {
+		console.log("Lỗi save high scores:", err.message);
+	}
+}
+
+// Hàm thực hiện reset điểm
+function resetHighScores() {
+	console.log("[SYSTEM] Đã đến 0h GMT+7: Tiến hành reset bảng điểm High Scores...");
+	highScores = {
+		vi_dau: null,
+		vi_nodau: null,
+		en: null,
+		numpad: null,
+	};
+	saveHighScoresToFile();
+	// Gửi bảng điểm đã reset cho toàn bộ người chơi đang kết nối
+	io.emit("update_high_scores", highScores);
+}
+
+// Hàm tính toán thời gian chờ đến 00:00:00 GMT+7 tiếp theo (không dùng thư viện ngoài)
+function scheduleDailyReset() {
+	const now = new Date();
+
+	// Lấy thời gian UTC hiện tại (ms)
+	const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+
+	// Chuyển sang thời gian GMT+7 (ms)
+	const gmt7OffsetMs = 7 * 60 * 60 * 1000;
+	const gmt7Ms = utcMs + gmt7OffsetMs;
+	const gmt7Date = new Date(gmt7Ms);
+
+	// Tạo thời điểm 00:00:00 ngày tiếp theo theo giờ GMT+7
+	const nextResetGmt7 = new Date(gmt7Ms);
+	nextResetGmt7.setHours(24, 0, 0, 0); // 24h hôm nay = 0h00 ngày hôm sau
+
+	// Tính khoảng thời gian còn lại (ms)
+	const timeUntilReset = nextResetGmt7.getTime() - gmt7Date.getTime();
+
+	console.log(
+		`[SYSTEM] Lịch reset điểm tiếp theo sau: ${(timeUntilReset / 1000 / 3600).toFixed(2)} giờ.`,
+	);
+
+	// Đặt hẹn giờ đến đúng 0h GMT+7
+	setTimeout(() => {
+		resetHighScores();
+		scheduleDailyReset(); // Lặp lại lịch đặt cho ngày tiếp theo
+	}, timeUntilReset);
+}
+
+// Khởi chạy load điểm và đặt lịch reset
+loadHighScoresFromFile();
+scheduleDailyReset();
+
+function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount) {
+	if (playerCount < 3) return;
+
+	const currentRecord = highScores[lang];
+	const isNewRecord =
+		!currentRecord ||
+		wpm > currentRecord.wpm ||
+		(wpm === currentRecord.wpm && errors < currentRecord.errors);
+
+	if (isNewRecord) {
+		highScores[lang] = {
+			username: username,
+			wpm: wpm,
+			errors: errors,
+			timestamp: Date.now(),
+		};
+		saveHighScoresToFile();
+		io.emit("update_high_scores", highScores);
+	}
+}
+
+// ==========================================
+// DỮ LIỆU TỪ VỰNG & QUẢN LÝ LOBBY/ROOM
+// ==========================================
 const BIG_WORD_BANKS = {
 	vi_dau: {
 		easy: [
@@ -1358,9 +1462,13 @@ function checkMatchCompletion(room) {
 	}
 }
 
+// ==========================================
+// SOCKET.IO EVENTS
+// ==========================================
 io.on("connection", (socket) => {
 	totalOnlineUsers++;
 	io.emit("update_online_count", totalOnlineUsers);
+	socket.emit("init_high_scores", highScores);
 
 	let currentRoom = null;
 	let player = null;
@@ -1369,7 +1477,6 @@ io.on("connection", (socket) => {
 		const selectedLang = language || "vi_dau";
 		currentRoom = getOrCreateRoom(selectedLang);
 
-		// Chọn icon mặc định ngẫu nhiên nếu không truyền selectedIcon
 		const defaultIcon = selectedIcon || runnerIcons[Math.floor(Math.random() * runnerIcons.length)];
 
 		player = {
@@ -1396,7 +1503,6 @@ io.on("connection", (socket) => {
 
 	socket.on("select_icon", ({ icon }) => {
 		if (player && currentRoom && currentRoom.state === "waiting") {
-			// Kiểm tra xem icon này đã được người khác chọn chưa
 			const isTaken = currentRoom.players.some((p) => p.id !== player.id && p.icon === icon);
 			if (!isTaken) {
 				player.icon = icon;
@@ -1559,6 +1665,20 @@ function finishMatch(room) {
 		}
 		return a.errors - b.errors;
 	});
+
+	if (leaderboard.length > 0) {
+		const winner = leaderboard[0];
+		if (!winner.isSurrendered && !winner.isDisconnected) {
+			updateHighScoresAndBroadcast(
+				room.lang,
+				winner.username,
+				winner.wpm || 0,
+				winner.errors || 0,
+				room.players.length,
+			);
+		}
+	}
+
 	io.to(room.id).emit("game_over", leaderboard);
 }
 

@@ -17,6 +17,14 @@ let timerInterval = null;
 let currentMatchPlayerCount = 0;
 let currentLobbyPlayers = [];
 
+// Server High Scores
+let serverHighScores = {
+	vi_dau: null,
+	vi_nodau: null,
+	en: null,
+	numpad: null,
+};
+
 const runnerIcons = [
 	"🤖",
 	"🐶",
@@ -43,7 +51,6 @@ const modeNames = {
 	numpad: "🔢 Numpad",
 };
 
-// Hàm Reset Icon về mặc định
 function resetToDefaultIcon() {
 	mySelectedIcon = DEFAULT_ICON;
 	localStorage.removeItem("racer_icon");
@@ -54,40 +61,11 @@ function generateBotName() {
 	return `bot_${randomNum}`;
 }
 
-function getVNCurrentDateString() {
-	const now = new Date();
-	const vnTimeStr = now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" });
-	const vnDate = new Date(vnTimeStr);
-
-	const year = vnDate.getFullYear();
-	const month = String(vnDate.getMonth() + 1).padStart(2, "0");
-	const day = String(vnDate.getDate()).padStart(2, "0");
-
-	return `${year}-${month}-${day}`;
-}
-
-function getValidHighScores() {
-	const todayStr = getVNCurrentDateString();
-	const savedData = JSON.parse(localStorage.getItem("racer_high_scores")) || {};
-
-	if (savedData.date !== todayStr) {
-		const freshData = {
-			date: todayStr,
-			scores: {},
-		};
-		localStorage.setItem("racer_high_scores", JSON.stringify(freshData));
-		return freshData.scores;
-	}
-
-	return savedData.scores || {};
-}
-
 function loadHighScores() {
-	const scores = getValidHighScores();
 	const modes = ["vi_dau", "vi_nodau", "en", "numpad"];
 
 	modes.forEach((mode) => {
-		const data = scores[mode];
+		const data = serverHighScores[mode];
 		const nameEl = document.getElementById(`hs-name-${mode}`);
 		const wpmEl = document.getElementById(`hs-wpm-${mode}`);
 		const errEl = document.getElementById(`hs-err-${mode}`);
@@ -102,36 +80,6 @@ function loadHighScores() {
 			if (errEl) errEl.innerText = "0";
 		}
 	});
-}
-
-function updateHighScore(lang, username, wpm, errors, roomPlayerCount) {
-	if (roomPlayerCount < 3) return;
-
-	const todayStr = getVNCurrentDateString();
-	let currentScores = getValidHighScores();
-	const currentRecord = currentScores[lang];
-
-	const isNewRecord =
-		!currentRecord ||
-		wpm > currentRecord.wpm ||
-		(wpm === currentRecord.wpm && errors < currentRecord.errors);
-
-	if (isNewRecord) {
-		currentScores[lang] = {
-			username: username,
-			wpm: wpm,
-			errors: errors,
-			timestamp: Date.now(),
-		};
-
-		const dataToSave = {
-			date: todayStr,
-			scores: currentScores,
-		};
-
-		localStorage.setItem("racer_high_scores", JSON.stringify(dataToSave));
-		loadHighScores();
-	}
 }
 
 function initTheme() {
@@ -397,6 +345,16 @@ function renderIconPicker() {
 socket.on("update_online_count", (count) => {
 	const onlineCount = document.getElementById("online-count");
 	if (onlineCount) onlineCount.innerText = count;
+});
+
+socket.on("init_high_scores", (scores) => {
+	serverHighScores = scores;
+	loadHighScores();
+});
+
+socket.on("update_high_scores", (scores) => {
+	serverHighScores = scores;
+	loadHighScores();
 });
 
 socket.on("update_lobby", (data) => {
@@ -708,16 +666,6 @@ socket.on("game_over", (leaderboard) => {
 			<td style="color: var(--secondary);">${p.errors || 0}</td>
 		`;
 		summaryTbody.appendChild(tr);
-
-		if (!p.isSurrendered && !p.isDisconnected) {
-			updateHighScore(
-				currentLanguage,
-				p.username,
-				p.wpm || 0,
-				p.errors || 0,
-				currentMatchPlayerCount,
-			);
-		}
 	});
 
 	document.getElementById("summary-modal").classList.remove("hidden");
