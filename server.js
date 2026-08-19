@@ -1,6 +1,6 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
-const https = require("https");
 const { Server } = require("socket.io");
 const path = require("path");
 const fs = require("fs");
@@ -13,6 +13,8 @@ const io = new Server(server, {
 		methods: ["GET", "POST"],
 	},
 });
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -47,7 +49,6 @@ function saveHighScoresToFile() {
 	}
 }
 
-// Hàm thực hiện reset điểm
 function resetHighScores() {
 	console.log("[SYSTEM] Đã đến 0h GMT+7: Tiến hành reset bảng điểm High Scores...");
 	highScores = {
@@ -57,41 +58,27 @@ function resetHighScores() {
 		numpad: null,
 	};
 	saveHighScoresToFile();
-	// Gửi bảng điểm đã reset cho toàn bộ người chơi đang kết nối
 	io.emit("update_high_scores", highScores);
 }
 
-// Hàm tính toán thời gian chờ đến 00:00:00 GMT+7 tiếp theo (không dùng thư viện ngoài)
 function scheduleDailyReset() {
 	const now = new Date();
-
-	// Lấy thời gian UTC hiện tại (ms)
 	const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-
-	// Chuyển sang thời gian GMT+7 (ms)
 	const gmt7OffsetMs = 7 * 60 * 60 * 1000;
 	const gmt7Ms = utcMs + gmt7OffsetMs;
 	const gmt7Date = new Date(gmt7Ms);
 
-	// Tạo thời điểm 00:00:00 ngày tiếp theo theo giờ GMT+7
 	const nextResetGmt7 = new Date(gmt7Ms);
-	nextResetGmt7.setHours(24, 0, 0, 0); // 24h hôm nay = 0h00 ngày hôm sau
+	nextResetGmt7.setHours(24, 0, 0, 0);
 
-	// Tính khoảng thời gian còn lại (ms)
 	const timeUntilReset = nextResetGmt7.getTime() - gmt7Date.getTime();
 
-	console.log(
-		`[SYSTEM] Lịch reset điểm tiếp theo sau: ${(timeUntilReset / 1000 / 3600).toFixed(2)} giờ.`,
-	);
-
-	// Đặt hẹn giờ đến đúng 0h GMT+7
 	setTimeout(() => {
 		resetHighScores();
-		scheduleDailyReset(); // Lặp lại lịch đặt cho ngày tiếp theo
+		scheduleDailyReset();
 	}, timeUntilReset);
 }
 
-// Khởi chạy load điểm và đặt lịch reset
 loadHighScoresFromFile();
 scheduleDailyReset();
 
@@ -117,7 +104,88 @@ function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount) 
 }
 
 // ==========================================
-// DỮ LIỆU TỪ VỰNG & QUẢN LÝ LOBBY/ROOM
+// QUẢN LÝ ADMIN & BAN USER
+// ==========================================
+const connectedUsers = new Map(); // socket.id -> { id, username, ip, isAdmin }
+const bannedUsers = new Map(); // ip -> { ip, username, bannedAt, expiresAt, timeoutId }
+
+function getClientIp(socket) {
+	const forwarded = socket.handshake.headers["x-forwarded-for"];
+	if (forwarded) {
+		return forwarded.split(",")[0].trim();
+	}
+	return socket.handshake.address;
+}
+
+function isIpBanned(ip) {
+	if (!bannedUsers.has(ip)) return false;
+	const b = bannedUsers.get(ip);
+	if (Date.now() > b.expiresAt) {
+		unbanIp(ip);
+		return false;
+	}
+	return true;
+}
+
+function unbanIp(ip) {
+	if (bannedUsers.has(ip)) {
+		const b = bannedUsers.get(ip);
+		if (b.timeoutId) clearTimeout(b.timeoutId);
+		bannedUsers.delete(ip);
+		broadcastAdminData();
+	}
+}
+
+function getOnlineUsersList() {
+	const list = [];
+	for (let [id, u] of connectedUsers.entries()) {
+		list.push({
+			id: u.id,
+			username: u.username || "Vô danh",
+			ip: u.ip,
+			isAdmin: u.isAdmin || false,
+			isBanned: u.isAdmin ? false : isIpBanned(u.ip),
+		});
+	}
+
+	list.sort((a, b) => {
+		if (a.isAdmin && !b.isAdmin) return -1;
+		if (!a.isAdmin && b.isAdmin) return 1;
+		return 0;
+	});
+
+	return list;
+}
+
+function getBannedUsersList() {
+	const list = [];
+	const now = Date.now();
+	for (let [ip, b] of bannedUsers.entries()) {
+		const remainingSec = Math.max(0, Math.ceil((b.expiresAt - now) / 1000));
+		list.push({
+			ip: b.ip,
+			username: b.username || "Vô danh",
+			bannedAt: b.bannedAt,
+			expiresAt: b.expiresAt,
+			remainingSec: remainingSec,
+		});
+	}
+	return list;
+}
+
+function broadcastAdminData() {
+	const onlineList = getOnlineUsersList();
+	const bannedList = getBannedUsersList();
+	io.sockets.sockets.forEach((s) => {
+		if (s.isAdmin) {
+			s.emit("admin_online_users", onlineList);
+			s.emit("admin_banned_users", bannedList);
+		}
+	});
+}
+
+// ==========================================
+// DỮ LIỆU TỪ VỰNG & QUẢN LÝ ROOM
 // ==========================================
 const BIG_WORD_BANKS = {
 	vi_dau: {
@@ -481,7 +549,6 @@ const BIG_WORD_BANKS = {
 			"trâu",
 			"voi",
 			"hổ",
-			"sư tử",
 			"gấu",
 			"khỉ",
 			"nai",
@@ -1036,7 +1103,6 @@ const BIG_WORD_BANKS = {
 			"trau",
 			"voi",
 			"ho",
-			"su tu",
 			"gau",
 			"khi",
 			"nai",
@@ -1408,24 +1474,42 @@ const BIG_WORD_BANKS = {
 	},
 };
 
-const runnerIcons = ["🐶", "🐭", "🐷", "🐱", "🐨", "🐯", "🐺", "🐰", "🦝", "🐵"];
+const runnerIcons = [
+	"🤖",
+	"🐶",
+	"🐭",
+	"🐷",
+	"🐱",
+	"🐨",
+	"🐯",
+	"🐺",
+	"🐰",
+	"🦝",
+	"🐵",
+	"🦁",
+	"🐸",
+	"🐧",
+	"🐻",
+	"🐼",
+	"🐲",
+	"🐢",
+	"🦑",
+	"🦭",
+];
 
 function generateWords(lang, count = 100) {
 	if (lang === "numpad") {
 		const zipList = [];
-		for (let i = 0; i < 500; i++) {
+		for (let i = 0; i < 500; i++)
 			zipList.push(Math.floor(10000 + Math.random() * 90000).toString());
-		}
 		return zipList;
 	}
-
 	const bank = BIG_WORD_BANKS[lang] || BIG_WORD_BANKS.vi_dau;
 	const result = [];
 	for (let i = 0; i < count; i++) {
 		const isHard = Math.random() < 0.3;
 		const pool = isHard ? bank.hard : bank.easy;
-		const randomWord = pool[Math.floor(Math.random() * pool.length)];
-		result.push(randomWord);
+		result.push(pool[Math.floor(Math.random() * pool.length)]);
 	}
 	return result;
 }
@@ -1457,9 +1541,7 @@ function checkMatchCompletion(room) {
 	const activeOrFinished = room.players.filter(
 		(p) => p.isFinished || p.isSurrendered || p.isDisconnected,
 	);
-	if (activeOrFinished.length >= room.players.length) {
-		finishMatch(room);
-	}
+	if (activeOrFinished.length >= room.players.length) finishMatch(room);
 }
 
 // ==========================================
@@ -1467,16 +1549,124 @@ function checkMatchCompletion(room) {
 // ==========================================
 io.on("connection", (socket) => {
 	totalOnlineUsers++;
+	const clientIp = getClientIp(socket);
+
+	connectedUsers.set(socket.id, {
+		id: socket.id,
+		username: "Vô danh",
+		ip: clientIp,
+		isAdmin: false,
+	});
+
 	io.emit("update_online_count", totalOnlineUsers);
 	socket.emit("init_high_scores", highScores);
+	broadcastAdminData();
 
 	let currentRoom = null;
 	let player = null;
 
+	// --- ADMIN SOCKET EVENTS ---
+	socket.on("admin_login", ({ password }) => {
+		if (password === ADMIN_PASSWORD) {
+			socket.isAdmin = true;
+			const u = connectedUsers.get(socket.id);
+			if (u) u.isAdmin = true;
+
+			socket.emit("admin_login_response", { success: true });
+			broadcastAdminData();
+		} else {
+			socket.emit("admin_login_response", {
+				success: false,
+				message: "Mật khẩu Admin không chính xác!",
+			});
+		}
+	});
+
+	socket.on("admin_logout", () => {
+		socket.isAdmin = false;
+		const u = connectedUsers.get(socket.id);
+		if (u) u.isAdmin = false;
+
+		socket.emit("admin_logout_response", { success: true });
+		broadcastAdminData();
+	});
+
+	socket.on("admin_ban_user", ({ targetSocketId }) => {
+		if (!socket.isAdmin || targetSocketId === socket.id) return;
+
+		const targetUser = connectedUsers.get(targetSocketId);
+		if (!targetUser) return;
+
+		const targetIp = targetUser.ip;
+		const targetName = targetUser.username || "Vô danh";
+
+		if (!targetIp) return;
+
+		if (isIpBanned(targetIp)) return;
+
+		const DURATION = 5 * 60 * 1000;
+		const now = Date.now();
+		const expiresAt = now + DURATION;
+
+		const timeoutId = setTimeout(() => {
+			unbanIp(targetIp);
+		}, DURATION);
+
+		bannedUsers.set(targetIp, {
+			ip: targetIp,
+			username: targetName,
+			bannedAt: now,
+			expiresAt: expiresAt,
+			timeoutId: timeoutId,
+		});
+
+		io.sockets.sockets.forEach((s) => {
+			if (getClientIp(s) === targetIp && !s.isAdmin) {
+				s.emit("banned_notice", {
+					expiresAt: expiresAt,
+					message: "Bạn đã bị Admin tạm cấm 5 phút!",
+				});
+			}
+		});
+
+		broadcastAdminData();
+	});
+
+	socket.on("admin_unban_user", ({ targetIp }) => {
+		if (!socket.isAdmin) return;
+		unbanIp(targetIp);
+	});
+
+	socket.on("admin_reset_highscore", ({ lang }) => {
+		if (!socket.isAdmin) return;
+		if (lang && highScores.hasOwnProperty(lang)) {
+			highScores[lang] = null;
+		} else {
+			highScores = { vi_dau: null, vi_nodau: null, en: null, numpad: null };
+		}
+		saveHighScoresToFile();
+		io.emit("update_high_scores", highScores);
+	});
+
+	socket.on("admin_clear_chat", () => {
+		if (!socket.isAdmin) return;
+		io.emit("clear_global_chat");
+	});
+
+	// --- GAME SOCKET EVENTS ---
 	socket.on("join_lobby", ({ username, language, selectedIcon }) => {
+		if (!socket.isAdmin && isIpBanned(clientIp)) {
+			const b = bannedUsers.get(clientIp);
+			const expiresAt = b ? b.expiresAt : Date.now() + 5 * 60 * 1000;
+			socket.emit("join_lobby_banned", {
+				expiresAt: expiresAt,
+				message: "Bạn đang bị cấm tham gia phòng chờ!",
+			});
+			return;
+		}
+
 		const selectedLang = language || "vi_dau";
 		currentRoom = getOrCreateRoom(selectedLang);
-
 		const defaultIcon = selectedIcon || runnerIcons[Math.floor(Math.random() * runnerIcons.length)];
 
 		player = {
@@ -1526,14 +1716,24 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("update_username", ({ username }) => {
-		if (player) {
-			player.username = username;
-			if (currentRoom) {
-				io.to(currentRoom.id).emit("update_lobby", {
-					players: currentRoom.players,
-				});
+		const cleanName = (username || "").trim() || "Vô danh";
+		if (player) player.username = cleanName;
+
+		const u = connectedUsers.get(socket.id);
+		if (u) {
+			u.username = cleanName;
+			if (!u.isAdmin && bannedUsers.has(u.ip)) {
+				bannedUsers.get(u.ip).username = cleanName;
 			}
 		}
+
+		if (currentRoom) {
+			io.to(currentRoom.id).emit("update_lobby", {
+				players: currentRoom.players,
+				lang: currentRoom.lang,
+			});
+		}
+		broadcastAdminData();
 	});
 
 	socket.on("update_progress", (data) => {
@@ -1554,9 +1754,7 @@ io.on("connection", (socket) => {
 		if (!currentRoom.startTime) {
 			currentRoom.startTime = Date.now();
 			io.to(currentRoom.id).emit("race_start_timer");
-
 			const DURATION_MS = currentRoom.lang === "numpad" ? 90 * 1000 : 5 * 60 * 1000;
-
 			currentRoom.matchInterval = setTimeout(() => {
 				finishMatch(currentRoom);
 			}, DURATION_MS);
@@ -1597,16 +1795,13 @@ io.on("connection", (socket) => {
 
 		player.isSurrendered = true;
 		player.wpm = 0;
-
 		io.to(currentRoom.id).emit("race_update", currentRoom.players);
 		checkMatchCompletion(currentRoom);
 	});
 
 	socket.on("send_global_chat", ({ message, username }) => {
 		if (!message || !message.trim()) return;
-
 		const senderName = player && player.username ? player.username : username || "Vô danh";
-
 		io.emit("receive_global_chat", {
 			username: senderName,
 			message: message.trim(),
@@ -1625,12 +1820,13 @@ io.on("connection", (socket) => {
 
 	socket.on("disconnect", () => {
 		totalOnlineUsers = Math.max(0, totalOnlineUsers - 1);
+		connectedUsers.delete(socket.id);
 		io.emit("update_online_count", totalOnlineUsers);
+		broadcastAdminData();
 
 		if (currentRoom && player) {
 			if (currentRoom.state === "waiting") {
 				currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
-
 				if (currentRoom.players.length === 0) {
 					if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
 					if (rooms[currentRoom.lang]) {
@@ -1639,7 +1835,10 @@ io.on("connection", (socket) => {
 						);
 					}
 				} else {
-					io.to(currentRoom.id).emit("update_lobby", { players: currentRoom.players });
+					io.to(currentRoom.id).emit("update_lobby", {
+						players: currentRoom.players,
+						lang: currentRoom.lang,
+					});
 				}
 			} else if (currentRoom.state === "racing") {
 				player.isDisconnected = true;
@@ -1659,10 +1858,7 @@ function finishMatch(room) {
 	const leaderboard = [...room.players].sort((a, b) => {
 		if (a.isSurrendered || a.isDisconnected) return 1;
 		if (b.isSurrendered || b.isDisconnected) return -1;
-
-		if (b.wpm !== a.wpm) {
-			return b.wpm - a.wpm;
-		}
+		if (b.wpm !== a.wpm) return b.wpm - a.wpm;
 		return a.errors - b.errors;
 	});
 
@@ -1678,7 +1874,6 @@ function finishMatch(room) {
 			);
 		}
 	}
-
 	io.to(room.id).emit("game_over", leaderboard);
 }
 

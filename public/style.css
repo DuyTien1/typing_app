@@ -1,5 +1,4 @@
 :root {
-	/* Mặc định Theme Tối (Cyberpunk Dark) */
 	--bg-color: #05050a;
 	--panel-bg: #0d0d1a;
 	--modal-bg: rgba(2, 2, 5, 0.95);
@@ -15,7 +14,6 @@
 	--border-color: rgba(0, 240, 255, 0.3);
 }
 
-/* Theme Sáng (Modern Light) */
 [data-theme="light"] {
 	--bg-color: #f4f6f9;
 	--panel-bg: #ffffff;
@@ -39,7 +37,6 @@
 	font-family: "Rajdhani", sans-serif;
 }
 
-/* CĂN GIỮA TOÀN MÀN HÌNH */
 body {
 	font-family:
 		"Inter",
@@ -75,7 +72,143 @@ body {
 	position: relative;
 }
 
-/* MODAL CONTAINER & CAN GIỮA TRANG CHỦ / TỔNG KẾT */
+/* THANH GÓC TRÊN PHẢI */
+.top-right-bar {
+	position: fixed;
+	top: 12px;
+	right: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	z-index: 1000;
+}
+
+.online-badge {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: var(--panel-bg);
+	border: 1px solid var(--correct);
+	color: var(--correct);
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 12px;
+	font-weight: bold;
+
+	user-select: none;
+}
+
+.online-badge.clickable {
+	cursor: pointer;
+}
+
+.online-badge.clickable:hover {
+	background: rgba(0, 255, 102, 0.15);
+}
+
+.banned-badge {
+	border-color: var(--secondary) !important;
+	color: var(--secondary) !important;
+	cursor: pointer;
+}
+
+.banned-badge:hover {
+	background: rgba(255, 0, 85, 0.15);
+}
+
+.btn-gear {
+	background: var(--panel-bg);
+	border: 1px solid var(--primary);
+	color: var(--primary);
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.btn-gear:hover {
+	background: var(--primary);
+	color: #000;
+	box-shadow: 0 0 10px var(--primary);
+}
+
+.online-dot {
+	width: 8px;
+	height: 8px;
+	background-color: var(--correct);
+	border-radius: 50%;
+	box-shadow: 0 0 8px var(--correct);
+	animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.3;
+	}
+}
+
+/* MODALS & POPUPS ADMIN */
+.modal-large {
+	max-width: 620px !important;
+}
+
+.admin-table-wrapper {
+	max-height: 320px;
+	overflow-y: auto;
+	margin-top: 10px;
+}
+
+.admin-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.admin-table th,
+.admin-table td {
+	padding: 8px 10px;
+	border-bottom: 1px solid var(--border-color);
+	text-align: center;
+}
+
+.admin-table th {
+	color: var(--primary);
+	font-family: "Orbitron", sans-serif;
+	font-size: 11px;
+}
+
+.btn-danger {
+	background: rgba(255, 0, 85, 0.2) !important;
+	border-color: var(--secondary) !important;
+	color: var(--secondary) !important;
+}
+
+.btn-danger:hover {
+	background: var(--secondary) !important;
+	color: #fff !important;
+}
+
+.btn-success {
+	background: rgba(0, 255, 102, 0.2) !important;
+	border-color: var(--correct) !important;
+	color: var(--correct) !important;
+}
+
+.btn-success:hover {
+	background: var(--correct) !important;
+	color: #000 !important;
+}
+
+/* MODAL TRANG CHỦ & PHÒNG CHỜ */
 .modal {
 	position: fixed;
 	inset: 0;
@@ -123,7 +256,6 @@ body {
 	letter-spacing: 1px;
 }
 
-/* BẢNG XẾP HẠNG TRANG CHỦ */
 .high-score-board {
 	background: var(--track-bg);
 	border: 1px solid var(--border-color);
@@ -181,7 +313,6 @@ body {
 	margin-bottom: 15px;
 }
 
-/* USER PROFILE BAR & BADGE (CỐ ĐỊNH Ở 2 GÓC TRÊN) */
 #user-profile-bar.left-bar {
 	position: fixed;
 	top: 12px;
@@ -195,6 +326,25 @@ body {
 	border-radius: 8px;
 	box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
 	z-index: 1000;
+	transition: all 0.3s ease;
+}
+
+/* KHI ĐĂNG NHẬP ADMIN THÀNH CÔNG */
+#user-profile-bar.admin-mode {
+	border: 3px solid var(--secondary) !important;
+	box-shadow: 0 0 15px rgba(255, 0, 85, 0.5) !important;
+}
+
+.admin-badge {
+	background: var(--secondary);
+	color: #ffffff;
+	font-size: 10px;
+	font-weight: 800;
+	font-family: "Orbitron", sans-serif;
+	padding: 2px 6px;
+	border-radius: 4px;
+	letter-spacing: 1px;
+	box-shadow: 0 0 8px var(--secondary);
 }
 
 #profile-name {
@@ -213,42 +363,6 @@ body {
 .theme-btn:hover {
 	background: var(--accent) !important;
 	color: #000 !important;
-}
-
-.online-badge.top-right-badge {
-	position: fixed;
-	top: 12px;
-	right: 12px;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	background: var(--panel-bg);
-	border: 1px solid var(--correct);
-	color: var(--correct);
-	padding: 6px 12px;
-	border-radius: 8px;
-	font-size: 12px;
-	font-weight: bold;
-	z-index: 1000;
-}
-
-.online-dot {
-	width: 8px;
-	height: 8px;
-	background-color: var(--correct);
-	border-radius: 50%;
-	box-shadow: 0 0 8px var(--correct);
-	animation: blink 1.5s infinite;
-}
-
-@keyframes blink {
-	0%,
-	100% {
-		opacity: 1;
-	}
-	50% {
-		opacity: 0.3;
-	}
 }
 
 .btn-small {
@@ -281,17 +395,18 @@ body {
 	color: #fff !important;
 }
 
-.btn-surrender-style:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
 .status-tag {
 	font-family: "Orbitron", sans-serif;
 	font-size: 11px;
 	font-weight: bold;
 	padding: 2px 6px;
 	border-radius: 4px;
+}
+
+.status-tag.correct {
+	background: rgba(0, 255, 102, 0.2);
+	color: var(--correct);
+	border: 1px solid var(--correct);
 }
 
 .status-tag.surrendered {
@@ -311,7 +426,6 @@ body {
 	filter: grayscale(1);
 }
 
-/* KHUNG CHAT TOÀN CỤC */
 .global-chat-box {
 	margin-top: 15px;
 	background: var(--panel-bg);
@@ -398,7 +512,6 @@ body {
 	cursor: pointer;
 }
 
-/* BẢNG CHỌN CHẾ ĐỘ THI ĐẤU */
 .mode-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -462,23 +575,12 @@ body {
 	color: #ffffff !important;
 }
 
-.surrender-btn-danger:hover {
-	filter: brightness(1.2);
-	box-shadow: 0 0 12px rgba(255, 0, 85, 0.5);
-}
-
 .surrender-btn-cancel {
 	background: linear-gradient(45deg, #00ff66, #10b981) !important;
 	color: #000000 !important;
 	font-weight: 900 !important;
 }
 
-.surrender-btn-cancel:hover {
-	filter: brightness(1.15);
-	box-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
-}
-
-/* SCREEN BÀN CHƠI CHÍNH & PHÒNG CHỜ (CĂN GIỮA MÀN HÌNH) */
 .screen {
 	width: 100%;
 	max-width: 900px;
@@ -516,13 +618,7 @@ body {
 
 #lobby-players-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-	gap: 10px;
-}
-
-#lobby-players-grid {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr); /* Giới hạn đúng 4 thẻ người chơi trên 1 hàng */
+	grid-template-columns: repeat(4, 1fr);
 	gap: 10px;
 	margin-top: 15px;
 	margin-bottom: 15px;
@@ -583,7 +679,6 @@ header .logo {
 	text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
 }
 
-/* ĐƯỜNG ĐUA REALTIME */
 #leaderboard {
 	width: 100%;
 	padding: 15px;
@@ -661,7 +756,6 @@ header .logo {
 	box-sizing: border-box;
 }
 
-/* KHU VỰC GÕ CHỮ */
 #typing-area {
 	width: 100%;
 	padding: 15px;
@@ -750,7 +844,6 @@ header .logo {
 	box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
 }
 
-/* POPUPS & DIALOGS */
 .summary-box,
 #summary-modal .modal-content,
 .summary-modal-content {
@@ -895,30 +988,15 @@ header .logo {
 	transform: scale(1.1);
 }
 
-.icon-picker-btn.active {
-	border-color: var(--correct);
-	background: rgba(0, 255, 102, 0.2);
-}
-
-.icon-picker-btn.disabled {
-	opacity: 0.25;
-	filter: grayscale(1);
-	cursor: not-allowed;
-	border-color: transparent;
-}
-
 .btn-home-corner {
 	position: absolute;
-	top: 8px;
-	left: 8px;
-	padding: 4px 8px;
 	top: 12px;
 	left: 12px;
-	padding: 5px 10px;
+	padding: 5px 12px;
 	font-size: 12px;
-	background: linear-gradient(45deg, #00f0ff, #0088ff);
-	border: 1px solid #00f0ff;
-	color: #000;
+	background: linear-gradient(45deg, #444, #222);
+	border: 1px solid var(--border-color);
+	color: #fff;
 	cursor: pointer;
 	z-index: 10;
 	width: auto;
@@ -926,160 +1004,16 @@ header .logo {
 
 .footer-copyright {
 	position: fixed;
-	bottom: 0;
-	left: 0;
-	width: 100%;
-	height: 35px;
-	line-height: 35px;
-	padding: 0 10px;
-	background: var(--panel-bg);
-	border-top: 1px solid var(--border-color);
+	bottom: 10px;
+	font-size: 11px;
 	color: var(--text-muted);
-	text-align: center;
-	font-size: 12px;
 	font-family: "Orbitron", sans-serif;
-	font-weight: bold;
-	z-index: 500;
+	z-index: 50;
 }
 
 #fireworks-canvas {
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
-	z-index: 80;
-}
-
-/* ========================================================= */
-/* THIẾT LẬP RIÊNG TỐI ƯU CHO SMARTPHONE (DƯỚI 600PX)        */
-/* ========================================================= */
-@media (max-width: 600px) {
-	/* Màn hình nhỏ hơn: thu gọn thanh thông tin người chơi */
-	#user-profile-bar.left-bar {
-		top: 8px;
-		left: 8px;
-		padding: 4px 8px;
-		max-width: 58%;
-	}
-
-	#profile-name {
-		font-size: 12px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 70px;
-		display: inline-block;
-		vertical-align: middle;
-	}
-
-	.online-badge.top-right-badge {
-		top: 8px;
-		right: 8px;
-		padding: 4px 8px;
-		font-size: 11px;
-	}
-
-	.glitch-title {
-		font-size: 22px;
-		text-shadow: 0 0 8px var(--primary);
-	}
-
-	.subtitle {
-		font-size: 11px;
-		letter-spacing: 2px;
-		margin-bottom: 10px;
-	}
-
-	.home-flex-row {
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	.modal-content.home-main-container {
-		padding: 50px 12px 15px 12px;
-	}
-
-	.mode-grid {
-		gap: 8px;
-	}
-
-	.mode-card {
-		padding: 8px 4px;
-	}
-
-	.mode-card .icon {
-		font-size: 18px;
-	}
-
-	.mode-card .title {
-		font-size: 11px;
-	}
-
-	.screen {
-		padding: 55px 8px 45px;
-	}
-
-	header {
-		padding: 10px;
-		flex-wrap: wrap;
-		justify-content: space-between;
-	}
-
-	header .logo {
-		font-size: 15px;
-	}
-
-	#status-box,
-	#timer-box {
-		font-size: 12px;
-	}
-
-	#words-display {
-		font-size: 16px;
-		height: 100px;
-		padding: 8px;
-		gap: 4px 6px;
-	}
-
-	#type-input {
-		font-size: 16px;
-		padding: 10px;
-	}
-
-	.track-header {
-		font-size: 12px;
-	}
-
-	#summary-modal .modal-content {
-		padding: 15px 8px !important;
-	}
-
-	#summary-table th,
-	#summary-table td {
-		font-size: 11px;
-		padding: 6px 3px !important;
-	}
-
-	.global-chat-messages {
-		height: 90px;
-	}
-
-	/* .btn-home-corner {
-	} */
-
-	.word-box,
-	.words-container,
-	#word-display {
-		font-family: "Lexend", sans-serif;
-		letter-spacing: 0.5px;
-	}
-
-	h1,
-	h2,
-	h3,
-	.high-scores,
-	.wpm-display,
-	.timer {
-		font-family: "Chakra Petch", sans-serif;
-		font-weight: 700;
-	}
+	z-index: 9999;
 }

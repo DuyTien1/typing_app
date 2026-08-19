@@ -1,26 +1,6 @@
 {
-	"vi_dau": {
-		"username": "Thần Đánh Máy",
-		"wpm": 145,
-		"errors": 8,
-		"timestamp": 1692345600000
-	},
-	"vi_nodau": {
-		"username": "Tốc Độ Tuyến",
-		"wpm": 138,
-		"errors": 12,
-		"timestamp": 1692345600000
-	},
-	"en": {
-		"username": "Speed Runner",
-		"wpm": 152,
-		"errors": 5,
-		"timestamp": 1692345600000
-	},
-	"numpad": {
-		"username": "Numpad Master",
-		"wpm": 189,
-		"errors": 3,
-		"timestamp": 1692345600000
-	}
+  "vi_dau": null,
+  "vi_nodau": null,
+  "en": null,
+  "numpad": null
 }

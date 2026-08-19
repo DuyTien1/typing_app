@@ -16,13 +16,25 @@
 	<body>
 		<div id="user-profile-bar" class="left-bar">
 			<span>🤖 <span id="profile-name">Vô danh</span></span>
+			<span class="admin-badge admin-only hidden">ADMIN</span>
 			<button id="btn-change-name" class="btn-small">ĐỔI TÊN</button>
 			<button id="theme-toggle-btn" class="btn-small theme-btn">🌙 Tối</button>
 		</div>
 
-		<div class="online-badge top-right-badge">
-			<div class="online-dot"></div>
-			<span id="online-count">0</span> Trực tuyến
+		<!-- THANH GÓC TRÊN PHẢI -->
+		<div class="top-right-bar">
+			<div id="online-badge" class="online-badge" title="Người chơi trực tuyến">
+				<div class="online-dot"></div>
+				<span id="online-count">0</span> Trực tuyến
+			</div>
+			<div
+				id="admin-banned-badge"
+				class="online-badge banned-badge hidden"
+				title="Danh sách bị cấm"
+			>
+				🚫 <span id="banned-count">0</span> Bị ban
+			</div>
+			<button id="btn-admin-gear" class="btn-gear" title="Quản trị viên">⚙️</button>
 		</div>
 
 		<!-- MODAL TRANG CHỦ -->
@@ -64,6 +76,7 @@
 										<th>THẦN ĐẰNG</th>
 										<th>TỐC ĐỘ</th>
 										<th>LỖI</th>
+										<th class="admin-only-col hidden">ADMIN</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -72,24 +85,28 @@
 										<td id="hs-name-vi_dau">---</td>
 										<td id="hs-wpm-vi_dau" class="highlight-val">0</td>
 										<td id="hs-err-vi_dau">0</td>
+										<td id="hs-action-vi_dau" class="admin-only-col hidden"></td>
 									</tr>
 									<tr>
 										<td>🔤 Không Dấu</td>
 										<td id="hs-name-vi_nodau">---</td>
 										<td id="hs-wpm-vi_nodau" class="highlight-val">0</td>
 										<td id="hs-err-vi_nodau">0</td>
+										<td id="hs-action-vi_nodau" class="admin-only-col hidden"></td>
 									</tr>
 									<tr>
 										<td>🔠 English</td>
 										<td id="hs-name-en">---</td>
 										<td id="hs-wpm-en" class="highlight-val">0</td>
 										<td id="hs-err-en">0</td>
+										<td id="hs-action-en" class="admin-only-col hidden"></td>
 									</tr>
 									<tr>
 										<td>🔢 Numpad</td>
 										<td id="hs-name-numpad">---</td>
 										<td id="hs-wpm-numpad" class="highlight-val">0</td>
 										<td id="hs-err-numpad">0</td>
+										<td id="hs-action-numpad" class="admin-only-col hidden"></td>
 									</tr>
 								</tbody>
 							</table>
@@ -100,7 +117,16 @@
 				<button id="join-btn" class="cyber-btn" style="margin-top: 15px">VÀO PHÒNG CHỜ</button>
 
 				<div class="global-chat-box">
-					<div class="chat-header-title">💬 KHUNG SỦA DƠ</div>
+					<div class="chat-header-title">
+						💬 KHUNG SỦA DƠ
+						<button
+							id="btn-clear-chat"
+							class="btn-small btn-surrender-style admin-only hidden"
+							style="float: right"
+						>
+							XÓA CHAT
+						</button>
+					</div>
 					<div class="global-chat-messages"></div>
 					<div class="global-chat-input-wrapper">
 						<input
@@ -112,6 +138,169 @@
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
 				</div>
+			</div>
+		</div>
+
+		<!-- POPUP ĐĂNG NHẬP ADMIN -->
+		<div id="admin-login-popup" class="custom-popup hidden">
+			<div class="popup-content">
+				<h3
+					style="
+						font-family: &quot;Orbitron&quot;, sans-serif;
+						color: var(--primary);
+						margin-bottom: 15px;
+					"
+				>
+					🔑 ĐĂNG NHẬP ADMIN
+				</h3>
+				<input
+					type="password"
+					id="admin-password-input"
+					placeholder="Nhập mật khẩu admin..."
+					style="
+						width: 100%;
+						padding: 12px;
+						background: var(--input-bg);
+						border: 1px solid var(--primary);
+						color: var(--text-main);
+						border-radius: 6px;
+						margin-bottom: 10px;
+					"
+				/>
+				<div
+					id="admin-login-error"
+					class="hidden"
+					style="color: var(--secondary); font-size: 13px; margin-bottom: 15px; font-weight: bold"
+				>
+					Mật khẩu không chính xác!
+				</div>
+				<div style="display: flex; gap: 10px; justify-content: center">
+					<button
+						id="btn-submit-admin-login"
+						class="cyber-btn"
+						style="padding: 8px 20px; font-size: 14px"
+					>
+						XÁC NHẬN
+					</button>
+					<button
+						id="btn-cancel-admin-login"
+						class="cyber-btn"
+						style="
+							padding: 8px 20px;
+							font-size: 14px;
+							background: linear-gradient(45deg, #444, #222);
+						"
+					>
+						HỦY
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL NGƯỜI CHƠI ONLINE (REALTIME ADMIN) -->
+		<div id="online-users-modal" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3
+					style="
+						font-family: &quot;Orbitron&quot;, sans-serif;
+						color: var(--primary);
+						margin-bottom: 15px;
+					"
+				>
+					👥 NGƯỜI CHƠI TRỰC TUYẾN
+				</h3>
+				<div class="admin-table-wrapper">
+					<table class="admin-table">
+						<thead>
+							<tr>
+								<th>TÊN</th>
+								<th>SOCKET ID</th>
+								<th>TRẠNG THÁI</th>
+								<th>THAO TÁC</th>
+							</tr>
+						</thead>
+						<tbody id="online-users-tbody"></tbody>
+					</table>
+				</div>
+				<button
+					id="btn-close-online-users"
+					class="cyber-btn"
+					style="
+						margin-top: 15px;
+						padding: 8px 20px;
+						font-size: 14px;
+						background: linear-gradient(45deg, #444, #222);
+					"
+				>
+					ĐÓNG
+				</button>
+			</div>
+		</div>
+
+		<!-- MODAL NGƯỜI CHƠI BỊ BAN (REALTIME ADMIN) -->
+		<div id="banned-users-modal" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3
+					style="
+						font-family: &quot;Orbitron&quot;, sans-serif;
+						color: var(--secondary);
+						margin-bottom: 15px;
+					"
+				>
+					🚫 DANH SÁCH BỊ BAN
+				</h3>
+				<div class="admin-table-wrapper">
+					<table class="admin-table">
+						<thead>
+							<tr>
+								<th>TÊN / IP</th>
+								<th>THỜI GIAN CÒN LẠI</th>
+								<th>THAO TÁC</th>
+							</tr>
+						</thead>
+						<tbody id="banned-users-tbody"></tbody>
+					</table>
+				</div>
+				<button
+					id="btn-close-banned-users"
+					class="cyber-btn"
+					style="
+						margin-top: 15px;
+						padding: 8px 20px;
+						font-size: 14px;
+						background: linear-gradient(45deg, #444, #222);
+					"
+				>
+					ĐÓNG
+				</button>
+			</div>
+		</div>
+
+		<!-- POPUP THÔNG BÁO BAN -->
+		<div id="ban-notice-popup" class="custom-popup hidden">
+			<div class="popup-content">
+				<h3
+					style="
+						font-family: &quot;Orbitron&quot;, sans-serif;
+						color: var(--secondary);
+						margin-bottom: 15px;
+					"
+				>
+					🚫 BẠN ĐÃ BỊ BAN
+				</h3>
+				<p
+					id="ban-notice-msg"
+					style="margin-bottom: 20px; font-size: 14px; color: var(--text-main)"
+				>
+					Bạn tạm thời bị cấm tham gia phòng chờ.
+				</p>
+				<button
+					id="btn-close-ban-notice"
+					class="cyber-btn"
+					style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222)"
+				>
+					ĐÃ HIỂU
+				</button>
 			</div>
 		</div>
 
@@ -165,16 +354,13 @@
 			</div>
 		</div>
 
-		<!-- PHÒNG CHỜ (CÓ THÊM NÚT ĐỔI ICON BÊN PHẢI TÊN KHUNG) -->
+		<!-- PHÒNG CHỜ -->
 		<div id="lobby-screen" class="screen hidden">
 			<div class="cyber-box lobby-box" style="position: relative">
 				<button id="btn-lobby-home" class="cyber-btn btn-home-corner">↩️ TRỞ VỀ</button>
-
-				<!-- Nút Đổi Icon nằm ở góc phải trên của khung -->
 				<button id="btn-open-icon-select" class="cyber-btn btn-icon-corner">🕹️ ĐỔI ICON</button>
 
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
-
 				<div
 					id="lobby-mode-display"
 					style="
@@ -222,7 +408,7 @@
 			</div>
 		</div>
 
-		<!-- POPUP CHỌN ICON CẢI TIẾN -->
+		<!-- POPUP CHỌN ICON -->
 		<div id="icon-select-popup" class="custom-popup hidden">
 			<div class="popup-content">
 				<h3
