@@ -94,7 +94,6 @@ body {
 	border-radius: 8px;
 	font-size: 12px;
 	font-weight: bold;
-
 	user-select: none;
 }
 
@@ -114,6 +113,22 @@ body {
 
 .banned-badge:hover {
 	background: rgba(255, 0, 85, 0.15);
+}
+
+/* HUY HIỆU ADMIN-BANNED MỞ RỘNG */
+.admin-banned-badge {
+	background: rgba(255, 0, 85, 0.15);
+	border: 1px solid var(--secondary);
+	color: var(--secondary);
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 11px;
+	font-weight: bold;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 .btn-gear {
@@ -178,6 +193,7 @@ body {
 	padding: 8px 10px;
 	border-bottom: 1px solid var(--border-color);
 	text-align: center;
+	vertical-align: middle;
 }
 
 .admin-table th {
@@ -186,10 +202,22 @@ body {
 	font-size: 11px;
 }
 
+/* HIỂN THỊ CỘT IP THỰC THAY THẾ SOCKET ID */
+.admin-table td.ip-cell,
+.admin-table th.ip-header {
+	font-family: monospace;
+	font-size: 12px;
+	color: var(--accent);
+}
+
 .btn-danger {
 	background: rgba(255, 0, 85, 0.2) !important;
 	border-color: var(--secondary) !important;
 	color: var(--secondary) !important;
+	cursor: pointer;
+	padding: 4px 10px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
 }
 
 .btn-danger:hover {
@@ -201,6 +229,10 @@ body {
 	background: rgba(0, 255, 102, 0.2) !important;
 	border-color: var(--correct) !important;
 	color: var(--correct) !important;
+	cursor: pointer;
+	padding: 4px 10px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
 }
 
 .btn-success:hover {
@@ -437,6 +469,7 @@ body {
 
 .chat-header-title {
 	font-size: 11px;
+	padding-bottom: 8px;
 	color: var(--primary);
 	font-weight: bold;
 	margin-bottom: 8px;
@@ -510,6 +543,89 @@ body {
 	font-size: 12px;
 	font-weight: bold;
 	cursor: pointer;
+}
+
+/* KHUNG CHAT TRONG TRẬN ĐẤU & CÁC NÚT ICON */
+.in-game-chat-wrapper {
+	display: flex;
+	gap: 8px;
+	width: 100%;
+	align-items: center;
+}
+
+.in-game-chat-send-btn {
+	background: rgba(0, 240, 255, 0.12);
+	border: 1px solid var(--primary);
+	color: var(--primary);
+	padding: 8px 14px;
+	border-radius: 6px;
+	font-family: "Orbitron", sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.chat-emoji-btn {
+	background: rgba(255, 230, 0, 0.15) !important;
+	border-color: var(--accent) !important;
+	color: var(--accent) !important;
+	font-size: 14px !important;
+	padding: 6px 10px !important;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+}
+
+.chat-emoji-btn:hover {
+	background: var(--accent) !important;
+	color: #000 !important;
+}
+
+/* Đã chỉnh sửa: Loại bỏ scroll và hiển thị trọn vẹn toàn bộ icon */
+.chat-emoji-picker {
+	position: fixed;
+	top: 545px !important;
+	left: 1100px !important;
+	z-index: 10000;
+	background: var(--panel-bg);
+	border: 2px solid var(--accent);
+	border-radius: 10px;
+	padding: 8px;
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+	width: auto;
+	max-width: 340px;
+	backdrop-filter: blur(8px);
+}
+
+.chat-emoji-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 4px;
+	max-height: none;
+	overflow-y: visible;
+}
+
+.chat-emoji-item {
+	background: var(--input-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	font-size: 18px;
+	padding: 4px;
+	cursor: pointer;
+	text-align: center;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.chat-emoji-item:hover {
+	border-color: var(--accent);
+	transform: scale(1.2);
+	background: rgba(255, 230, 0, 0.2);
 }
 
 .mode-grid {
@@ -625,10 +741,11 @@ body {
 }
 
 .lobby-player-card {
+	position: relative;
 	background: var(--input-bg, rgba(255, 255, 255, 0.05));
 	border: 1px solid var(--primary, #00f0ff);
 	border-radius: 8px;
-	padding: 10px 12px;
+	padding: 10px 24px 10px 12px;
 	text-align: center;
 	font-weight: 600;
 	font-size: 13px;
@@ -636,6 +753,27 @@ body {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.kick-player-btn {
+	position: absolute;
+	top: 3px;
+	right: 5px;
+	background: transparent;
+	border: none;
+	color: var(--secondary, #ff0055);
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	line-height: 1;
+	padding: 2px 5px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+}
+
+.kick-player-btn:hover {
+	background: var(--secondary, #ff0055);
+	color: #ffffff;
 }
 
 header {
@@ -948,6 +1086,46 @@ header .logo {
 	text-align: center;
 }
 
+/* POPUP THÔNG BÁO BỊ ĐÁ KHỎI PHÒNG */
+.kicked-popup-content {
+	border-color: var(--secondary) !important;
+	box-shadow: 0 0 25px rgba(255, 0, 85, 0.4) !important;
+	animation: popupScale 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.kicked-popup-icon {
+	font-size: 42px;
+	margin-bottom: 8px;
+}
+
+.kicked-popup-title {
+	font-family: "Orbitron", sans-serif;
+	color: var(--secondary);
+	font-size: 18px;
+	font-weight: 900;
+	margin-bottom: 12px;
+	letter-spacing: 1px;
+	text-shadow: 0 0 8px rgba(255, 0, 85, 0.6);
+}
+
+.kicked-popup-msg {
+	font-size: 14px;
+	color: var(--text-main);
+	margin-bottom: 20px;
+	line-height: 1.5;
+}
+
+@keyframes popupScale {
+	0% {
+		transform: scale(0.85);
+		opacity: 0;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
 .btn-icon-corner {
 	position: absolute;
 	top: 12px;
@@ -994,9 +1172,10 @@ header .logo {
 	left: 12px;
 	padding: 5px 12px;
 	font-size: 12px;
-	background: linear-gradient(45deg, #444, #222);
-	border: 1px solid var(--border-color);
-	color: #fff;
+	background: linear-gradient(45deg, #00f0ff, #0088ff);
+	border: 1px solid #00f0ff;
+	color: #000;
+	font-weight: bold;
 	cursor: pointer;
 	z-index: 10;
 	width: auto;

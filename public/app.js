@@ -25,6 +25,35 @@ let adminBannedUsers = [];
 let bannedModalTimer = null;
 let banNoticeTimer = null;
 
+// Khung Chat Emojis
+let activeChatInput = null;
+const chatEmojis = [
+	"😀",
+	"😂",
+	"🤣",
+	"😍",
+	"😎",
+	"🔥",
+	"👍",
+	"👎",
+	"❤️",
+	"🎉",
+	"💩",
+	"👀",
+	"🤡",
+	"⚡",
+	"🎮",
+	"🚀",
+	"💀",
+	"🤫",
+	"💪",
+	"🏆",
+	"😡",
+	"🙏",
+	"😭",
+	"😤",
+];
+
 let serverHighScores = {
 	vi_dau: null,
 	vi_nodau: null,
@@ -93,7 +122,6 @@ socket.on("connect", () => {
 		socket.emit("update_username", { username: myUsername });
 	}
 
-	// Tự động khôi phục quyền Admin nếu Cookie tồn tại
 	const savedAdminPwd = getCookie("admin_token");
 	if (savedAdminPwd) {
 		lastEnteredAdminPassword = savedAdminPwd;
@@ -171,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	socket.emit("update_username", { username: myUsername });
 	loadHighScores();
 	setupAdminControls();
+	setupChatEmojiPicker();
 
 	const themeToggleBtn = document.getElementById("theme-toggle-btn");
 	if (themeToggleBtn) {
@@ -225,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	document.getElementById("btn-lobby-home")?.addEventListener("click", () => {
+		socket.emit("leave_lobby");
 		resetToDefaultIcon();
 		document.getElementById("lobby-screen").classList.add("hidden");
 		document.getElementById("login-modal").classList.remove("hidden");
@@ -232,8 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateBanBadgeVisibility();
 		const bgCanvas = document.getElementById("keyboard-bg-canvas");
 		if (bgCanvas) bgCanvas.style.display = "block";
-		socket.disconnect();
-		socket.connect();
 	});
 
 	const btnSurrender = document.getElementById("btn-surrender");
@@ -317,6 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	document.getElementById("btn-home")?.addEventListener("click", () => {
+		socket.emit("leave_lobby");
 		resetToDefaultIcon();
 		document.getElementById("summary-modal").classList.add("hidden");
 		document.getElementById("game-container").classList.add("hidden");
@@ -329,18 +358,87 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	const chatInput = document.getElementById("chat-input");
+	const inGameSendBtn = document.getElementById("in-game-chat-send-btn");
+
+	function sendInGameChatMsg() {
+		if (chatInput) {
+			const msg = chatInput.value.trim();
+			if (msg) {
+				socket.emit("send_in_game_chat", { message: msg });
+				chatInput.value = "";
+			}
+		}
+	}
+
+	if (inGameSendBtn) {
+		inGameSendBtn.addEventListener("click", sendInGameChatMsg);
+	}
+
 	if (chatInput) {
 		chatInput.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
-				const msg = chatInput.value.trim();
-				if (msg) {
-					socket.emit("send_in_game_chat", { message: msg });
-					chatInput.value = "";
-				}
+				sendInGameChatMsg();
 			}
 		});
 	}
 });
+
+function setupChatEmojiPicker() {
+	const picker = document.getElementById("chat-emoji-picker");
+	const grid = document.getElementById("chat-emoji-grid");
+	if (!grid || !picker) return;
+
+	grid.innerHTML = "";
+	chatEmojis.forEach((emoji) => {
+		const btn = document.createElement("div");
+		btn.className = "chat-emoji-item";
+		btn.innerText = emoji;
+		btn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			if (activeChatInput) {
+				const start = activeChatInput.selectionStart || activeChatInput.value.length;
+				const end = activeChatInput.selectionEnd || activeChatInput.value.length;
+				const val = activeChatInput.value;
+				activeChatInput.value = val.substring(0, start) + emoji + val.substring(end);
+				activeChatInput.focus();
+				activeChatInput.selectionStart = activeChatInput.selectionEnd = start + emoji.length;
+			}
+			picker.classList.add("hidden");
+		});
+		grid.appendChild(btn);
+	});
+
+	document.querySelectorAll(".chat-emoji-btn").forEach((btn) => {
+		btn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			const wrapper =
+				e.currentTarget.closest(".global-chat-input-wrapper") ||
+				e.currentTarget.closest(".in-game-chat-wrapper");
+
+			if (wrapper) {
+				activeChatInput = wrapper.querySelector("input");
+			}
+
+			const rect = e.currentTarget.getBoundingClientRect();
+			let top = rect.top - 200;
+			if (top < 10) top = rect.bottom + 5;
+
+			let left = rect.left - 180;
+			if (left < 10) left = 10;
+			if (left + 260 > window.innerWidth) left = window.innerWidth - 270;
+
+			picker.style.top = `${top}px`;
+			picker.style.left = `${left}px`;
+			picker.classList.toggle("hidden");
+		});
+	});
+
+	document.addEventListener("click", (e) => {
+		if (!picker.contains(e.target) && !e.target.classList.contains("chat-emoji-btn")) {
+			picker.classList.add("hidden");
+		}
+	});
+}
 
 function initUserProfile() {
 	let savedName = localStorage.getItem("racer_username");
@@ -457,13 +555,9 @@ socket.on("admin_logout_response", () => {
 	updateAdminUI();
 });
 
-// Kiểm tra chỉ hiển thị ô Danh sách Ban ở Trang chủ (Home)
 function updateBanBadgeVisibility() {
 	const adminBannedBadge = document.getElementById("admin-banned-badge");
-	const loginModal = document.getElementById("login-modal");
-	const isHomePage = loginModal && !loginModal.classList.contains("hidden");
-
-	if (isAdmin && isHomePage) {
+	if (isAdmin) {
 		if (adminBannedBadge) adminBannedBadge.classList.remove("hidden");
 	} else {
 		if (adminBannedBadge) adminBannedBadge.classList.add("hidden");
@@ -480,7 +574,7 @@ function updateAdminUI() {
 
 	if (isAdmin) {
 		if (btnAdminGear) {
-			btnAdminGear.innerText = "⤵️";
+			btnAdminGear.innerText = "❌";
 			btnAdminGear.title = "Thoát chế độ Admin";
 		}
 		if (onlineBadge) onlineBadge.classList.add("clickable");
@@ -503,6 +597,7 @@ function updateAdminUI() {
 	}
 	updateBanBadgeVisibility();
 	loadHighScores();
+	renderLobbyPlayers();
 }
 
 socket.on("admin_online_users", (users) => {
@@ -585,16 +680,16 @@ function renderBannedUsersModal() {
 		const secsFormatted = secs < 10 ? `0${secs}` : secs;
 
 		tr.innerHTML = `
-			<td style="font-weight: bold;">${b.username} (${b.ip})</td>
+			<td style="font-weight: bold;">${b.username} (${b.id})</td>
 			<td style="color: var(--secondary); font-weight: bold;">${mins}m ${secsFormatted}s</td>
-			<td><button class="btn-small btn-success" onclick="unbanUser('${b.ip}')">Gỡ Ban</button></td>
+			<td><button class="btn-small btn-success" onclick="unbanUser('${b.id}')">Gỡ Ban</button></td>
 		`;
 		tbody.appendChild(tr);
 	});
 }
 
-window.unbanUser = function (ip) {
-	if (isAdmin) socket.emit("admin_unban_user", { targetIp: ip });
+window.unbanUser = function (targetId) {
+	if (isAdmin) socket.emit("admin_unban_user", { targetId: targetId });
 };
 
 function showBanNoticePopup(expiresAt, baseMsg) {
@@ -630,16 +725,66 @@ socket.on("join_lobby_banned", (data) => {
 
 socket.on("banned_notice", (data) => {
 	showBanNoticePopup(data.expiresAt, data.message || "Bạn đã bị Admin tạm cấm 5 phút!");
-
-	if (!document.getElementById("lobby-screen").classList.contains("hidden")) {
-		document.getElementById("btn-lobby-home")?.click();
-	}
+	socket.emit("leave_lobby");
+	resetToDefaultIcon();
+	document.getElementById("lobby-screen").classList.add("hidden");
+	document.getElementById("game-container").classList.add("hidden");
+	document.getElementById("summary-modal").classList.add("hidden");
+	document.getElementById("login-modal").classList.remove("hidden");
+	loadHighScores();
+	updateBanBadgeVisibility();
+	const bgCanvas = document.getElementById("keyboard-bg-canvas");
+	if (bgCanvas) bgCanvas.style.display = "block";
 });
 
 socket.on("clear_global_chat", () => {
 	document.querySelectorAll(".global-chat-messages").forEach((container) => {
 		container.innerHTML = "";
 	});
+});
+
+window.kickLobbyPlayer = function (targetSocketId) {
+	if (isAdmin) {
+		socket.emit("admin_kick_lobby_player", { targetSocketId: targetSocketId });
+	}
+};
+
+function showKickedPopup(message) {
+	let popup = document.getElementById("kicked-notice-popup");
+	if (!popup) {
+		popup = document.createElement("div");
+		popup.id = "kicked-notice-popup";
+		popup.className = "custom-popup hidden";
+		popup.innerHTML = `
+			<div class="popup-content cyber-box kicked-popup-content">
+				<div class="kicked-popup-icon">🚫</div>
+				<h3 class="kicked-popup-title">BỊ ĐÁ KHỎI PHÒNG</h3>
+				<p id="kicked-notice-msg" class="kicked-popup-msg"></p>
+				<button id="btn-close-kicked-notice" class="cyber-btn">ĐÃ HIỂU</button>
+			</div>
+		`;
+		document.body.appendChild(popup);
+
+		document.getElementById("btn-close-kicked-notice")?.addEventListener("click", () => {
+			popup.classList.add("hidden");
+		});
+	}
+
+	const msgEl = document.getElementById("kicked-notice-msg");
+	if (msgEl) msgEl.innerText = message || "Bạn đã bị Admin đá ra khỏi phòng chờ!";
+	popup.classList.remove("hidden");
+}
+
+socket.on("kicked_from_lobby", (data) => {
+	showKickedPopup(data.message || "Bạn đã bị Admin đá ra khỏi phòng chờ!");
+	socket.emit("leave_lobby");
+	resetToDefaultIcon();
+	document.getElementById("lobby-screen").classList.add("hidden");
+	document.getElementById("login-modal").classList.remove("hidden");
+	loadHighScores();
+	updateBanBadgeVisibility();
+	const bgCanvas = document.getElementById("keyboard-bg-canvas");
+	if (bgCanvas) bgCanvas.style.display = "block";
 });
 
 function renderIconPicker() {
@@ -674,6 +819,32 @@ function renderIconPicker() {
 	});
 }
 
+function renderLobbyPlayers() {
+	const lobbyPlayersGrid = document.getElementById("lobby-players-grid");
+	if (!lobbyPlayersGrid) return;
+	lobbyPlayersGrid.innerHTML = "";
+
+	currentLobbyPlayers.forEach((p) => {
+		const card = document.createElement("div");
+		card.className = "lobby-player-card";
+		card.textContent = `${p.icon || DEFAULT_ICON} ${p.username} ${p.id === socket.id ? "(Bạn)" : ""}`;
+
+		if (isAdmin && p.id !== socket.id) {
+			const kickBtn = document.createElement("button");
+			kickBtn.className = "kick-player-btn";
+			kickBtn.innerHTML = "&times;";
+			kickBtn.title = "Đá khỏi phòng";
+			kickBtn.onclick = (e) => {
+				e.stopPropagation();
+				kickLobbyPlayer(p.id);
+			};
+			card.appendChild(kickBtn);
+		}
+
+		lobbyPlayersGrid.appendChild(card);
+	});
+}
+
 socket.on("update_online_count", (count) => {
 	const onlineCount = document.getElementById("online-count");
 	if (onlineCount) onlineCount.innerText = count;
@@ -699,7 +870,6 @@ socket.on("update_lobby", (data) => {
 
 	currentLobbyPlayers = data.players || [];
 	const lobbyCount = document.getElementById("lobby-count");
-	const lobbyPlayersGrid = document.getElementById("lobby-players-grid");
 	const lobbyModeDisplay = document.getElementById("lobby-mode-display");
 
 	const me = currentLobbyPlayers.find((p) => p.id === socket.id);
@@ -710,15 +880,7 @@ socket.on("update_lobby", (data) => {
 		lobbyModeDisplay.innerText = `CHẾ ĐỘ: ${modeNames[activeLang] || activeLang}`;
 
 	if (lobbyCount) lobbyCount.innerText = `${data.players.length}/10`;
-	if (lobbyPlayersGrid) {
-		lobbyPlayersGrid.innerHTML = "";
-		data.players.forEach((p) => {
-			const card = document.createElement("div");
-			card.className = "lobby-player-card";
-			card.innerText = `${p.icon || DEFAULT_ICON} ${p.username} ${p.id === socket.id ? "(Bạn)" : ""}`;
-			lobbyPlayersGrid.appendChild(card);
-		});
-	}
+	renderLobbyPlayers();
 });
 
 socket.on("game_start", (data) => {
@@ -1033,19 +1195,37 @@ function setupGlobalChat() {
 	});
 }
 
+function appendSingleChatMessage(container, data) {
+	const msgDiv = document.createElement("div");
+	msgDiv.className = "chat-msg-item";
+	const timeStr = new Date(data.timestamp).toLocaleTimeString([], {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+	msgDiv.innerHTML = `<span class="chat-msg-user">${data.username}:</span><span>${data.message}</span><span class="chat-msg-time">${timeStr}</span>`;
+	container.appendChild(msgDiv);
+	container.scrollTop = container.scrollHeight;
+}
+
+socket.on("load_initial_messages", (messages) => {
+	const chatContainers = document.querySelectorAll(".global-chat-messages");
+	chatContainers.forEach((container) => {
+		container.innerHTML = "";
+		messages.forEach((msg) => {
+			appendSingleChatMessage(container, msg);
+		});
+	});
+});
+
 socket.on("receive_global_chat", (data) => {
 	const chatContainers = document.querySelectorAll(".global-chat-messages");
 	chatContainers.forEach((container) => {
-		const msgDiv = document.createElement("div");
-		msgDiv.className = "chat-msg-item";
-		const timeStr = new Date(data.timestamp).toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-		});
-		msgDiv.innerHTML = `<span class="chat-msg-user">${data.username}:</span><span>${data.message}</span><span class="chat-msg-time">${timeStr}</span>`;
-		container.appendChild(msgDiv);
-		container.scrollTop = container.scrollHeight;
+		appendSingleChatMessage(container, data);
 	});
+});
+
+socket.on("chat_error", (data) => {
+	alert(data.message || "Bạn đang thao tác quá nhanh!");
 });
 
 socket.on("receive_in_game_chat", (data) => {

@@ -135,6 +135,7 @@
 							placeholder="Nhập tin nhắn..."
 							maxlength="100"
 						/>
+						<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
 				</div>
@@ -402,6 +403,7 @@
 							placeholder="Nhập tin nhắn..."
 							maxlength="100"
 						/>
+						<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
 				</div>
@@ -483,16 +485,25 @@
 			</div>
 
 			<div id="chat-container" class="cyber-box hidden">
-				<input
-					type="text"
-					id="chat-input"
-					placeholder="Nhắn tin nhanh trong trận đấu (Enter)..."
-					maxlength="50"
-				/>
+				<div class="in-game-chat-wrapper">
+					<input
+						type="text"
+						id="chat-input"
+						placeholder="Nhắn tin nhanh trong trận đấu (Enter)..."
+						maxlength="50"
+					/>
+					<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
+					<button id="in-game-chat-send-btn" class="in-game-chat-send-btn btn-small">GỬI</button>
+				</div>
 			</div>
 		</div>
 
 		<div id="chat-popups"></div>
+
+		<!-- POPUP BẢNG ICON NHẮN TIN -->
+		<div id="chat-emoji-picker" class="chat-emoji-picker hidden">
+			<div id="chat-emoji-grid" class="chat-emoji-grid"></div>
+		</div>
 
 		<!-- BẢNG TỔNG KẾT -->
 		<div id="summary-modal" class="modal hidden">
