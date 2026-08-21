@@ -153,7 +153,6 @@ loadMessagesFromFile();
 function checkSpamLimit(socketId) {
 	const now = Date.now();
 
-	// Kiểm tra xem user có đang trong thời gian phạt tạm dừng nhắn (5s) không
 	if (mutedUsers.has(socketId)) {
 		const unmuteTime = mutedUsers.get(socketId);
 		if (now < unmuteTime) {
@@ -166,11 +165,10 @@ function checkSpamLimit(socketId) {
 	}
 
 	let history = userChatHistory.get(socketId) || [];
-	// Lọc các tin nhắn gửi trong 5 giây gần đây
 	history = history.filter((time) => now - time < 5000);
 
 	if (history.length >= 5) {
-		const unmuteTime = now + 5000; // Khóa 5 giây
+		const unmuteTime = now + 5000;
 		mutedUsers.set(socketId, unmuteTime);
 		userChatHistory.delete(socketId);
 		return { allowed: false, remainingSec: 5 };
@@ -461,18 +459,28 @@ io.on("connection", (socket) => {
 
 	function leaveCurrentLobby() {
 		if (currentRoom && player) {
-			currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
 			socket.leave(currentRoom.id);
-			if (currentRoom.players.length === 0) {
-				if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
-				if (rooms[currentRoom.lang]) {
-					rooms[currentRoom.lang] = rooms[currentRoom.lang].filter((r) => r.id !== currentRoom.id);
-				}
+
+			// Nếu đang thi đấu thì không xoá người chơi khỏi room để tránh kích hoạt phòng chờ đè lên
+			if (currentRoom.state === "playing") {
+				player.isDisconnected = true;
+				io.to(currentRoom.id).emit("race_update", currentRoom.players);
+				checkMatchCompletion(currentRoom);
 			} else {
-				io.to(currentRoom.id).emit("update_lobby", {
-					players: currentRoom.players,
-					lang: currentRoom.lang,
-				});
+				currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
+				if (currentRoom.players.length === 0) {
+					if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
+					if (rooms[currentRoom.lang]) {
+						rooms[currentRoom.lang] = rooms[currentRoom.lang].filter(
+							(r) => r.id !== currentRoom.id,
+						);
+					}
+				} else if (currentRoom.state === "waiting") {
+					io.to(currentRoom.id).emit("update_lobby", {
+						players: currentRoom.players,
+						lang: currentRoom.lang,
+					});
+				}
 			}
 			currentRoom = null;
 			player = null;
@@ -510,7 +518,7 @@ io.on("connection", (socket) => {
 		const targetSocket = io.sockets.sockets.get(targetSocketId);
 		const targetUser = connectedUsers.get(targetSocketId);
 
-		const expiresAt = Date.now() + 5 * 60 * 1000; // 5 phút
+		const expiresAt = Date.now() + 5 * 60 * 1000;
 		const timeoutId = setTimeout(
 			() => {
 				unbanUser(targetSocketId);
@@ -634,6 +642,7 @@ io.on("connection", (socket) => {
 			correctChars: 0,
 			isFinished: false,
 			isSurrendered: false,
+			isAFK: false,
 			isDisconnected: false,
 		};
 
@@ -697,9 +706,12 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	socket.on("surrender", () => {
+	socket.on("surrender", (data) => {
 		if (currentRoom && player) {
 			player.isSurrendered = true;
+			if (data && data.isAFK) {
+				player.isAFK = true;
+			}
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
 			checkMatchCompletion(currentRoom);
 		}
@@ -709,12 +721,7 @@ io.on("connection", (socket) => {
 		totalOnlineUsers = Math.max(0, totalOnlineUsers - 1);
 		connectedUsers.delete(socket.id);
 
-		if (currentRoom && player) {
-			player.isDisconnected = true;
-			io.to(currentRoom.id).emit("race_update", currentRoom.players);
-			checkMatchCompletion(currentRoom);
-			leaveCurrentLobby();
-		}
+		leaveCurrentLobby();
 
 		io.emit("update_online_count", totalOnlineUsers);
 		broadcastAdminData();

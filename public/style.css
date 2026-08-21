@@ -433,24 +433,23 @@ body {
 	font-weight: bold;
 	padding: 2px 6px;
 	border-radius: 4px;
+	width: 80px;
+	display: inline-block;
+	text-align: center;
+	box-sizing: border-box;
 }
 
-.status-tag.correct {
-	background: rgba(0, 255, 102, 0.2);
-	color: var(--correct);
-	border: 1px solid var(--correct);
-}
-
-.status-tag.surrendered {
-	background: rgba(255, 0, 85, 0.2);
-	color: var(--secondary);
-	border: 1px solid var(--secondary);
-}
-
+.status-tag.surrendered,
 .status-tag.disconnected {
 	background: rgba(139, 148, 158, 0.2);
 	color: var(--text-muted);
 	border: 1px solid var(--text-muted);
+}
+
+.status-tag.correct {
+	background: rgba(139, 148, 158, 0.2);
+	color: var(--correct);
+	border: 1px solid var(--correct);
 }
 
 .disabled-track {
@@ -587,8 +586,8 @@ body {
 /* Đã chỉnh sửa: Loại bỏ scroll và hiển thị trọn vẹn toàn bộ icon */
 .chat-emoji-picker {
 	position: fixed;
-	top: 545px !important;
-	left: 1100px !important;
+	top: 715px !important;
+	left: 1130px !important;
 	z-index: 10000;
 	background: var(--panel-bg);
 	border: 2px solid var(--accent);

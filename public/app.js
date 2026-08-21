@@ -3,6 +3,7 @@ const socket = io();
 const ZIPCODE_TEST_DURATION = 90;
 const NORMAL_RACE_DURATION = 300;
 const DEFAULT_ICON = "🤖";
+const AFK_TIMEOUT = 30000; // 30 giây không thao tác sẽ bị tính AFK
 
 let currentLanguage = "vi_dau";
 let myUsername = "bot_1000";
@@ -14,6 +15,7 @@ let totalErrors = 0;
 let isPlaying = false;
 let startTime = null;
 let timerInterval = null;
+let afkTimer = null;
 let currentMatchPlayerCount = 0;
 let currentLobbyPlayers = [];
 
@@ -325,6 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (typeInput) {
 		typeInput.addEventListener("input", handleTypingInput);
 		typeInput.addEventListener("keydown", (e) => {
+			resetAFKTimer();
 			if (e.key === "-" || e.code === "NumpadMinus") {
 				e.preventDefault();
 				typeInput.value = typeInput.value.slice(0, -1);
@@ -382,6 +385,23 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 });
+
+function resetAFKTimer() {
+	if (!isPlaying) return;
+	if (afkTimer) clearTimeout(afkTimer);
+	afkTimer = setTimeout(() => {
+		if (isPlaying) {
+			surrenderGame(true);
+		}
+	}, AFK_TIMEOUT);
+}
+
+function clearAFKTimer() {
+	if (afkTimer) {
+		clearTimeout(afkTimer);
+		afkTimer = null;
+	}
+}
 
 function setupChatEmojiPicker() {
 	const picker = document.getElementById("chat-emoji-picker");
@@ -935,6 +955,7 @@ function startCountdown(seconds) {
 			typeInput.focus();
 			isPlaying = true;
 			startTime = Date.now();
+			resetAFKTimer();
 			startRaceTimer(raceDuration);
 		}
 	}, 1000);
@@ -984,6 +1005,7 @@ function scrollCurrentWordIntoView() {
 
 function handleTypingInput(e) {
 	if (!isPlaying) return;
+	resetAFKTimer();
 
 	const typeInput = e.target;
 	const val = typeInput.value;
@@ -1053,6 +1075,7 @@ function sendProgressUpdate() {
 
 function finishGame() {
 	isPlaying = false;
+	clearAFKTimer();
 	const typeInput = document.getElementById("type-input");
 	typeInput.disabled = true;
 	if (timerInterval) clearInterval(timerInterval);
@@ -1068,17 +1091,18 @@ function finishGame() {
 	});
 }
 
-function surrenderGame() {
+function surrenderGame(isAFK = false) {
 	isPlaying = false;
+	clearAFKTimer();
 	const typeInput = document.getElementById("type-input");
 	typeInput.disabled = true;
 	if (timerInterval) clearInterval(timerInterval);
-	document.getElementById("status-box").innerText = "ĐÃ ĐẦU HÀNG";
+	document.getElementById("status-box").innerText = isAFK ? "AFK - BỊ LOẠI" : "ĐÃ ĐẦU HÀNG";
 
 	const btnSurrender = document.getElementById("btn-surrender");
 	if (btnSurrender) btnSurrender.disabled = true;
 
-	socket.emit("surrender");
+	socket.emit("surrender", { isAFK: isAFK });
 }
 
 function renderRaceTracks(players) {
@@ -1094,7 +1118,8 @@ function renderRaceTracks(players) {
 
 		let statusBadge = `<span class="wpm-tag" id="wpm-${p.id}">${p.wpm || 0} WPM</span>`;
 		if (p.isSurrendered) {
-			statusBadge = `<span class="status-tag surrendered" id="wpm-${p.id}">GIẢNG HÒA</span>`;
+			const label = p.isAFK ? "AFK" : "GIẢNG HÒA";
+			statusBadge = `<span class="status-tag surrendered" id="wpm-${p.id}">${label}</span>`;
 		} else if (p.isDisconnected) {
 			statusBadge = `<span class="status-tag disconnected" id="wpm-${p.id}">BẢY CHỌ</span>`;
 		}
@@ -1124,7 +1149,7 @@ socket.on("race_update", (players) => {
 		if (wpmEl) {
 			if (p.isSurrendered) {
 				wpmEl.className = "status-tag surrendered";
-				wpmEl.innerText = "GIẢNG HÒA";
+				wpmEl.innerText = p.isAFK ? "AFK" : "GIẢNG HÒA";
 				if (trackBg) trackBg.classList.add("disabled-track");
 			} else if (p.isDisconnected) {
 				wpmEl.className = "status-tag disconnected";
@@ -1138,6 +1163,7 @@ socket.on("race_update", (players) => {
 });
 
 socket.on("game_over", (leaderboard) => {
+	clearAFKTimer();
 	const summaryTbody = document.getElementById("summary-tbody");
 	summaryTbody.innerHTML = "";
 	leaderboard.forEach((p, idx) => {
@@ -1148,7 +1174,7 @@ socket.on("game_over", (leaderboard) => {
 		else if (idx === 2) rankBadge = "🥉 3";
 
 		let statusText = `${p.wpm || 0} WPM`;
-		if (p.isSurrendered) statusText = "🏳️ GIẢNG HÒA";
+		if (p.isSurrendered) statusText = p.isAFK ? "💤 AFK" : "🏳️ GIẢNG HÒA";
 		else if (p.isDisconnected) statusText = "❌ BẢY CHỌ";
 
 		tr.innerHTML = `
