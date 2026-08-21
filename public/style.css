@@ -433,23 +433,18 @@ body {
 	font-weight: bold;
 	padding: 2px 6px;
 	border-radius: 4px;
-	width: 80px;
+	width: 110px;
 	display: inline-block;
 	text-align: center;
 	box-sizing: border-box;
 }
 
+.status-tag.correct,
 .status-tag.surrendered,
 .status-tag.disconnected {
 	background: rgba(139, 148, 158, 0.2);
 	color: var(--text-muted);
 	border: 1px solid var(--text-muted);
-}
-
-.status-tag.correct {
-	background: rgba(139, 148, 158, 0.2);
-	color: var(--correct);
-	border: 1px solid var(--correct);
 }
 
 .disabled-track {
@@ -513,6 +508,7 @@ body {
 	gap: 8px;
 	width: 100%;
 	align-items: center;
+	position: relative;
 }
 
 .global-chat-input {
@@ -550,6 +546,7 @@ body {
 	gap: 8px;
 	width: 100%;
 	align-items: center;
+	position: relative;
 }
 
 .in-game-chat-send-btn {
@@ -583,11 +580,11 @@ body {
 	color: #000 !important;
 }
 
-/* Đã chỉnh sửa: Loại bỏ scroll và hiển thị trọn vẹn toàn bộ icon */
+/* Tự động điều chỉnh vị trí theo nút bấm tương ứng */
 .chat-emoji-picker {
-	position: fixed;
-	top: 715px !important;
-	left: 1130px !important;
+	position: absolute;
+	top: 725px !important;
+	left: 1145px !important;
 	z-index: 10000;
 	background: var(--panel-bg);
 	border: 2px solid var(--accent);
