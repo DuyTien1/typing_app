@@ -400,6 +400,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					document.getElementById("bot-speed-input")?.focus();
 				}
 			}
+		} else if (e.key === "F8") {
+			e.preventDefault();
+			if (autoTyperActive) {
+				stopAutoTyperBot();
+			}
 		}
 	});
 });
@@ -420,9 +425,10 @@ function setupBotModal() {
 					<input type="number" id="bot-speed-input" value="100" min="10" max="500" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
 				</div>
 				<div style="margin-bottom: 20px; text-align: left;">
-					<label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">SỐ LỖI MONG CỦA BOT:</label>
+					<label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">SỐ LỖI MONG MUỐN CỦA BOT:</label>
 					<input type="number" id="bot-errors-input" value="0" min="0" max="100" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
 				</div>
+				<p style="font-size: 12px; color: var(--accent); margin-bottom: 15px;">Tip: Nhấn <b>F8</b> khi bot đang chạy để dừng ngay lập tức.</p>
 				<div style="display: flex; gap: 10px; justify-content: center;">
 					<button id="btn-start-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px;">BẮT ĐẦU BOT</button>
 					<button id="btn-cancel-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222);">HỦY</button>
@@ -562,17 +568,38 @@ function setupChatEmojiPicker() {
 				activeChatInput = wrapper.querySelector("input");
 			}
 
-			const rect = e.currentTarget.getBoundingClientRect();
-			let top = rect.top - 200;
-			if (top < 10) top = rect.bottom + 5;
+			const isCurrentlyOpen = !picker.classList.contains("hidden");
+			const isSameButton = picker.getAttribute("data-last-btn") === (btn.id || btn.className);
 
-			let left = rect.left - 180;
+			if (isCurrentlyOpen && isSameButton) {
+				picker.classList.add("hidden");
+				return;
+			}
+
+			picker.setAttribute("data-last-btn", btn.id || btn.className);
+			picker.classList.remove("hidden");
+
+			const rect = e.currentTarget.getBoundingClientRect();
+			const pickerHeight = picker.offsetHeight || 160;
+			const pickerWidth = picker.offsetWidth || 280;
+
+			// Ưu tiên hiển thị ngay phía trên nút bấm (cách 8px)
+			let top = rect.top - pickerHeight - 8;
+
+			// Nếu tràn mép trên màn hình thì tự động chuyển xuống phía dưới nút
+			if (top < 10) {
+				top = rect.bottom + 8;
+			}
+
+			// Căn lề phải của picker khớp theo cạnh phải nút bấm
+			let left = rect.right - pickerWidth;
 			if (left < 10) left = 10;
-			if (left + 260 > window.innerWidth) left = window.innerWidth - 270;
+			if (left + pickerWidth > window.innerWidth - 10) {
+				left = window.innerWidth - pickerWidth - 10;
+			}
 
 			picker.style.top = `${top}px`;
 			picker.style.left = `${left}px`;
-			picker.classList.toggle("hidden");
 		});
 	});
 
@@ -1292,6 +1319,8 @@ socket.on("game_over", (leaderboard) => {
 
 		if (idx === 0) {
 			tr.classList.add("winner-row");
+		} else if (leaderboard.length > 1 && idx === leaderboard.length - 1) {
+			tr.classList.add("last-place-row");
 		}
 
 		let rankStr = `${idx + 1}`;

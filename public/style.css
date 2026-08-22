@@ -606,9 +606,7 @@ body {
 }
 
 .chat-emoji-picker {
-	position: absolute;
-	top: 725px !important;
-	left: 1145px !important;
+	position: fixed;
 	z-index: 10000;
 	background: var(--panel-bg);
 	border: 2px solid var(--accent);
@@ -618,6 +616,7 @@ body {
 	width: auto;
 	max-width: 340px;
 	backdrop-filter: blur(8px);
+	box-sizing: border-box;
 }
 
 .chat-emoji-grid {
@@ -1062,6 +1061,25 @@ header .logo {
 	}
 	100% {
 		background: rgba(255, 230, 0, 0.18);
+	}
+}
+
+/* Hiệu ứng nổi bật cho người chơi xếp cuối bảng tổng kết */
+#summary-table tr.last-place-row td {
+	color: var(--incorrect) !important;
+	font-weight: bold;
+	font-size: 15px;
+	background: rgba(255, 77, 77, 0.1);
+	text-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+	animation: loserGlow 2s infinite alternate;
+}
+
+@keyframes loserGlow {
+	0% {
+		background: rgba(255, 77, 77, 0.08);
+	}
+	100% {
+		background: rgba(255, 77, 77, 0.18);
 	}
 }
 
