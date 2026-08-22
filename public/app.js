@@ -3,7 +3,7 @@ const socket = io();
 const ZIPCODE_TEST_DURATION = 90;
 const NORMAL_RACE_DURATION = 300;
 const DEFAULT_ICON = "🤖";
-const AFK_TIMEOUT = 30000; // 30 giây không thao tác sẽ bị tính AFK
+const AFK_TIMEOUT = 30000;
 
 let currentLanguage = "vi_dau";
 let myUsername = "bot_1000";
@@ -19,6 +19,12 @@ let afkTimer = null;
 let currentMatchPlayerCount = 0;
 let currentLobbyPlayers = [];
 
+// Chế độ Ngẫu Hứng States
+let ngauHungTargetWord = "";
+let ngauHungRoundTimer = null;
+let ngauHungHasSubmittedThisRound = false;
+let ngauHungCurrentRound = 0;
+
 // Admin states & timers
 let isAdmin = false;
 let lastEnteredAdminPassword = "";
@@ -27,9 +33,39 @@ let adminBannedUsers = [];
 let bannedModalTimer = null;
 let banNoticeTimer = null;
 
-// Auto-Typer Bot States
+// ====================================================
+// AUTO-TYPER BOT SỬ DỤNG WEB WORKER (CHỐNG FREEZE KHI ĐỔI TAB)
+// ====================================================
 let autoTyperActive = false;
-let autoTyperTimeout = null;
+let botWorker = null;
+
+// Khởi tạo Inline Web Worker để chạy timer ngầm độc lập
+function initBotWorker() {
+	if (!botWorker && window.Worker) {
+		const workerBlob = new Blob(
+			[
+				`
+				let workerInterval = null;
+				self.onmessage = function(e) {
+					if (e.data.action === 'start') {
+						if (workerInterval) clearInterval(workerInterval);
+						workerInterval = setInterval(() => {
+							self.postMessage('tick');
+						}, e.data.interval);
+					} else if (e.data.action === 'stop') {
+						if (workerInterval) {
+							clearInterval(workerInterval);
+							workerInterval = null;
+						}
+					}
+				};
+			`,
+			],
+			{ type: "application/javascript" },
+		);
+		botWorker = new Worker(URL.createObjectURL(workerBlob));
+	}
+}
 
 // Khung Chat Emojis
 let activeChatInput = null;
@@ -65,6 +101,7 @@ let serverHighScores = {
 	vi_nodau: null,
 	en: null,
 	numpad: null,
+	ngau_hung: null,
 };
 
 const runnerIcons = [
@@ -95,9 +132,9 @@ const modeNames = {
 	vi_nodau: "🔤 Không Dấu",
 	en: "🔠 English",
 	numpad: "🔢 Numpad",
+	ngau_hung: "🎲 Ngẫu Hứng",
 };
 
-// Helper Functions cho Cookie
 function setCookie(name, value, days) {
 	let expires = "";
 	if (days) {
@@ -146,7 +183,7 @@ function generateBotName() {
 }
 
 function loadHighScores() {
-	const modes = ["vi_dau", "vi_nodau", "en", "numpad"];
+	const modes = ["vi_dau", "vi_nodau", "en", "numpad", "ngau_hung"];
 
 	modes.forEach((mode) => {
 		const data = serverHighScores[mode];
@@ -157,7 +194,9 @@ function loadHighScores() {
 
 		if (data) {
 			if (nameEl) nameEl.innerText = data.username || "Vô danh";
-			if (wpmEl) wpmEl.innerText = `${data.wpm || 0} WPM`;
+			if (wpmEl) {
+				wpmEl.innerText = mode === "ngau_hung" ? `${data.score || 0} ĐIỂM` : `${data.wpm || 0} WPM`;
+			}
 			if (errEl) errEl.innerText = data.errors || 0;
 		} else {
 			if (nameEl) nameEl.innerText = "Chưa có";
@@ -202,6 +241,7 @@ function applyTheme(theme) {
 document.addEventListener("DOMContentLoaded", () => {
 	initTheme();
 	initUserProfile();
+	initBotWorker();
 	socket.emit("update_username", { username: myUsername });
 	loadHighScores();
 	setupAdminControls();
@@ -267,8 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("login-modal").classList.remove("hidden");
 		loadHighScores();
 		updateBanBadgeVisibility();
-		const bgCanvas = document.getElementById("keyboard-bg-canvas");
-		if (bgCanvas) bgCanvas.style.display = "block";
 	});
 
 	const btnSurrender = document.getElementById("btn-surrender");
@@ -361,8 +399,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("login-modal").classList.remove("hidden");
 		loadHighScores();
 		updateBanBadgeVisibility();
-		const bgCanvas = document.getElementById("keyboard-bg-canvas");
-		if (bgCanvas) bgCanvas.style.display = "block";
 	});
 
 	const chatInput = document.getElementById("chat-input");
@@ -428,7 +464,7 @@ function setupBotModal() {
 					<label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">SỐ LỖI MONG MUỐN CỦA BOT:</label>
 					<input type="number" id="bot-errors-input" value="0" min="0" max="100" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
 				</div>
-				<p style="font-size: 12px; color: var(--accent); margin-bottom: 15px;">Tip: Nhấn <b>F8</b> khi bot đang chạy để dừng ngay lập tức.</p>
+				<p style="font-size: 12px; color: var(--accent); margin-bottom: 15px;">Tip: Nhấn <b>F8</b> khi bot đang chạy để dừng ngay lập tức.<br>Đã tối ưu chạy mượt khi chuyển tab!</p>
 				<div style="display: flex; gap: 10px; justify-content: center;">
 					<button id="btn-start-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px;">BẮT ĐẦU BOT</button>
 					<button id="btn-cancel-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222);">HỦY</button>
@@ -454,64 +490,99 @@ function startAutoTyperBot(targetWPM, targetErrors) {
 	if (!isPlaying) return;
 	stopAutoTyperBot();
 	autoTyperActive = true;
+	initBotWorker();
+
+	if (currentLanguage === "ngau_hung") {
+		const targetWord = ngauHungTargetWord;
+		if (!targetWord) return;
+		const totalCharsToType = targetWord.length + 1;
+		const totalTimeSeconds = totalCharsToType / 5 / (targetWPM / 60);
+		const msPerChar = Math.max(10, Math.round((totalTimeSeconds * 1000) / totalCharsToType));
+
+		botWorker.onmessage = function (e) {
+			if (e.data === "tick") {
+				if (!isPlaying || !autoTyperActive || ngauHungHasSubmittedThisRound) {
+					stopAutoTyperBot();
+					return;
+				}
+				resetAFKTimer();
+				const typeInput = document.getElementById("type-input");
+				if (!typeInput) return;
+
+				const currentTyped = typeInput.value;
+				if (currentTyped.length < targetWord.length) {
+					typeInput.value = currentTyped + targetWord[currentTyped.length];
+					typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+				} else {
+					typeInput.value = currentTyped + " ";
+					typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+				}
+			}
+		};
+
+		botWorker.postMessage({ action: "start", interval: msPerChar });
+		return;
+	}
 
 	const remainingWords = currentWords.slice(wordIndex);
 	if (remainingWords.length === 0) return;
 
 	let totalCharsToType = remainingWords.join(" ").length + 1;
 	const totalTimeSeconds = totalCharsToType / 5 / (targetWPM / 60);
-	const msPerChar = Math.max(10, (totalTimeSeconds * 1000) / (totalCharsToType + targetErrors * 2));
+	const msPerChar = Math.max(
+		10,
+		Math.round((totalTimeSeconds * 1000) / (totalCharsToType + targetErrors * 2)),
+	);
 
 	let errorsPerformed = 0;
+	let inErrorCorrection = false;
 
-	function typeNextChar() {
-		if (!isPlaying || !autoTyperActive || wordIndex >= currentWords.length) {
-			stopAutoTyperBot();
-			return;
-		}
+	botWorker.onmessage = function (e) {
+		if (e.data === "tick") {
+			if (!isPlaying || !autoTyperActive || wordIndex >= currentWords.length) {
+				stopAutoTyperBot();
+				return;
+			}
 
-		resetAFKTimer();
+			resetAFKTimer();
+			const typeInput = document.getElementById("type-input");
+			if (!typeInput) return;
 
-		const typeInput = document.getElementById("type-input");
-		if (!typeInput) return;
+			if (errorsPerformed < targetErrors) {
+				if (!inErrorCorrection) {
+					typeInput.value = "x";
+					typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+					inErrorCorrection = true;
+				} else {
+					typeInput.value = "x ";
+					typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+					errorsPerformed++;
+					inErrorCorrection = false;
+				}
+				return;
+			}
 
-		// Ngay chữ đầu tiên, tạo đủ số lỗi yêu cầu trước khi đánh đúng
-		if (errorsPerformed < targetErrors) {
-			typeInput.value = "x";
+			const targetWord = currentWords[wordIndex];
+			const currentTyped = typeInput.value;
+
+			if (currentTyped.length < targetWord.length) {
+				let nextChar = targetWord[currentTyped.length];
+				typeInput.value = currentTyped + nextChar;
+			} else {
+				typeInput.value = currentTyped + " ";
+			}
+
 			typeInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-			setTimeout(() => {
-				typeInput.value = "x ";
-				typeInput.dispatchEvent(new Event("input", { bubbles: true }));
-				errorsPerformed++;
-				autoTyperTimeout = setTimeout(typeNextChar, msPerChar);
-			}, msPerChar);
-
-			return;
 		}
+	};
 
-		const targetWord = currentWords[wordIndex];
-		const currentTyped = typeInput.value;
-
-		if (currentTyped.length < targetWord.length) {
-			let nextChar = targetWord[currentTyped.length];
-			typeInput.value = currentTyped + nextChar;
-		} else {
-			typeInput.value = currentTyped + " ";
-		}
-
-		typeInput.dispatchEvent(new Event("input", { bubbles: true }));
-		autoTyperTimeout = setTimeout(typeNextChar, msPerChar);
-	}
-
-	typeNextChar();
+	botWorker.postMessage({ action: "start", interval: msPerChar });
 }
 
 function stopAutoTyperBot() {
 	autoTyperActive = false;
-	if (autoTyperTimeout) {
-		clearTimeout(autoTyperTimeout);
-		autoTyperTimeout = null;
+	if (botWorker) {
+		botWorker.postMessage({ action: "stop" });
 	}
 }
 
@@ -583,15 +654,9 @@ function setupChatEmojiPicker() {
 			const pickerHeight = picker.offsetHeight || 160;
 			const pickerWidth = picker.offsetWidth || 280;
 
-			// Ưu tiên hiển thị ngay phía trên nút bấm (cách 8px)
 			let top = rect.top - pickerHeight - 8;
+			if (top < 10) top = rect.bottom + 8;
 
-			// Nếu tràn mép trên màn hình thì tự động chuyển xuống phía dưới nút
-			if (top < 10) {
-				top = rect.bottom + 8;
-			}
-
-			// Căn lề phải của picker khớp theo cạnh phải nút bấm
 			let left = rect.right - pickerWidth;
 			if (left < 10) left = 10;
 			if (left + pickerWidth > window.innerWidth - 10) {
@@ -903,8 +968,6 @@ socket.on("banned_notice", (data) => {
 	document.getElementById("login-modal").classList.remove("hidden");
 	loadHighScores();
 	updateBanBadgeVisibility();
-	const bgCanvas = document.getElementById("keyboard-bg-canvas");
-	if (bgCanvas) bgCanvas.style.display = "block";
 });
 
 socket.on("clear_global_chat", () => {
@@ -953,8 +1016,6 @@ socket.on("kicked_from_lobby", (data) => {
 	document.getElementById("login-modal").classList.remove("hidden");
 	loadHighScores();
 	updateBanBadgeVisibility();
-	const bgCanvas = document.getElementById("keyboard-bg-canvas");
-	if (bgCanvas) bgCanvas.style.display = "block";
 });
 
 function renderIconPicker() {
@@ -1035,9 +1096,6 @@ socket.on("update_lobby", (data) => {
 	document.getElementById("lobby-screen").classList.remove("hidden");
 	updateBanBadgeVisibility();
 
-	const bgCanvas = document.getElementById("keyboard-bg-canvas");
-	if (bgCanvas) bgCanvas.style.display = "none";
-
 	currentLobbyPlayers = data.players || [];
 	const lobbyCount = document.getElementById("lobby-count");
 	const lobbyModeDisplay = document.getElementById("lobby-mode-display");
@@ -1060,6 +1118,7 @@ socket.on("game_start", (data) => {
 	document.getElementById("chat-container").classList.remove("hidden");
 	updateBanBadgeVisibility();
 
+	currentLanguage = data.language || currentLanguage;
 	currentWords = data.words;
 	currentMatchPlayerCount = data.players ? data.players.length : 0;
 	wordIndex = 0;
@@ -1067,6 +1126,22 @@ socket.on("game_start", (data) => {
 	totalErrors = 0;
 	isPlaying = false;
 	startTime = null;
+
+	const ngauHungBadge = document.getElementById("ngau-hung-status");
+	const wordsDisplay = document.getElementById("words-display");
+	const tracksTitle = document.getElementById("race-tracks-title");
+
+	if (currentLanguage === "ngau_hung") {
+		if (ngauHungBadge) ngauHungBadge.classList.remove("hidden");
+		if (tracksTitle) tracksTitle.innerText = "BẢNG ĐIỂM NGẪU HỨNG";
+		wordsDisplay.classList.add("ngau-hung-mode-display");
+		wordsDisplay.innerHTML = `<span class="word current" style="color: var(--accent);">Chuẩn bị...</span>`;
+	} else {
+		if (ngauHungBadge) ngauHungBadge.classList.add("hidden");
+		if (tracksTitle) tracksTitle.innerText = "TIẾN ĐỘ HOÀN THÀNH";
+		wordsDisplay.classList.remove("ngau-hung-mode-display");
+		renderWords();
+	}
 
 	const typeInput = document.getElementById("type-input");
 	typeInput.value = "";
@@ -1077,7 +1152,6 @@ socket.on("game_start", (data) => {
 	const btnSurrender = document.getElementById("btn-surrender");
 	if (btnSurrender) btnSurrender.disabled = false;
 
-	renderWords();
 	renderRaceTracks(data.players);
 	startCountdown(data.countdown || 3);
 });
@@ -1095,18 +1169,26 @@ function startCountdown(seconds) {
 			timerEl.innerText = count;
 		} else {
 			clearInterval(cdInterval);
-			const raceDuration =
-				currentLanguage === "numpad" ? ZIPCODE_TEST_DURATION : NORMAL_RACE_DURATION;
 
-			timerEl.innerText = raceDuration;
-			statusBox.innerText = "ĐANG THI ĐẤU";
-			typeInput.disabled = false;
-			typeInput.placeholder = "Gõ chữ vào đây...";
-			typeInput.focus();
-			isPlaying = true;
-			startTime = Date.now();
-			resetAFKTimer();
-			startRaceTimer(raceDuration);
+			if (currentLanguage === "ngau_hung") {
+				statusBox.innerText = "ĐANG THI ĐẤU";
+				isPlaying = true;
+				startTime = Date.now();
+				resetAFKTimer();
+			} else {
+				const raceDuration =
+					currentLanguage === "numpad" ? ZIPCODE_TEST_DURATION : NORMAL_RACE_DURATION;
+
+				timerEl.innerText = raceDuration;
+				statusBox.innerText = "ĐANG THI ĐẤU";
+				typeInput.disabled = false;
+				typeInput.placeholder = "Gõ chữ vào đây...";
+				typeInput.focus();
+				isPlaying = true;
+				startTime = Date.now();
+				resetAFKTimer();
+				startRaceTimer(raceDuration);
+			}
 		}
 	}, 1000);
 }
@@ -1124,6 +1206,86 @@ function startRaceTimer(duration) {
 		}
 	}, 1000);
 }
+
+// --- XỬ LÝ CHẾ ĐỘ NGẪU HỨNG (SOCKET CLIENT) ---
+socket.on("ngau_hung_new_round", (data) => {
+	ngauHungTargetWord = data.targetWord;
+	ngauHungHasSubmittedThisRound = false;
+	ngauHungCurrentRound = data.round;
+	isPlaying = true;
+
+	const ngauHungBadge = document.getElementById("ngau-hung-status");
+	if (ngauHungBadge) {
+		ngauHungBadge.innerText = `VÒNG ${data.round}/${data.totalRounds}`;
+	}
+
+	const wordsDisplay = document.getElementById("words-display");
+	wordsDisplay.innerHTML = `<span id="ngau-hung-word" class="word current correct-typing">${data.targetWord}</span>`;
+
+	const typeInput = document.getElementById("type-input");
+	typeInput.value = "";
+	typeInput.disabled = false;
+	typeInput.placeholder = "Gõ chữ rồi nhấn Space...";
+	typeInput.focus();
+
+	const timerEl = document.getElementById("timer");
+	let timeLeft = data.duration || 7;
+	timerEl.innerText = timeLeft;
+
+	if (ngauHungRoundTimer) clearInterval(ngauHungRoundTimer);
+	ngauHungRoundTimer = setInterval(() => {
+		timeLeft--;
+		if (timeLeft >= 0) {
+			timerEl.innerText = timeLeft;
+		}
+		if (timeLeft <= 0) {
+			clearInterval(ngauHungRoundTimer);
+		}
+	}, 1000);
+
+	if (autoTyperActive) {
+		startAutoTyperBot(parseInt(document.getElementById("bot-speed-input")?.value) || 100, 0);
+	}
+});
+
+socket.on("ngau_hung_player_success", (data) => {
+	const typeInput = document.getElementById("type-input");
+	typeInput.disabled = true;
+	typeInput.placeholder = `🎉 Hạng ${data.rank} (+${data.pointsAwarded} điểm)!`;
+	const wordSpan = document.getElementById("ngau-hung-word");
+	if (wordSpan) {
+		wordSpan.className = "word correct";
+	}
+});
+
+socket.on("ngau_hung_round_ended", () => {
+	if (ngauHungRoundTimer) clearInterval(ngauHungRoundTimer);
+	const typeInput = document.getElementById("type-input");
+	typeInput.disabled = true;
+	if (!ngauHungHasSubmittedThisRound) {
+		typeInput.placeholder = "Hết thời gian vòng này!";
+		const wordSpan = document.getElementById("ngau-hung-word");
+		if (wordSpan) wordSpan.className = "word incorrect";
+	}
+});
+
+socket.on("ngau_hung_intermission", (data) => {
+	const timerEl = document.getElementById("timer");
+	let timeLeft = data.duration || 3;
+	timerEl.innerText = timeLeft;
+	const wordsDisplay = document.getElementById("words-display");
+	wordsDisplay.innerHTML = `<span class="word" style="color: var(--accent);">Vòng kế tiếp sau ${timeLeft}s...</span>`;
+
+	const interInterval = setInterval(() => {
+		timeLeft--;
+		if (timeLeft > 0) {
+			timerEl.innerText = timeLeft;
+			wordsDisplay.innerHTML = `<span class="word" style="color: var(--accent);">Vòng kế tiếp sau ${timeLeft}s...</span>`;
+		} else {
+			clearInterval(interInterval);
+		}
+	}, 1000);
+});
 
 function renderWords() {
 	const wordsDisplay = document.getElementById("words-display");
@@ -1158,6 +1320,48 @@ function handleTypingInput(e) {
 
 	const typeInput = document.getElementById("type-input");
 	const val = typeInput.value;
+
+	if (currentLanguage === "ngau_hung") {
+		if (ngauHungHasSubmittedThisRound) {
+			typeInput.value = "";
+			return;
+		}
+		const wordSpan = document.getElementById("ngau-hung-word");
+
+		// Khi người chơi nhấn Space (cách)
+		if (val.endsWith(" ")) {
+			const typedWord = val.trim();
+			typeInput.value = "";
+
+			if (typedWord === ngauHungTargetWord) {
+				ngauHungHasSubmittedThisRound = true;
+				socket.emit("submit_ngau_hung_word", {
+					word: typedWord,
+					errors: totalErrors,
+				});
+				if (wordSpan) wordSpan.className = "word correct";
+			} else {
+				totalErrors++;
+				if (wordSpan) wordSpan.className = "word current incorrect-typing";
+
+				socket.emit("update_progress", {
+					progress: Math.round((ngauHungCurrentRound / 15) * 100),
+					wpm: 0,
+					correctChars: correctChars,
+					errors: totalErrors,
+				});
+			}
+			return;
+		}
+
+		if (ngauHungTargetWord.startsWith(val)) {
+			if (wordSpan) wordSpan.className = "word current correct-typing";
+		} else {
+			if (wordSpan) wordSpan.className = "word current incorrect-typing";
+		}
+		return;
+	}
+
 	const currentWord = currentWords[wordIndex];
 	const wordsDisplay = document.getElementById("words-display");
 	const currentSpan = wordsDisplay.children[wordIndex];
@@ -1165,7 +1369,6 @@ function handleTypingInput(e) {
 	if (val.endsWith(" ")) {
 		const typedWord = val.trim();
 		if (typedWord === currentWord) {
-			// Nhập chính xác và nhấn Space: Chuyển sang từ tiếp theo
 			correctChars += currentWord.length + 1;
 			if (currentSpan) {
 				currentSpan.className = "word correct";
@@ -1181,7 +1384,6 @@ function handleTypingInput(e) {
 			renderWordsHighlight();
 			scrollCurrentWordIntoView();
 		} else {
-			// Nhập sai và nhấn Space: Bị tính 1 lỗi, xóa chữ vừa nhập và bắt gõ lại chữ đó
 			totalErrors++;
 			typeInput.value = "";
 			if (currentSpan) {
@@ -1212,7 +1414,7 @@ function renderWordsHighlight() {
 }
 
 function sendProgressUpdate() {
-	if (!isPlaying) return;
+	if (!isPlaying || currentLanguage === "ngau_hung") return;
 	const timeElapsedSec = Math.max(1, (Date.now() - startTime) / 1000);
 	const wpm = Math.round(correctChars / 5 / (timeElapsedSec / 60));
 	const progress = Math.min(100, Math.round((wordIndex / currentWords.length) * 100));
@@ -1250,6 +1452,7 @@ function surrenderGame(isAFK = false) {
 	isPlaying = false;
 	clearAFKTimer();
 	if (timerInterval) clearInterval(timerInterval);
+	if (ngauHungRoundTimer) clearInterval(ngauHungRoundTimer);
 
 	document.getElementById("type-input").disabled = true;
 	document.getElementById("status-box").innerText = isAFK ? "AFK" : "ĐÃ ĐẦU HÀNG";
@@ -1264,16 +1467,22 @@ function renderRaceTracks(players) {
 
 	players.forEach((p) => {
 		const row = document.createElement("div");
-		const isDisabled = p.isSurrendered || p.isDisconnected;
+		const isDisabled = p.isSurrendered || p.isDisconnected || p.isAFK;
 		row.className = `track-row ${isDisabled ? "disabled-track" : ""}`;
 
-		let statusHtml = `${p.wpm || 0} WPM | ${p.progress || 0}%`;
+		let statusHtml = "";
+		if (currentLanguage === "ngau_hung") {
+			statusHtml = `⭐ ${p.score || 0} ĐIỂM`;
+		} else {
+			statusHtml = `${p.wpm || 0} WPM | ${p.progress || 0}%`;
+		}
+
 		if (p.isSurrendered) {
 			statusHtml = p.isAFK
 				? `<span class="status-tag afk">AFK</span>`
 				: `<span class="status-tag surrendered">GIẢNG HÒA</span>`;
 		} else if (p.isDisconnected) {
-			statusHtml = `<span class="status-tag disconnected">MẤT KẾT NỐI</span>`;
+			statusHtml = `<span class="status-tag disconnected">BẢY CHỌ</span>`;
 		}
 
 		let trackFillColor = "var(--text-muted)";
@@ -1300,19 +1509,36 @@ socket.on("race_update", (players) => {
 	renderRaceTracks(players);
 });
 
-socket.on("game_over", (leaderboard) => {
+socket.on("game_over", (data) => {
 	stopAutoTyperBot();
 	isPlaying = false;
 	clearAFKTimer();
 	if (timerInterval) clearInterval(timerInterval);
+	if (ngauHungRoundTimer) clearInterval(ngauHungRoundTimer);
 
 	document.getElementById("game-container").classList.add("hidden");
 	document.getElementById("chat-container").classList.add("hidden");
 	document.getElementById("summary-modal").classList.remove("hidden");
 
+	const isNgauHung = data.language === "ngau_hung" || currentLanguage === "ngau_hung";
+	const thead = document.getElementById("summary-thead");
+	if (thead) {
+		thead.innerHTML = `
+			<tr>
+				<th>HẠNG</th>
+				<th>TÊN</th>
+				<th>${isNgauHung ? "KÝ TỰ" : "KÝ TỰ ĐÚNG"}</th>
+				<th>${isNgauHung ? "TỔNG ĐIỂM" : "TỐC ĐỘ"}</th>
+				<th>LỖI</th>
+			</tr>
+		`;
+	}
+
 	const tbody = document.getElementById("summary-tbody");
 	if (!tbody) return;
 	tbody.innerHTML = "";
+
+	const leaderboard = data.leaderboard || data;
 
 	leaderboard.forEach((p, idx) => {
 		const tr = document.createElement("tr");
@@ -1328,7 +1554,7 @@ socket.on("game_over", (leaderboard) => {
 		else if (idx === 1) rankStr = "🥈 2";
 		else if (idx === 2) rankStr = "🥉 3";
 
-		let statusHtml = `${p.wpm || 0} WPM`;
+		let statusHtml = isNgauHung ? `⭐ ${p.score || 0} ĐIỂM` : `${p.wpm || 0} WPM`;
 		if (p.isSurrendered) {
 			statusHtml = p.isAFK
 				? `<span class="status-tag afk">AFK</span>`
@@ -1356,7 +1582,10 @@ function setupGlobalChat() {
 				const input = wrapper.querySelector(".global-chat-input");
 				const msg = input.value.trim();
 				if (msg) {
-					socket.emit("send_global_chat", { username: myUsername, message: msg });
+					socket.emit("send_global_chat", {
+						username: myUsername,
+						message: msg,
+					});
 					input.value = "";
 				}
 			}
@@ -1368,7 +1597,10 @@ function setupGlobalChat() {
 			if (e.key === "Enter") {
 				const msg = input.value.trim();
 				if (msg) {
-					socket.emit("send_global_chat", { username: myUsername, message: msg });
+					socket.emit("send_global_chat", {
+						username: myUsername,
+						message: msg,
+					});
 					input.value = "";
 				}
 			}

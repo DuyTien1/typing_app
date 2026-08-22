@@ -1,6 +1,19 @@
 {
   "vi_dau": null,
-  "vi_nodau": null,
+  "vi_nodau": {
+    "username": "Nguyễn Duy Tiến",
+    "wpm": 98,
+    "score": 0,
+    "errors": 0,
+    "timestamp": 1787415885454
+  },
   "en": null,
-  "numpad": null
+  "numpad": null,
+  "ngau_hung": {
+    "username": "Nguyễn Duy Tiến",
+    "wpm": 0,
+    "score": 41,
+    "errors": 0,
+    "timestamp": 1787415609185
+  }
 }

@@ -16,6 +16,11 @@ const io = new Server(server, {
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
+// Cấu hình thời gian cho chế độ Ngẫu Hứng
+const NGAU_HUNG_ROUND_DURATION = 7;
+const NGAU_HUNG_INTERMISSION_DURATION = 3;
+const NGAU_HUNG_TOTAL_ROUNDS = 15;
+
 app.use(express.static(path.join(__dirname, "public")));
 
 // ==========================================
@@ -28,13 +33,23 @@ let highScores = {
 	vi_nodau: null,
 	en: null,
 	numpad: null,
+	ngau_hung: null,
 };
 
 function loadHighScoresFromFile() {
 	try {
 		if (fs.existsSync(HIGHSCORES_FILE)) {
 			const data = fs.readFileSync(HIGHSCORES_FILE, "utf8");
-			highScores = JSON.parse(data);
+			highScores = Object.assign(
+				{
+					vi_dau: null,
+					vi_nodau: null,
+					en: null,
+					numpad: null,
+					ngau_hung: null,
+				},
+				JSON.parse(data),
+			);
 		}
 	} catch (err) {
 		console.log("Lỗi load high scores:", err.message);
@@ -56,6 +71,7 @@ function resetHighScores() {
 		vi_nodau: null,
 		en: null,
 		numpad: null,
+		ngau_hung: null,
 	};
 	saveHighScoresToFile();
 	io.emit("update_high_scores", highScores);
@@ -82,19 +98,29 @@ function scheduleDailyReset() {
 loadHighScoresFromFile();
 scheduleDailyReset();
 
-function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount) {
+function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount, score = 0) {
 	if (playerCount < 3) return;
 
 	const currentRecord = highScores[lang];
-	const isNewRecord =
-		!currentRecord ||
-		wpm > currentRecord.wpm ||
-		(wpm === currentRecord.wpm && errors < currentRecord.errors);
+	let isNewRecord = false;
+
+	if (lang === "ngau_hung") {
+		isNewRecord =
+			!currentRecord ||
+			score > (currentRecord.score || 0) ||
+			(score === (currentRecord.score || 0) && errors < currentRecord.errors);
+	} else {
+		isNewRecord =
+			!currentRecord ||
+			wpm > currentRecord.wpm ||
+			(wpm === currentRecord.wpm && errors < currentRecord.errors);
+	}
 
 	if (isNewRecord) {
 		highScores[lang] = {
 			username: username,
 			wpm: wpm,
+			score: score,
 			errors: errors,
 			timestamp: Date.now(),
 		};
@@ -107,12 +133,11 @@ function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount) 
 // QUẢN LÝ TIN NHẮN CHAT & CHỐNG SPAM
 // ==========================================
 const MESSAGES_FILE = path.join(__dirname, "messages.json");
-const MESSAGE_TTL = 3 * 60 * 1000; // 3 phút tự động xóa
+const MESSAGE_TTL = 3 * 60 * 1000;
 let chatMessages = [];
 
-// Quản lý rate limit chống spam
-const userChatHistory = new Map(); // socket.id -> array of timestamps
-const mutedUsers = new Map(); // socket.id -> unmute timestamp
+const userChatHistory = new Map();
+const mutedUsers = new Map();
 
 function loadMessagesFromFile() {
 	try {
@@ -146,7 +171,6 @@ function cleanOldMessages() {
 	}
 }
 
-// Dọn dẹp tin nhắn hết hạn mỗi 10 giây
 setInterval(cleanOldMessages, 10000);
 loadMessagesFromFile();
 
@@ -180,10 +204,10 @@ function checkSpamLimit(socketId) {
 }
 
 // ==========================================
-// QUẢN LÝ ADMIN & BAN USER BẰNG SOCKET.ID
+// QUẢN LÝ ADMIN & BAN USER
 // ==========================================
-const connectedUsers = new Map(); // socket.id -> { id, username, isAdmin }
-const bannedUsers = new Map(); // socket.id -> { id, username, bannedAt, expiresAt, timeoutId }
+const connectedUsers = new Map();
+const bannedUsers = new Map();
 
 function isUserBanned(socketId) {
 	if (!socketId || !bannedUsers.has(socketId)) return false;
@@ -1542,7 +1566,6 @@ const BIG_WORD_BANKS = {
 		],
 	},
 };
-
 const runnerIcons = [
 	"🤖",
 	"🐶",
@@ -1566,7 +1589,28 @@ const runnerIcons = [
 	"🦭",
 ];
 
+function generateNgauHungItems(count = NGAU_HUNG_TOTAL_ROUNDS) {
+	const list = [];
+	const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
+	const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
+
+	for (let i = 0; i < count; i++) {
+		const type = Math.floor(Math.random() * 3);
+		if (type === 0) {
+			list.push(viPool[Math.floor(Math.random() * viPool.length)]);
+		} else if (type === 1) {
+			list.push(enPool[Math.floor(Math.random() * enPool.length)]);
+		} else {
+			list.push(Math.floor(10000 + Math.random() * 90000).toString());
+		}
+	}
+	return list;
+}
+
 function generateWords(lang, count = 100) {
+	if (lang === "ngau_hung") {
+		return generateNgauHungItems(NGAU_HUNG_TOTAL_ROUNDS);
+	}
 	if (lang === "numpad") {
 		const zipList = [];
 		for (let i = 0; i < 500; i++)
@@ -1583,7 +1627,7 @@ function generateWords(lang, count = 100) {
 	return result;
 }
 
-const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [] };
+const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [] };
 let totalOnlineUsers = 0;
 
 function getOrCreateRoom(lang) {
@@ -1600,40 +1644,127 @@ function getOrCreateRoom(lang) {
 			matchInterval: null,
 			startTime: null,
 			finishedCount: 0,
+			currentRound: 0,
+			totalRounds: NGAU_HUNG_TOTAL_ROUNDS,
+			roundWinners: [],
+			roundActive: false,
+			roundTimer: null,
+			roundIntermissionTimer: null,
 		};
 		roomList.push(room);
 	}
 	return room;
 }
 
+function clearRoomTimers(room) {
+	if (room.matchInterval) clearInterval(room.matchInterval);
+	if (room.roundTimer) clearTimeout(room.roundTimer);
+	if (room.roundIntermissionTimer) clearTimeout(room.roundIntermissionTimer);
+}
+
 function checkMatchCompletion(room) {
+	if (room.lang === "ngau_hung") return;
 	const activeOrFinished = room.players.filter(
 		(p) => p.isFinished || p.isSurrendered || p.isDisconnected,
 	);
 	if (activeOrFinished.length >= room.players.length) finishMatch(room);
 }
 
+function startNgauHungRound(room) {
+	if (room.state !== "playing") return;
+
+	room.currentRound++;
+	if (room.currentRound > room.totalRounds) {
+		finishMatch(room);
+		return;
+	}
+
+	room.roundWinners = [];
+	room.roundActive = true;
+	const currentWord = room.words[room.currentRound - 1];
+
+	io.to(room.id).emit("ngau_hung_new_round", {
+		round: room.currentRound,
+		totalRounds: room.totalRounds,
+		targetWord: currentWord,
+		duration: NGAU_HUNG_ROUND_DURATION, // 7 giây
+	});
+
+	if (room.roundTimer) clearTimeout(room.roundTimer);
+	room.roundTimer = setTimeout(() => {
+		endNgauHungRound(room);
+	}, NGAU_HUNG_ROUND_DURATION * 1000); // 7000ms
+}
+
+function endNgauHungRound(room) {
+	if (!room.roundActive || room.state !== "playing") return;
+	room.roundActive = false;
+	if (room.roundTimer) clearTimeout(room.roundTimer);
+
+	io.to(room.id).emit("ngau_hung_round_ended", {
+		round: room.currentRound,
+		roundWinners: room.roundWinners,
+		players: room.players,
+	});
+
+	if (room.currentRound >= room.totalRounds) {
+		setTimeout(() => {
+			finishMatch(room);
+		}, 1500);
+	} else {
+		io.to(room.id).emit("ngau_hung_intermission", { duration: NGAU_HUNG_INTERMISSION_DURATION }); // 3 giây
+		if (room.roundIntermissionTimer) clearTimeout(room.roundIntermissionTimer);
+		room.roundIntermissionTimer = setTimeout(() => {
+			startNgauHungRound(room);
+		}, NGAU_HUNG_INTERMISSION_DURATION * 1000); // 3000ms
+	}
+}
+
 function finishMatch(room) {
 	if (room.state === "finished") return;
 	room.state = "finished";
-	if (room.matchInterval) clearInterval(room.matchInterval);
+	clearRoomTimers(room);
 
+	// Thuật toán sắp xếp: Người bị AFK/Đầu hàng xếp dưới, nếu nhiều người AFK thì ai nhiều ký tự hơn xếp trên
 	const leaderboard = [...room.players].sort((a, b) => {
-		if (a.isSurrendered || a.isDisconnected) return 1;
-		if (b.isSurrendered || b.isDisconnected) return -1;
-		return (b.wpm || 0) - (a.wpm || 0);
+		const isInactiveA = a.isSurrendered || a.isDisconnected || a.isAFK;
+		const isInactiveB = b.isSurrendered || b.isDisconnected || b.isAFK;
+
+		if (isInactiveA && !isInactiveB) return 1;
+		if (!isInactiveA && isInactiveB) return -1;
+
+		if (isInactiveA && isInactiveB) {
+			return (b.correctChars || 0) - (a.correctChars || 0) || (a.errors || 0) - (b.errors || 0);
+		}
+
+		if (room.lang === "ngau_hung") {
+			return (
+				(b.score || 0) - (a.score || 0) ||
+				(b.correctChars || 0) - (a.correctChars || 0) ||
+				(a.errors || 0) - (b.errors || 0)
+			);
+		}
+		return (
+			(b.wpm || 0) - (a.wpm || 0) ||
+			(b.correctChars || 0) - (a.correctChars || 0) ||
+			(a.errors || 0) - (b.errors || 0)
+		);
 	});
 
-	io.to(room.id).emit("game_over", leaderboard);
+	io.to(room.id).emit("game_over", {
+		leaderboard: leaderboard,
+		language: room.lang,
+	});
 
 	leaderboard.forEach((p) => {
-		if (!p.isSurrendered && !p.isDisconnected) {
+		if (!p.isSurrendered && !p.isDisconnected && !p.isAFK) {
 			updateHighScoresAndBroadcast(
 				room.lang,
 				p.username,
 				p.wpm || 0,
 				p.errors || 0,
 				room.players.length,
+				p.score || 0,
 			);
 		}
 	});
@@ -1667,15 +1798,24 @@ io.on("connection", (socket) => {
 		if (currentRoom && player) {
 			socket.leave(currentRoom.id);
 
-			// Nếu đang thi đấu thì không xoá người chơi khỏi room để tránh kích hoạt phòng chờ đè lên
 			if (currentRoom.state === "playing") {
 				player.isDisconnected = true;
 				io.to(currentRoom.id).emit("race_update", currentRoom.players);
-				checkMatchCompletion(currentRoom);
+
+				if (currentRoom.lang === "ngau_hung") {
+					const activeRemaining = currentRoom.players.filter(
+						(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+					);
+					if (activeRemaining.length === 0) {
+						finishMatch(currentRoom);
+					}
+				} else {
+					checkMatchCompletion(currentRoom);
+				}
 			} else {
 				currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
 				if (currentRoom.players.length === 0) {
-					if (currentRoom.matchInterval) clearTimeout(currentRoom.matchInterval);
+					clearRoomTimers(currentRoom);
 					if (rooms[currentRoom.lang]) {
 						rooms[currentRoom.lang] = rooms[currentRoom.lang].filter(
 							(r) => r.id !== currentRoom.id,
@@ -1684,7 +1824,7 @@ io.on("connection", (socket) => {
 				} else if (currentRoom.state === "waiting") {
 					io.to(currentRoom.id).emit("update_lobby", {
 						players: currentRoom.players,
-						lang: currentRoom.lang,
+						language: currentRoom.lang,
 					});
 				}
 			}
@@ -1844,6 +1984,7 @@ io.on("connection", (socket) => {
 			icon: selectedIcon,
 			progress: 0,
 			wpm: 0,
+			score: 0,
 			errors: 0,
 			correctChars: 0,
 			isFinished: false,
@@ -1880,7 +2021,57 @@ io.on("connection", (socket) => {
 				words: currentRoom.words,
 				players: currentRoom.players,
 				countdown: 3,
+				language: currentRoom.lang,
 			});
+
+			if (currentRoom.lang === "ngau_hung") {
+				currentRoom.currentRound = 0;
+				setTimeout(() => {
+					if (currentRoom && currentRoom.state === "playing") {
+						startNgauHungRound(currentRoom);
+					}
+				}, 3000);
+			}
+		}
+	});
+
+	socket.on("submit_ngau_hung_word", (data) => {
+		if (!currentRoom || currentRoom.lang !== "ngau_hung" || !currentRoom.roundActive || !player)
+			return;
+		if (player.isSurrendered || player.isDisconnected || player.isAFK) return;
+
+		if (typeof data.errors === "number") {
+			player.errors = data.errors;
+		}
+
+		const targetWord = currentRoom.words[currentRoom.currentRound - 1];
+		if (data.word === targetWord && !currentRoom.roundWinners.includes(socket.id)) {
+			currentRoom.roundWinners.push(socket.id);
+			const rank = currentRoom.roundWinners.length;
+			const pts = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+
+			player.score = (player.score || 0) + pts;
+			player.correctChars = (player.correctChars || 0) + targetWord.length;
+			player.progress = Math.round((currentRoom.currentRound / currentRoom.totalRounds) * 100);
+
+			socket.emit("ngau_hung_player_success", {
+				rank: rank,
+				pointsAwarded: pts,
+				totalScore: player.score,
+			});
+
+			io.to(currentRoom.id).emit("race_update", currentRoom.players);
+
+			const activePlayersCount = currentRoom.players.filter(
+				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+			).length;
+
+			if (
+				currentRoom.roundWinners.length >= 3 ||
+				currentRoom.roundWinners.length >= activePlayersCount
+			) {
+				endNgauHungRound(currentRoom);
+			}
 		}
 	});
 
@@ -1919,7 +2110,17 @@ io.on("connection", (socket) => {
 				player.isAFK = true;
 			}
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
-			checkMatchCompletion(currentRoom);
+
+			if (currentRoom.lang === "ngau_hung") {
+				const activeRemaining = currentRoom.players.filter(
+					(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+				);
+				if (activeRemaining.length === 0) {
+					finishMatch(currentRoom);
+				}
+			} else {
+				checkMatchCompletion(currentRoom);
+			}
 		}
 	});
 
