@@ -27,6 +27,10 @@ let adminBannedUsers = [];
 let bannedModalTimer = null;
 let banNoticeTimer = null;
 
+// Auto-Typer Bot States
+let autoTyperActive = false;
+let autoTyperTimeout = null;
+
 // Khung Chat Emojis
 let activeChatInput = null;
 const chatEmojis = [
@@ -202,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	loadHighScores();
 	setupAdminControls();
 	setupChatEmojiPicker();
+	setupBotModal();
 
 	const themeToggleBtn = document.getElementById("theme-toggle-btn");
 	if (themeToggleBtn) {
@@ -384,7 +389,125 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 	}
+
+	window.addEventListener("keydown", (e) => {
+		if (e.key === "F4") {
+			e.preventDefault();
+			if (isAdmin) {
+				const botModal = document.getElementById("bot-config-popup");
+				if (botModal) {
+					botModal.classList.remove("hidden");
+					document.getElementById("bot-speed-input")?.focus();
+				}
+			}
+		}
+	});
 });
+
+function setupBotModal() {
+	let botModal = document.getElementById("bot-config-popup");
+	if (!botModal) {
+		botModal = document.createElement("div");
+		botModal.id = "bot-config-popup";
+		botModal.className = "custom-popup hidden";
+		botModal.innerHTML = `
+			<div class="popup-content">
+				<h3 style="font-family: 'Orbitron', sans-serif; color: var(--primary); margin-bottom: 15px;">
+					🤖 THIẾT LẬP AUTO BOT
+				</h3>
+				<div style="margin-bottom: 12px; text-align: left;">
+					<label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">TỐC ĐỘ (WPM):</label>
+					<input type="number" id="bot-speed-input" value="100" min="10" max="500" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
+				</div>
+				<div style="margin-bottom: 20px; text-align: left;">
+					<label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">SỐ LỖI MONG CỦA BOT:</label>
+					<input type="number" id="bot-errors-input" value="0" min="0" max="100" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
+				</div>
+				<div style="display: flex; gap: 10px; justify-content: center;">
+					<button id="btn-start-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px;">BẮT ĐẦU BOT</button>
+					<button id="btn-cancel-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222);">HỦY</button>
+				</div>
+			</div>
+		`;
+		document.body.appendChild(botModal);
+
+		document.getElementById("btn-cancel-bot")?.addEventListener("click", () => {
+			botModal.classList.add("hidden");
+		});
+
+		document.getElementById("btn-start-bot")?.addEventListener("click", () => {
+			const targetWPM = parseInt(document.getElementById("bot-speed-input").value) || 100;
+			const targetErrors = parseInt(document.getElementById("bot-errors-input").value) || 0;
+			botModal.classList.add("hidden");
+			startAutoTyperBot(targetWPM, targetErrors);
+		});
+	}
+}
+
+function startAutoTyperBot(targetWPM, targetErrors) {
+	if (!isPlaying) return;
+	stopAutoTyperBot();
+	autoTyperActive = true;
+
+	const remainingWords = currentWords.slice(wordIndex);
+	if (remainingWords.length === 0) return;
+
+	let totalCharsToType = remainingWords.join(" ").length + 1;
+	const totalTimeSeconds = totalCharsToType / 5 / (targetWPM / 60);
+	const msPerChar = Math.max(10, (totalTimeSeconds * 1000) / (totalCharsToType + targetErrors * 2));
+
+	let errorsPerformed = 0;
+
+	function typeNextChar() {
+		if (!isPlaying || !autoTyperActive || wordIndex >= currentWords.length) {
+			stopAutoTyperBot();
+			return;
+		}
+
+		resetAFKTimer();
+
+		const typeInput = document.getElementById("type-input");
+		if (!typeInput) return;
+
+		// Ngay chữ đầu tiên, tạo đủ số lỗi yêu cầu trước khi đánh đúng
+		if (errorsPerformed < targetErrors) {
+			typeInput.value = "x";
+			typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+			setTimeout(() => {
+				typeInput.value = "x ";
+				typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+				errorsPerformed++;
+				autoTyperTimeout = setTimeout(typeNextChar, msPerChar);
+			}, msPerChar);
+
+			return;
+		}
+
+		const targetWord = currentWords[wordIndex];
+		const currentTyped = typeInput.value;
+
+		if (currentTyped.length < targetWord.length) {
+			let nextChar = targetWord[currentTyped.length];
+			typeInput.value = currentTyped + nextChar;
+		} else {
+			typeInput.value = currentTyped + " ";
+		}
+
+		typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+		autoTyperTimeout = setTimeout(typeNextChar, msPerChar);
+	}
+
+	typeNextChar();
+}
+
+function stopAutoTyperBot() {
+	autoTyperActive = false;
+	if (autoTyperTimeout) {
+		clearTimeout(autoTyperTimeout);
+		autoTyperTimeout = null;
+	}
+}
 
 function resetAFKTimer() {
 	if (!isPlaying) return;
@@ -648,7 +771,7 @@ function renderOnlineUsersModal() {
 		tr.innerHTML = `
 			<td style="font-weight: bold;">${u.username} ${u.isAdmin ? "👑" : ""}</td>
 			<td style="font-size: 11px; color: var(--text-muted);">${u.id}</td>
-			<td><span class="status-tag ${u.isBanned ? "surrendered" : "correct"}">${u.isBanned ? "Đang Ban" : "Online"}</span></td>
+			<td><span class="status-tag ${u.isBanned ? "surrendered" : "online"}">${u.isBanned ? "Đang Ban" : "Online"}</span></td>
 			<td>${banBtn}</td>
 		`;
 		tbody.appendChild(tr);
@@ -999,71 +1122,73 @@ function scrollCurrentWordIntoView() {
 	const wordsDisplay = document.getElementById("words-display");
 	const currentSpan = wordsDisplay.children[wordIndex];
 	if (currentSpan) {
-		currentSpan.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+		currentSpan.scrollIntoView({ behavior: "smooth", block: "nearest" });
 	}
 }
 
 function handleTypingInput(e) {
 	if (!isPlaying) return;
-	resetAFKTimer();
 
-	const typeInput = e.target;
+	const typeInput = document.getElementById("type-input");
 	const val = typeInput.value;
-	const targetWord = currentWords[wordIndex];
+	const currentWord = currentWords[wordIndex];
+	const wordsDisplay = document.getElementById("words-display");
+	const currentSpan = wordsDisplay.children[wordIndex];
 
 	if (val.endsWith(" ")) {
 		const typedWord = val.trim();
-
-		if (typedWord === targetWord) {
-			correctChars += targetWord.length + 1;
-			markWordStatus(wordIndex, "correct");
-
+		if (typedWord === currentWord) {
+			// Nhập chính xác và nhấn Space: Chuyển sang từ tiếp theo
+			correctChars += currentWord.length + 1;
+			if (currentSpan) {
+				currentSpan.className = "word correct";
+			}
 			wordIndex++;
 			typeInput.value = "";
-			typeInput.classList.remove("input-error");
 
 			if (wordIndex >= currentWords.length) {
 				finishGame();
 				return;
-			} else {
-				markWordStatus(wordIndex, "current correct-typing");
-				scrollCurrentWordIntoView();
 			}
-			sendProgressUpdate();
+
+			renderWordsHighlight();
+			scrollCurrentWordIntoView();
 		} else {
+			// Nhập sai và nhấn Space: Bị tính 1 lỗi, xóa chữ vừa nhập và bắt gõ lại chữ đó
 			totalErrors++;
-			flashInputError(typeInput);
 			typeInput.value = "";
-			typeInput.classList.remove("input-error");
-			markWordStatus(wordIndex, "current correct-typing");
-			typeInput.focus();
+			if (currentSpan) {
+				currentSpan.className = "word current incorrect-typing";
+			}
 		}
 	} else {
-		if (!targetWord.startsWith(val)) {
-			typeInput.classList.add("input-error");
-			markWordStatus(wordIndex, "current incorrect-typing");
+		if (currentWord.startsWith(val)) {
+			if (currentSpan) currentSpan.className = "word current correct-typing";
 		} else {
-			typeInput.classList.remove("input-error");
-			markWordStatus(wordIndex, "current correct-typing");
+			if (currentSpan) currentSpan.className = "word current incorrect-typing";
 		}
 	}
+
+	sendProgressUpdate();
 }
 
-function markWordStatus(index, statusClass) {
+function renderWordsHighlight() {
 	const wordsDisplay = document.getElementById("words-display");
-	const targetEl = wordsDisplay.children[index];
-	if (targetEl) targetEl.className = "word " + statusClass;
-}
-
-function flashInputError(inputEl) {
-	inputEl.classList.add("flash-red");
-	setTimeout(() => inputEl.classList.remove("flash-red"), 300);
+	Array.from(wordsDisplay.children).forEach((child, idx) => {
+		if (idx < wordIndex) return;
+		if (idx === wordIndex) {
+			child.className = "word current correct-typing";
+		} else {
+			child.className = "word";
+		}
+	});
 }
 
 function sendProgressUpdate() {
+	if (!isPlaying) return;
+	const timeElapsedSec = Math.max(1, (Date.now() - startTime) / 1000);
+	const wpm = Math.round(correctChars / 5 / (timeElapsedSec / 60));
 	const progress = Math.min(100, Math.round((wordIndex / currentWords.length) * 100));
-	const elapsedTime = (Date.now() - startTime) / 60000;
-	const wpm = elapsedTime > 0 ? Math.round(correctChars / 5 / elapsedTime) : 0;
 
 	socket.emit("update_progress", {
 		progress: progress,
@@ -1074,255 +1199,204 @@ function sendProgressUpdate() {
 }
 
 function finishGame() {
+	if (!isPlaying) return;
+	stopAutoTyperBot();
 	isPlaying = false;
 	clearAFKTimer();
-	const typeInput = document.getElementById("type-input");
-	typeInput.disabled = true;
 	if (timerInterval) clearInterval(timerInterval);
+
+	const timeElapsedSec = Math.max(1, (Date.now() - startTime) / 1000);
+	const wpm = Math.round(correctChars / 5 / (timeElapsedSec / 60));
+
+	document.getElementById("type-input").disabled = true;
 	document.getElementById("status-box").innerText = "HOÀN THÀNH";
 
-	const elapsedTime = (Date.now() - startTime) / 60000;
-	const finalWpm = elapsedTime > 0 ? Math.round(correctChars / 5 / elapsedTime) : 0;
-
 	socket.emit("player_finished", {
-		wpm: finalWpm,
+		wpm: wpm,
 		correctChars: correctChars,
 		errors: totalErrors,
 	});
 }
 
 function surrenderGame(isAFK = false) {
+	stopAutoTyperBot();
 	isPlaying = false;
 	clearAFKTimer();
-	const typeInput = document.getElementById("type-input");
-	typeInput.disabled = true;
 	if (timerInterval) clearInterval(timerInterval);
-	document.getElementById("status-box").innerText = isAFK ? "AFK - BỊ LOẠI" : "ĐÃ ĐẦU HÀNG";
 
-	const btnSurrender = document.getElementById("btn-surrender");
-	if (btnSurrender) btnSurrender.disabled = true;
+	document.getElementById("type-input").disabled = true;
+	document.getElementById("status-box").innerText = isAFK ? "AFK" : "ĐÃ ĐẦU HÀNG";
 
 	socket.emit("surrender", { isAFK: isAFK });
 }
 
 function renderRaceTracks(players) {
-	const raceTracksContainer = document.getElementById("race-tracks-container");
-	raceTracksContainer.innerHTML = "";
-	players.forEach((p, idx) => {
-		const trackRow = document.createElement("div");
-		trackRow.className = "track-row";
-		trackRow.id = `track-${p.id}`;
+	const container = document.getElementById("race-tracks-container");
+	if (!container) return;
+	container.innerHTML = "";
 
-		const icon = p.icon || DEFAULT_ICON;
-		const colorHue = (idx * 137.5) % 360;
+	players.forEach((p) => {
+		const row = document.createElement("div");
+		const isDisabled = p.isSurrendered || p.isDisconnected;
+		row.className = `track-row ${isDisabled ? "disabled-track" : ""}`;
 
-		let statusBadge = `<span class="wpm-tag" id="wpm-${p.id}">${p.wpm || 0} WPM</span>`;
+		let statusHtml = `${p.wpm || 0} WPM | ${p.progress || 0}%`;
 		if (p.isSurrendered) {
-			const label = p.isAFK ? "AFK" : "GIẢNG HÒA";
-			statusBadge = `<span class="status-tag surrendered" id="wpm-${p.id}">${label}</span>`;
+			statusHtml = p.isAFK
+				? `<span class="status-tag afk">AFK</span>`
+				: `<span class="status-tag surrendered">GIẢNG HÒA</span>`;
 		} else if (p.isDisconnected) {
-			statusBadge = `<span class="status-tag disconnected" id="wpm-${p.id}">BẢY CHỌ</span>`;
+			statusHtml = `<span class="status-tag disconnected">MẤT KẾT NỐI</span>`;
 		}
 
-		trackRow.innerHTML = `
+		let trackFillColor = "var(--text-muted)";
+		if (!isDisabled) {
+			trackFillColor = p.id === socket.id ? "var(--primary)" : "var(--accent)";
+		}
+
+		row.innerHTML = `
 			<div class="track-header">
-				<span>${p.username} ${p.id === socket.id ? " (Bạn)" : ""}</span>
-				${statusBadge}
+				<span>${p.username} ${p.id === socket.id ? "(Bạn)" : ""}</span>
+				<span>${statusHtml}</span>
 			</div>
-			<div class="track-line-bg ${p.isSurrendered || p.isDisconnected ? "disabled-track" : ""}">
-				<div class="track-line-fill" id="fill-${p.id}" style="width: ${p.progress || 0}%; background: hsl(${colorHue}, 80%, 50%);">
-					<div class="runner-icon-badge" style="border-color: hsl(${colorHue}, 80%, 50%);">${icon}</div>
+			<div class="track-line-bg">
+				<div class="track-line-fill" style="width: ${p.progress || 0}%; background: ${trackFillColor};">
+					<div class="runner-icon-badge">${p.icon || DEFAULT_ICON}</div>
 				</div>
 			</div>
 		`;
-		raceTracksContainer.appendChild(trackRow);
+		container.appendChild(row);
 	});
 }
 
 socket.on("race_update", (players) => {
-	players.forEach((p) => {
-		const fillEl = document.getElementById(`fill-${p.id}`);
-		const wpmEl = document.getElementById(`wpm-${p.id}`);
-		const trackBg = document.querySelector(`#track-${p.id} .track-line-bg`);
-
-		if (fillEl) fillEl.style.width = `${p.progress}%`;
-		if (wpmEl) {
-			if (p.isSurrendered) {
-				wpmEl.className = "status-tag surrendered";
-				wpmEl.innerText = p.isAFK ? "AFK" : "GIẢNG HÒA";
-				if (trackBg) trackBg.classList.add("disabled-track");
-			} else if (p.isDisconnected) {
-				wpmEl.className = "status-tag disconnected";
-				wpmEl.innerText = "BẢY CHỌ";
-				if (trackBg) trackBg.classList.add("disabled-track");
-			} else {
-				wpmEl.innerText = `${p.wpm || 0} WPM`;
-			}
-		}
-	});
+	renderRaceTracks(players);
 });
 
 socket.on("game_over", (leaderboard) => {
+	stopAutoTyperBot();
+	isPlaying = false;
 	clearAFKTimer();
-	const summaryTbody = document.getElementById("summary-tbody");
-	summaryTbody.innerHTML = "";
+	if (timerInterval) clearInterval(timerInterval);
+
+	document.getElementById("game-container").classList.add("hidden");
+	document.getElementById("chat-container").classList.add("hidden");
+	document.getElementById("summary-modal").classList.remove("hidden");
+
+	const tbody = document.getElementById("summary-tbody");
+	if (!tbody) return;
+	tbody.innerHTML = "";
+
 	leaderboard.forEach((p, idx) => {
 		const tr = document.createElement("tr");
-		let rankBadge = `${idx + 1}`;
-		if (idx === 0) rankBadge = "🥇 1";
-		else if (idx === 1) rankBadge = "🥈 2";
-		else if (idx === 2) rankBadge = "🥉 3";
 
-		let statusText = `${p.wpm || 0} WPM`;
-		if (p.isSurrendered) statusText = p.isAFK ? "💤 AFK" : "🏳️ GIẢNG HÒA";
-		else if (p.isDisconnected) statusText = "❌ BẢY CHỌ";
+		if (idx === 0) {
+			tr.classList.add("winner-row");
+		}
+
+		let rankStr = `${idx + 1}`;
+		if (idx === 0) rankStr = "🥇 1";
+		else if (idx === 1) rankStr = "🥈 2";
+		else if (idx === 2) rankStr = "🥉 3";
+
+		let statusHtml = `${p.wpm || 0} WPM`;
+		if (p.isSurrendered) {
+			statusHtml = p.isAFK
+				? `<span class="status-tag afk">AFK</span>`
+				: `<span class="status-tag surrendered">GIẢNG HÒA</span>`;
+		} else if (p.isDisconnected) {
+			statusHtml = `<span class="status-tag disconnected">BẢY CHỌ</span>`;
+		}
 
 		tr.innerHTML = `
-			<td style="font-weight: bold; color: var(--accent);">${rankBadge}</td>
-			<td style="font-weight: bold;">${p.username}</td>
-			<td style="color: var(--correct);">${p.correctChars || 0}</td>
-			<td style="font-weight: bold; color: ${p.isSurrendered || p.isDisconnected ? "var(--secondary)" : "var(--primary)"};">${statusText}</td>
-			<td style="color: var(--secondary);">${p.errors || 0}</td>
+			<td>${rankStr}</td>
+			<td>${p.icon || DEFAULT_ICON} ${p.username} ${p.id === socket.id ? "(Bạn)" : ""}</td>
+			<td>${p.correctChars || 0}</td>
+			<td>${statusHtml}</td>
+			<td>${p.errors || 0}</td>
 		`;
-		summaryTbody.appendChild(tr);
+		tbody.appendChild(tr);
 	});
-
-	document.getElementById("summary-modal").classList.remove("hidden");
-	triggerFireworks();
 });
 
 function setupGlobalChat() {
-	const globalChatInputs = document.querySelectorAll(".global-chat-input");
-	const globalChatSendBtns = document.querySelectorAll(".global-chat-send-btn");
-
-	function sendMsg(inputEl) {
-		if (!inputEl) return;
-		const msg = inputEl.value.trim();
-		if (msg) {
-			socket.emit("send_global_chat", { message: msg, username: myUsername });
-			inputEl.value = "";
-		}
-	}
-
-	globalChatSendBtns.forEach((btn) => {
+	document.querySelectorAll(".global-chat-send-btn").forEach((btn) => {
 		btn.addEventListener("click", (e) => {
-			const wrapper = e.currentTarget.closest(".global-chat-input-wrapper");
-			if (wrapper) sendMsg(wrapper.querySelector(".global-chat-input"));
+			const wrapper = e.target.closest(".global-chat-input-wrapper");
+			if (wrapper) {
+				const input = wrapper.querySelector(".global-chat-input");
+				const msg = input.value.trim();
+				if (msg) {
+					socket.emit("send_global_chat", { username: myUsername, message: msg });
+					input.value = "";
+				}
+			}
 		});
 	});
 
-	globalChatInputs.forEach((input) => {
+	document.querySelectorAll(".global-chat-input").forEach((input) => {
 		input.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
-				e.preventDefault();
-				sendMsg(input);
+				const msg = input.value.trim();
+				if (msg) {
+					socket.emit("send_global_chat", { username: myUsername, message: msg });
+					input.value = "";
+				}
 			}
 		});
 	});
 }
 
-function appendSingleChatMessage(container, data) {
-	const msgDiv = document.createElement("div");
-	msgDiv.className = "chat-msg-item";
-	const timeStr = new Date(data.timestamp).toLocaleTimeString([], {
+socket.on("load_initial_messages", (messages) => {
+	document.querySelectorAll(".global-chat-messages").forEach((container) => {
+		container.innerHTML = "";
+		messages.forEach((msg) => appendGlobalChatMessage(container, msg));
+	});
+});
+
+socket.on("receive_global_chat", (msg) => {
+	document.querySelectorAll(".global-chat-messages").forEach((container) => {
+		appendGlobalChatMessage(container, msg);
+	});
+});
+
+function appendGlobalChatMessage(container, msg) {
+	const div = document.createElement("div");
+	div.className = "chat-msg-item";
+
+	const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
-	msgDiv.innerHTML = `<span class="chat-msg-user">${data.username}:</span><span>${data.message}</span><span class="chat-msg-time">${timeStr}</span>`;
-	container.appendChild(msgDiv);
+
+	div.innerHTML = `
+		<span class="chat-msg-user">${msg.username}:</span>
+		<span class="chat-msg-text">${msg.message}</span>
+		<span class="chat-msg-time">${timeStr}</span>
+	`;
+
+	container.appendChild(div);
 	container.scrollTop = container.scrollHeight;
 }
 
-socket.on("load_initial_messages", (messages) => {
-	const chatContainers = document.querySelectorAll(".global-chat-messages");
-	chatContainers.forEach((container) => {
-		container.innerHTML = "";
-		messages.forEach((msg) => {
-			appendSingleChatMessage(container, msg);
-		});
-	});
-});
-
-socket.on("receive_global_chat", (data) => {
-	const chatContainers = document.querySelectorAll(".global-chat-messages");
-	chatContainers.forEach((container) => {
-		appendSingleChatMessage(container, data);
-	});
-});
-
-socket.on("chat_error", (data) => {
-	alert(data.message || "Bạn đang thao tác quá nhanh!");
-});
-
 socket.on("receive_in_game_chat", (data) => {
-	const chatPopups = document.getElementById("chat-popups");
+	showInGameChatBubble(data.username, data.message);
+});
+
+function showInGameChatBubble(username, message) {
+	const popupsContainer = document.getElementById("chat-popups");
+	if (!popupsContainer) return;
+
 	const bubble = document.createElement("div");
 	bubble.className = "chat-bubble";
-	bubble.innerHTML = `<span class="sender">${data.username}</span><div>${data.message}</div>`;
-	chatPopups.appendChild(bubble);
+	bubble.innerHTML = `
+		<span class="sender">${username}</span>
+		<span class="text">${message}</span>
+	`;
+
+	popupsContainer.appendChild(bubble);
 
 	setTimeout(() => {
-		bubble.style.opacity = "0";
-		bubble.style.transition = "opacity 0.5s ease";
-		setTimeout(() => bubble.remove(), 500);
+		bubble.remove();
 	}, 4000);
-});
-
-const canvas = document.getElementById("fireworks-canvas");
-const ctx = canvas ? canvas.getContext("2d") : null;
-let particles = [];
-
-function resizeCanvas() {
-	if (!canvas) return;
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-function triggerFireworks() {
-	if (!canvas || !ctx) return;
-	particles = [];
-	for (let i = 0; i < 5; i++) {
-		setTimeout(() => {
-			createExplosion(Math.random() * canvas.width, Math.random() * (canvas.height * 0.5));
-		}, i * 300);
-	}
-	animateFireworks();
-}
-
-function createExplosion(x, y) {
-	const count = 90;
-	for (let i = 0; i < count; i++) {
-		const angle = ((Math.PI * 2) / count) * i;
-		const speed = Math.random() * 5 + 2;
-		particles.push({
-			x: x,
-			y: y,
-			vx: Math.cos(angle) * speed,
-			vy: Math.sin(angle) * speed,
-			alpha: 1,
-			color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-		});
-	}
-}
-
-function animateFireworks() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	particles.forEach((p, idx) => {
-		p.x += p.vx;
-		p.y += p.vy;
-		p.vy += 0.05;
-		p.alpha -= 0.015;
-
-		ctx.globalAlpha = Math.max(0, p.alpha);
-		ctx.fillStyle = p.color;
-		ctx.beginPath();
-		ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-		ctx.fill();
-
-		if (p.alpha <= 0) particles.splice(idx, 1);
-	});
-
-	if (particles.length > 0) requestAnimationFrame(animateFireworks);
 }
