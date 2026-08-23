@@ -4,6 +4,29 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>FASTTYPING CHALLENGE - Luyện Đánh Máy & NumPad Online</title>
+
+		<!-- SEO META TAGS -->
+		<meta
+			name="description"
+			content="Thử thách luyện gõ 10 ngón và phím số Numpad trực tuyến cực nhanh cùng bạn bè. Nhiều chế độ thi đấu tiếng Việt, English, Numpad, Ngẫu Hứng và Săn Boss hấp dẫn."
+		/>
+		<meta
+			name="keywords"
+			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, fast typing challenge, săn boss"
+		/>
+		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
+		<meta name="robots" content="index, follow" />
+		<meta name="theme-color" content="#00f0ff" />
+
+		<!-- OPEN GRAPH / FACEBOOK / DISCORD -->
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="FASTTYPING CHALLENGE - Đua Gõ Phím & Săn Boss Trực Tuyến" />
+		<meta
+			property="og:description"
+			content="Tham gia phòng đua gõ chữ tiếng Việt, Numpad và chế độ Co-op Săn Boss đỉnh cao cùng hàng trăm người chơi khác!"
+		/>
+		<meta property="og:image" content="/preview.png" />
+		<link rel="icon" type="image/x-icon" href="https://a.favicon.im/hey.com" />
 		<link rel="stylesheet" href="style.css" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,6 +37,7 @@
 		<script src="/socket.io/socket.io.js"></script>
 	</head>
 	<body>
+		<!-- THANH GÓC TRÊN TRÁI -->
 		<div id="user-profile-bar" class="left-bar">
 			<span>🤖 <span id="profile-name">Vô danh</span></span>
 			<span class="admin-badge admin-only hidden">ADMIN</span>
@@ -38,13 +62,13 @@
 		</div>
 
 		<!-- MODAL TRANG CHỦ -->
-		<div id="login-modal" class="modal">
+		<main id="login-modal" class="modal">
 			<div class="cyber-box modal-content home-main-container">
 				<h1 class="glitch-title">FASTTYPING CHALLENGE</h1>
 				<p class="subtitle">Thử Thách Đánh Máy & NumPad</p>
 
 				<div class="home-flex-row">
-					<div class="home-left-col">
+					<section class="home-left-col">
 						<label class="section-label">CHỌN CHẾ ĐỘ THI ĐẤU</label>
 						<div class="mode-grid">
 							<div class="mode-card selected" data-lang="vi_dau">
@@ -67,10 +91,14 @@
 								<div class="icon">🎲</div>
 								<div class="title">Ngẫu Hứng</div>
 							</div>
+							<div class="mode-card" data-lang="san_boss">
+								<div class="icon">🐉</div>
+								<div class="title">Săn Boss</div>
+							</div>
 						</div>
-					</div>
+					</section>
 
-					<div class="home-right-col">
+					<section class="home-right-col">
 						<label class="section-label">PHONG THẦN BẢNG</label>
 						<div class="high-score-board">
 							<table class="leaderboard-table">
@@ -83,51 +111,15 @@
 										<th class="admin-only-col hidden">ADMIN</th>
 									</tr>
 								</thead>
-								<tbody>
-									<tr>
-										<td>🇻🇳 Tiếng Việt</td>
-										<td id="hs-name-vi_dau">---</td>
-										<td id="hs-wpm-vi_dau" class="highlight-val">0</td>
-										<td id="hs-err-vi_dau">0</td>
-										<td id="hs-action-vi_dau" class="admin-only-col hidden"></td>
-									</tr>
-									<tr>
-										<td>🔤 Không Dấu</td>
-										<td id="hs-name-vi_nodau">---</td>
-										<td id="hs-wpm-vi_nodau" class="highlight-val">0</td>
-										<td id="hs-err-vi_nodau">0</td>
-										<td id="hs-action-vi_nodau" class="admin-only-col hidden"></td>
-									</tr>
-									<tr>
-										<td>🔠 English</td>
-										<td id="hs-name-en">---</td>
-										<td id="hs-wpm-en" class="highlight-val">0</td>
-										<td id="hs-err-en">0</td>
-										<td id="hs-action-en" class="admin-only-col hidden"></td>
-									</tr>
-									<tr>
-										<td>🔢 Numpad</td>
-										<td id="hs-name-numpad">---</td>
-										<td id="hs-wpm-numpad" class="highlight-val">0</td>
-										<td id="hs-err-numpad">0</td>
-										<td id="hs-action-numpad" class="admin-only-col hidden"></td>
-									</tr>
-									<tr>
-										<td>🎲 Ngẫu Hứng</td>
-										<td id="hs-name-ngau_hung">---</td>
-										<td id="hs-wpm-ngau_hung" class="highlight-val">0</td>
-										<td id="hs-err-ngau_hung">0</td>
-										<td id="hs-action-ngau_hung" class="admin-only-col hidden"></td>
-									</tr>
-								</tbody>
+								<tbody id="high-score-tbody"></tbody>
 							</table>
 						</div>
-					</div>
+					</section>
 				</div>
 
 				<button id="join-btn" class="cyber-btn" style="margin-top: 15px">VÀO PHÒNG CHỜ</button>
 
-				<div class="global-chat-box">
+				<section class="global-chat-box">
 					<div class="chat-header-title">
 						💬 KHUNG SỦA DƠ
 						<button
@@ -149,22 +141,14 @@
 						<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
-				</div>
+				</section>
 			</div>
-		</div>
+		</main>
 
 		<!-- POPUP ĐĂNG NHẬP ADMIN -->
 		<div id="admin-login-popup" class="custom-popup hidden">
 			<div class="popup-content">
-				<h3
-					style="
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						color: var(--primary);
-						margin-bottom: 15px;
-					"
-				>
-					🔑 ĐĂNG NHẬP ADMIN
-				</h3>
+				<h3 style="color: var(--primary); margin-bottom: 15px">🔑 ĐĂNG NHẬP ADMIN</h3>
 				<input
 					type="password"
 					id="admin-password-input"
@@ -195,8 +179,8 @@
 						XÁC NHẬN
 					</button>
 					<button
-						id="btn-cancel-admin-login"
 						class="cyber-btn"
+						data-close="admin-login-popup"
 						style="
 							padding: 8px 20px;
 							font-size: 14px;
@@ -209,18 +193,10 @@
 			</div>
 		</div>
 
-		<!-- MODAL NGƯỜI CHƠI ONLINE (REALTIME ADMIN) -->
+		<!-- MODAL NGƯỜI CHƠI ONLINE (ADMIN) -->
 		<div id="online-users-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3
-					style="
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						color: var(--primary);
-						margin-bottom: 15px;
-					"
-				>
-					👥 NGƯỜI CHƠI TRỰC TUYẾN
-				</h3>
+				<h3 style="color: var(--primary); margin-bottom: 15px">👥 NGƯỜI CHƠI TRỰC TUYẾN</h3>
 				<div class="admin-table-wrapper">
 					<table class="admin-table">
 						<thead>
@@ -235,8 +211,8 @@
 					</table>
 				</div>
 				<button
-					id="btn-close-online-users"
 					class="cyber-btn"
+					data-close="online-users-modal"
 					style="
 						margin-top: 15px;
 						padding: 8px 20px;
@@ -249,18 +225,10 @@
 			</div>
 		</div>
 
-		<!-- MODAL NGƯỜI CHƠI BỊ BAN (REALTIME ADMIN) -->
+		<!-- MODAL NGƯỜI CHƠI BỊ BAN (ADMIN) -->
 		<div id="banned-users-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3
-					style="
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						color: var(--secondary);
-						margin-bottom: 15px;
-					"
-				>
-					🚫 DANH SÁCH BỊ BAN
-				</h3>
+				<h3 style="color: var(--secondary); margin-bottom: 15px">🚫 DANH SÁCH BỊ BAN</h3>
 				<div class="admin-table-wrapper">
 					<table class="admin-table">
 						<thead>
@@ -274,8 +242,8 @@
 					</table>
 				</div>
 				<button
-					id="btn-close-banned-users"
 					class="cyber-btn"
+					data-close="banned-users-modal"
 					style="
 						margin-top: 15px;
 						padding: 8px 20px;
@@ -291,15 +259,7 @@
 		<!-- POPUP THÔNG BÁO BAN -->
 		<div id="ban-notice-popup" class="custom-popup hidden">
 			<div class="popup-content">
-				<h3
-					style="
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						color: var(--secondary);
-						margin-bottom: 15px;
-					"
-				>
-					🚫 BẠN ĐÃ BỊ BAN
-				</h3>
+				<h3 style="color: var(--secondary); margin-bottom: 15px">🚫 BẠN ĐÃ BỊ BAN</h3>
 				<p
 					id="ban-notice-msg"
 					style="margin-bottom: 20px; font-size: 14px; color: var(--text-main)"
@@ -307,8 +267,8 @@
 					Bạn tạm thời bị cấm tham gia phòng chờ.
 				</p>
 				<button
-					id="btn-close-ban-notice"
 					class="cyber-btn"
+					data-close="ban-notice-popup"
 					style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222)"
 				>
 					ĐÃ HIỂU
@@ -319,15 +279,7 @@
 		<!-- POPUP ĐỔI TÊN -->
 		<div id="rename-popup" class="custom-popup hidden">
 			<div class="popup-content">
-				<h3
-					style="
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						color: var(--primary);
-						margin-bottom: 15px;
-					"
-				>
-					✏️ THAY ĐỔI BIỆT DANH
-				</h3>
+				<h3 style="color: var(--primary); margin-bottom: 15px">✏️ THAY ĐỔI BIỆT DANH</h3>
 				<input
 					type="text"
 					id="popup-name-input"
@@ -352,8 +304,8 @@
 						LƯU TÊN
 					</button>
 					<button
-						id="btn-cancel-popup-name"
 						class="cyber-btn"
+						data-close="rename-popup"
 						style="
 							padding: 8px 20px;
 							font-size: 14px;
@@ -385,7 +337,6 @@
 				>
 					CHẾ ĐỘ: ---
 				</div>
-
 				<div class="lobby-players-title">
 					DANH SÁCH NGƯỜI CHƠI ( <span id="lobby-count">1/10</span> )
 				</div>
@@ -424,20 +375,12 @@
 		<!-- POPUP CHỌN ICON -->
 		<div id="icon-select-popup" class="custom-popup hidden">
 			<div class="popup-content">
-				<h3
-					style="
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						color: var(--primary);
-						margin-bottom: 15px;
-					"
-				>
-					🎨 CHỌN ICON NHÂN VẬT
-				</h3>
+				<h3 style="color: var(--primary); margin-bottom: 15px">🎨 CHỌN ICON NHÂN VẬT</h3>
 				<div id="icon-picker-grid" class="icon-picker-grid"></div>
 				<div style="margin-top: 20px">
 					<button
-						id="btn-close-icon-popup"
 						class="cyber-btn"
+						data-close="icon-select-popup"
 						style="
 							padding: 8px 20px;
 							font-size: 14px;
@@ -459,7 +402,7 @@
 					<button id="btn-confirm-surrender" class="cyber-btn surrender-btn-danger">
 						ĐẦU HÀNG
 					</button>
-					<button id="btn-cancel-surrender" class="cyber-btn surrender-btn-cancel">
+					<button class="cyber-btn surrender-btn-cancel" data-close="surrender-modal">
 						TIẾP TỤC CHIẾN
 					</button>
 				</div>
@@ -477,12 +420,34 @@
 				</div>
 			</header>
 
+			<!-- ARENA BOSS (HIỂN THỊ TRONG CHẾ ĐỘ SĂN BOSS) -->
+			<div id="boss-arena-box" class="cyber-box boss-arena-container hidden">
+				<div class="boss-profile">
+					<div class="boss-avatar-wrapper">
+						<span id="boss-avatar" class="boss-avatar">🐉</span>
+					</div>
+					<div class="boss-info">
+						<div class="boss-header-row">
+							<span id="boss-name" class="boss-name">HẮC LONG MA VƯƠNG</span>
+							<span id="boss-hp-text" class="boss-hp-text">1000/1000 HP</span>
+						</div>
+						<div class="boss-hp-bar-bg">
+							<div id="boss-hp-fill" class="boss-hp-bar-fill" style="width: 100%"></div>
+						</div>
+					</div>
+				</div>
+				<div id="boss-skill-alert" class="boss-skill-alert hidden">
+					⚠️ BOSS ĐANG GẬM NHẤM BÓNG TỐI!
+				</div>
+			</div>
+
 			<div id="leaderboard" class="cyber-box">
 				<h2 class="race-title" id="race-tracks-title">TIẾN ĐỘ HOÀN THÀNH</h2>
 				<div id="race-tracks-container"></div>
 			</div>
 
-			<div id="typing-area" class="cyber-box">
+			<div id="typing-area" class="cyber-box" style="position: relative; overflow: hidden">
+				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
 				<div id="ngau-hung-status" class="ngau-hung-badge hidden">VÒNG 1/15</div>
 				<div id="words-display"></div>
 				<input
@@ -518,7 +483,10 @@
 		<!-- BẢNG TỔNG KẾT -->
 		<div id="summary-modal" class="modal hidden">
 			<div class="cyber-box modal-content summary-box">
-				<h2 class="glitch-title summary-modal-title">🏆 BẢNG TỔNG KẾT TRẬN ĐẤU</h2>
+				<h2 id="summary-modal-title" class="glitch-title summary-modal-title">
+					🏆 BẢNG TỔNG KẾT TRẬN ĐẤU
+				</h2>
+				<p id="boss-result-subtitle" class="boss-result-subtitle hidden"></p>
 				<table id="summary-table">
 					<thead id="summary-thead">
 						<tr>
@@ -551,7 +519,6 @@
 		</div>
 
 		<footer class="footer-copyright">© 2026 Nguyễn Duy Tiến (niTe)</footer>
-
 		<canvas id="fireworks-canvas"></canvas>
 		<script src="app.js"></script>
 	</body>

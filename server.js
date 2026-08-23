@@ -7,280 +7,33 @@ const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-	cors: {
-		origin: "*",
-		methods: ["GET", "POST"],
-	},
-});
+const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-
-// Cấu hình thời gian cho chế độ Ngẫu Hứng
 const NGAU_HUNG_ROUND_DURATION = 7;
 const NGAU_HUNG_INTERMISSION_DURATION = 3;
 const NGAU_HUNG_TOTAL_ROUNDS = 15;
+const BOSS_RAID_DURATION = 120;
+const MESSAGE_TTL = 3 * 60 * 1000;
 
 app.use(express.static(path.join(__dirname, "public")));
 
 // ==========================================
-// QUẢN LÝ HIGH SCORES & TỰ ĐỘNG RESET 0H GMT+7
+// 1. TỪ VỰNG & TỰ ĐỘNG SINH "VI_NODAU"
 // ==========================================
-const HIGHSCORES_FILE = path.join(__dirname, "highscores.json");
-
-let highScores = {
-	vi_dau: null,
-	vi_nodau: null,
-	en: null,
-	numpad: null,
-	ngau_hung: null,
-};
-
-function loadHighScoresFromFile() {
-	try {
-		if (fs.existsSync(HIGHSCORES_FILE)) {
-			const data = fs.readFileSync(HIGHSCORES_FILE, "utf8");
-			highScores = Object.assign(
-				{
-					vi_dau: null,
-					vi_nodau: null,
-					en: null,
-					numpad: null,
-					ngau_hung: null,
-				},
-				JSON.parse(data),
-			);
-		}
-	} catch (err) {
-		console.log("Lỗi load high scores:", err.message);
-	}
+function removeVietnameseTones(str) {
+	return str
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/đ/g, "d")
+		.replace(/Đ/g, "D");
 }
 
-function saveHighScoresToFile() {
-	try {
-		fs.writeFileSync(HIGHSCORES_FILE, JSON.stringify(highScores, null, 2), "utf8");
-	} catch (err) {
-		console.log("Lỗi save high scores:", err.message);
-	}
-}
-
-function resetHighScores() {
-	console.log("[SYSTEM] Đã đến 0h GMT+7: Tiến hành reset bảng điểm High Scores...");
-	highScores = {
-		vi_dau: null,
-		vi_nodau: null,
-		en: null,
-		numpad: null,
-		ngau_hung: null,
-	};
-	saveHighScoresToFile();
-	io.emit("update_high_scores", highScores);
-}
-
-function scheduleDailyReset() {
-	const now = new Date();
-	const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-	const gmt7OffsetMs = 7 * 60 * 60 * 1000;
-	const gmt7Ms = utcMs + gmt7OffsetMs;
-	const gmt7Date = new Date(gmt7Ms);
-
-	const nextResetGmt7 = new Date(gmt7Ms);
-	nextResetGmt7.setHours(24, 0, 0, 0);
-
-	const timeUntilReset = nextResetGmt7.getTime() - gmt7Date.getTime();
-
-	setTimeout(() => {
-		resetHighScores();
-		scheduleDailyReset();
-	}, timeUntilReset);
-}
-
-loadHighScoresFromFile();
-scheduleDailyReset();
-
-function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount, score = 0) {
-	if (playerCount < 3) return;
-
-	const currentRecord = highScores[lang];
-	let isNewRecord = false;
-
-	if (lang === "ngau_hung") {
-		isNewRecord =
-			!currentRecord ||
-			score > (currentRecord.score || 0) ||
-			(score === (currentRecord.score || 0) && errors < currentRecord.errors);
-	} else {
-		isNewRecord =
-			!currentRecord ||
-			wpm > currentRecord.wpm ||
-			(wpm === currentRecord.wpm && errors < currentRecord.errors);
-	}
-
-	if (isNewRecord) {
-		highScores[lang] = {
-			username: username,
-			wpm: wpm,
-			score: score,
-			errors: errors,
-			timestamp: Date.now(),
-		};
-		saveHighScoresToFile();
-		io.emit("update_high_scores", highScores);
-	}
-}
-
-// ==========================================
-// QUẢN LÝ TIN NHẮN CHAT & CHỐNG SPAM
-// ==========================================
-const MESSAGES_FILE = path.join(__dirname, "messages.json");
-const MESSAGE_TTL = 3 * 60 * 1000;
-let chatMessages = [];
-
-const userChatHistory = new Map();
-const mutedUsers = new Map();
-
-function loadMessagesFromFile() {
-	try {
-		if (fs.existsSync(MESSAGES_FILE)) {
-			const data = fs.readFileSync(MESSAGES_FILE, "utf8");
-			chatMessages = JSON.parse(data);
-			cleanOldMessages();
-		}
-	} catch (err) {
-		console.log("Lỗi load messages:", err.message);
-		chatMessages = [];
-	}
-}
-
-function saveMessagesToFile() {
-	try {
-		fs.writeFileSync(MESSAGES_FILE, JSON.stringify(chatMessages, null, 2), "utf8");
-	} catch (err) {
-		console.log("Lỗi save messages:", err.message);
-	}
-}
-
-function cleanOldMessages() {
-	const now = Date.now();
-	const initialLength = chatMessages.length;
-	chatMessages = chatMessages.filter((msg) => now - msg.timestamp < MESSAGE_TTL);
-
-	if (chatMessages.length !== initialLength) {
-		saveMessagesToFile();
-		io.emit("load_initial_messages", chatMessages);
-	}
-}
-
-setInterval(cleanOldMessages, 10000);
-loadMessagesFromFile();
-
-function checkSpamLimit(socketId) {
-	const now = Date.now();
-
-	if (mutedUsers.has(socketId)) {
-		const unmuteTime = mutedUsers.get(socketId);
-		if (now < unmuteTime) {
-			const remainingSec = Math.ceil((unmuteTime - now) / 1000);
-			return { allowed: false, remainingSec };
-		} else {
-			mutedUsers.delete(socketId);
-			userChatHistory.delete(socketId);
-		}
-	}
-
-	let history = userChatHistory.get(socketId) || [];
-	history = history.filter((time) => now - time < 5000);
-
-	if (history.length >= 5) {
-		const unmuteTime = now + 5000;
-		mutedUsers.set(socketId, unmuteTime);
-		userChatHistory.delete(socketId);
-		return { allowed: false, remainingSec: 5 };
-	}
-
-	history.push(now);
-	userChatHistory.set(socketId, history);
-	return { allowed: true };
-}
-
-// ==========================================
-// QUẢN LÝ ADMIN & BAN USER
-// ==========================================
-const connectedUsers = new Map();
-const bannedUsers = new Map();
-
-function isUserBanned(socketId) {
-	if (!socketId || !bannedUsers.has(socketId)) return false;
-	const b = bannedUsers.get(socketId);
-	if (Date.now() > b.expiresAt) {
-		unbanUser(socketId);
-		return false;
-	}
-	return true;
-}
-
-function unbanUser(socketId) {
-	if (bannedUsers.has(socketId)) {
-		const b = bannedUsers.get(socketId);
-		if (b.timeoutId) clearTimeout(b.timeoutId);
-		bannedUsers.delete(socketId);
-		broadcastAdminData();
-	}
-}
-
-function getOnlineUsersList() {
-	const list = [];
-	for (let [id, u] of connectedUsers.entries()) {
-		list.push({
-			id: u.id,
-			username: u.username || "Vô danh",
-			isAdmin: u.isAdmin || false,
-			isBanned: u.isAdmin ? false : isUserBanned(u.id),
-		});
-	}
-
-	list.sort((a, b) => {
-		if (a.isAdmin && !b.isAdmin) return -1;
-		if (!a.isAdmin && b.isAdmin) return 1;
-		return 0;
-	});
-
-	return list;
-}
-
-function getBannedUsersList() {
-	const list = [];
-	const now = Date.now();
-	for (let [id, b] of bannedUsers.entries()) {
-		const remainingSec = Math.max(0, Math.ceil((b.expiresAt - now) / 1000));
-		list.push({
-			id: b.id,
-			username: b.username || "Vô danh",
-			bannedAt: b.bannedAt,
-			expiresAt: b.expiresAt,
-			remainingSec: remainingSec,
-		});
-	}
-	return list;
-}
-
-function broadcastAdminData() {
-	const onlineList = getOnlineUsersList();
-	const bannedList = getBannedUsersList();
-	io.sockets.sockets.forEach((s) => {
-		if (s.isAdmin) {
-			s.emit("admin_online_users", onlineList);
-			s.emit("admin_banned_users", bannedList);
-		}
-	});
-}
-
-// ==========================================
-// DỮ LIỆU TỪ VỰNG & QUẢN LÝ ROOM
-// ==========================================
 const BIG_WORD_BANKS = {
 	vi_dau: {
+		// ~650 TỪ TIẾNG VIỆT CƠ BẢN / DỄ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		easy: [
+			// Thiên nhiên, thời tiết & thời gian
 			"ngày",
 			"đêm",
 			"mưa",
@@ -295,66 +48,20 @@ const BIG_WORD_BANKS = {
 			"đất",
 			"lửa",
 			"nước",
-			"cây",
-			"hoa",
-			"lá",
-			"cỏ",
-			"chim",
-			"cá",
-			"nhà",
-			"xe",
-			"cơm",
-			"áo",
-			"tiền",
-			"sách",
-			"bút",
-			"bàn",
-			"ghế",
-			"đèn",
-			"tay",
-			"chân",
-			"mắt",
-			"mũi",
-			"tai",
-			"miệng",
-			"tóc",
-			"răng",
-			"mặt",
-			"lưng",
-			"anh",
-			"em",
-			"ông",
-			"bà",
-			"cha",
-			"mẹ",
-			"con",
-			"chú",
-			"bác",
-			"cô",
-			"thầy",
-			"bạn",
-			"người",
-			"bé",
-			"trẻ",
-			"già",
-			"nam",
-			"nữ",
-			"tôi",
-			"ta",
-			"mình",
-			"bạn",
-			"họ",
-			"ai",
-			"gì",
-			"đâu",
-			"đây",
-			"đó",
-			"này",
-			"kia",
+			"cát",
+			"đá",
+			"sỏi",
+			"bùn",
+			"tro",
+			"khói",
+			"bụi",
+			"sao",
+			"trăng",
 			"sáng",
 			"trưa",
 			"chiều",
 			"tối",
+			"khuya",
 			"hôm",
 			"mai",
 			"nay",
@@ -362,66 +69,459 @@ const BIG_WORD_BANKS = {
 			"muộn",
 			"lúc",
 			"giờ",
-			"năm",
-			"tháng",
-			"tuần",
 			"phút",
+			"giây",
+			"tuần",
+			"tháng",
+			"năm",
 			"mùa",
 			"xuân",
 			"hè",
 			"thu",
 			"đông",
-			"một",
-			"hai",
+			"bão",
+			"giông",
+			"sấm",
+			"chớp",
+			"sương",
+			"tuyết",
+			"rét",
+			"lạnh",
+			"nóng",
+			"ấm",
+			"mát",
+			"ẩm",
+			"khô",
+			"hanh",
+			"nguồn",
+			"suối",
+			"thác",
+			"khe",
+			"lạch",
+			"ao",
+			"hồ",
+			"đầm",
+			"vực",
+			"cồn",
+			"bãi",
+			"bờ",
+			"đảo",
+			"vịnh",
+			"hang",
+			"động",
+			"rãnh",
+			"kênh",
+			"mương",
+			"đồi",
+			"dốc",
+
+			// Con người, gia đình, đại từ
+			"ông",
+			"bà",
+			"cha",
+			"mẹ",
 			"ba",
-			"bốn",
-			"năm",
-			"sáu",
-			"bảy",
-			"tám",
-			"chín",
-			"mười",
-			"lớn",
-			"nhỏ",
-			"cao",
-			"thấp",
-			"dài",
-			"ngắn",
-			"to",
+			"má",
+			"anh",
+			"chị",
+			"em",
+			"con",
+			"cháu",
+			"chắt",
+			"chú",
+			"bác",
+			"cô",
+			"dì",
+			"thím",
+			"cậu",
+			"mợ",
+			"dượng",
+			"thầy",
+			"bạn",
+			"trò",
+			"khách",
+			"chủ",
+			"người",
+			"trai",
+			"gái",
+			"nam",
+			"nữ",
+			"già",
+			"trẻ",
 			"bé",
-			"mới",
-			"cũ",
-			"tốt",
-			"xấu",
-			"đẹp",
-			"hay",
-			"dở",
-			"nhanh",
-			"chậm",
-			"đúng",
-			"sai",
-			"dễ",
-			"khó",
-			"vui",
-			"buồn",
-			"yêu",
-			"ghét",
-			"thích",
-			"sợ",
-			"lo",
-			"tin",
-			"nhớ",
-			"quên",
-			"cười",
-			"khóc",
-			"nói",
-			"nghe",
-			"đọc",
-			"viết",
-			"xem",
-			"ăn",
-			"uống",
-			"ngủ",
+			"cụ",
+			"chàng",
+			"nàng",
+			"tôi",
+			"ta",
+			"mình",
+			"tớ",
+			"cậu",
+			"họ",
+			"chúng",
+			"ai",
+			"kẻ",
+			"hàng",
+			"xóm",
+			"làng",
+			"phố",
+			"thôn",
+			"ấp",
+			"bản",
+			"quê",
+			"quán",
+			"nhà",
+			"dân",
+			"tộc",
+
+			// Cơ thể con người
+			"đầu",
+			"tóc",
+			"tai",
+			"mắt",
+			"mũi",
+			"miệng",
+			"môi",
+			"răng",
+			"lưỡi",
+			"cằm",
+			"má",
+			"trán",
+			"cổ",
+			"gáy",
+			"vai",
+			"ngực",
+			"lưng",
+			"bụng",
+			"rốn",
+			"eo",
+			"hông",
+			"tay",
+			"chân",
+			"ngón",
+			"móng",
+			"nách",
+			"khớp",
+			"gối",
+			"gót",
+			"da",
+			"thịt",
+			"xương",
+			"máu",
+			"tim",
+			"gan",
+			"phổi",
+			"thận",
+			"ruột",
+			"não",
+			"mày",
+			"mi",
+			"râu",
+			"lông",
+			"gân",
+			"bắp",
+			"mặt",
+			"thân",
+			"vóc",
+			"dáng",
+			"tiếng",
+
+			// Động vật
+			"chó",
+			"mèo",
+			"gà",
+			"vịt",
+			"ngan",
+			"ngỗng",
+			"bồ",
+			"câu",
+			"chim",
+			"cá",
+			"tôm",
+			"cua",
+			"ốc",
+			"nghêu",
+			"sò",
+			"hến",
+			"mực",
+			"lươn",
+			"trạch",
+			"ếch",
+			"nhái",
+			"cóc",
+			"heo",
+			"lợn",
+			"bò",
+			"trâu",
+			"ngựa",
+			"dê",
+			"cừu",
+			"hươu",
+			"nai",
+			"voi",
+			"hổ",
+			"cọp",
+			"báo",
+			"gấu",
+			"khỉ",
+			"vượn",
+			"sói",
+			"cáo",
+			"chồn",
+			"thỏ",
+			"chuột",
+			"sóc",
+			"nhím",
+			"rắn",
+			"trăn",
+			"rùa",
+			"ba",
+			"ong",
+			"bướm",
+			"kiến",
+			"gián",
+			"muỗi",
+			"ruồi",
+			"nhện",
+			"dế",
+			"ve",
+			"tằm",
+			"sâu",
+			"giun",
+			"sên",
+			"đỉa",
+			"bọ",
+			"mối",
+			"cào",
+			"châu",
+			"nghé",
+			"bê",
+
+			// Cây cối, rau củ, quả, thực phẩm
+			"cây",
+			"hoa",
+			"lá",
+			"cành",
+			"gốc",
+			"rễ",
+			"thân",
+			"vỏ",
+			"búp",
+			"chồi",
+			"mầm",
+			"nụ",
+			"quả",
+			"trái",
+			"hạt",
+			"hột",
+			"cùi",
+			"xơ",
+			"gai",
+			"rơm",
+			"rạ",
+			"thóc",
+			"lúa",
+			"gạo",
+			"nếp",
+			"tẻ",
+			"ngô",
+			"bắp",
+			"khoai",
+			"sắn",
+			"đậu",
+			"đỗ",
+			"lạc",
+			"vừng",
+			"mè",
+			"tiêu",
+			"tỏi",
+			"hành",
+			"ớt",
+			"gừng",
+			"sả",
+			"chanh",
+			"quất",
+			"cam",
+			"quýt",
+			"bưởi",
+			"xoài",
+			"ổi",
+			"mít",
+			"na",
+			"chuối",
+			"lê",
+			"đào",
+			"mận",
+			"dưa",
+			"hấu",
+			"sầu",
+			"bơ",
+			"dừa",
+			"vải",
+			"nhãn",
+			"me",
+			"táo",
+			"dâu",
+			"nho",
+			"bí",
+			"bầu",
+			"mướp",
+			"cà",
+			"muống",
+			"ngót",
+			"cải",
+			"dền",
+			"ngải",
+			"răm",
+			"sen",
+			"súng",
+			"cúc",
+			"hồng",
+			"mai",
+			"lan",
+			"huệ",
+			"nhài",
+			"tre",
+			"trúc",
+			"nứa",
+			"thông",
+			"rong",
+			"rêu",
+			"cỏ",
+			"cơm",
+			"cháo",
+			"canh",
+			"súp",
+			"bún",
+			"phở",
+			"mì",
+			"miến",
+			"bánh",
+			"kẹo",
+			"muối",
+			"đường",
+			"mật",
+			"mía",
+			"sữa",
+			"trà",
+			"rượu",
+			"bia",
+			"mỡ",
+			"dầu",
+
+			// Đồ vật, nhà cửa, dụng cụ
+			"nhà",
+			"cửa",
+			"sân",
+			"vườn",
+			"ngõ",
+			"tường",
+			"vách",
+			"mái",
+			"cột",
+			"kèo",
+			"sàn",
+			"thềm",
+			"bậc",
+			"khóa",
+			"bàn",
+			"ghế",
+			"giường",
+			"tủ",
+			"chiếu",
+			"chăn",
+			"màn",
+			"gối",
+			"nệm",
+			"gương",
+			"lược",
+			"đèn",
+			"nến",
+			"quạt",
+			"nồi",
+			"xoong",
+			"chảo",
+			"bát",
+			"đĩa",
+			"tô",
+			"chén",
+			"cốc",
+			"ly",
+			"thìa",
+			"muỗng",
+			"đũa",
+			"dao",
+			"kéo",
+			"thớt",
+			"rổ",
+			"rá",
+			"chậu",
+			"xô",
+			"thùng",
+			"can",
+			"hũ",
+			"lọ",
+			"bình",
+			"chai",
+			"bao",
+			"túi",
+			"ví",
+			"cặp",
+			"áo",
+			"quần",
+			"váy",
+			"khăn",
+			"mũ",
+			"nón",
+			"giày",
+			"dép",
+			"ủng",
+			"tất",
+			"găng",
+			"kim",
+			"chỉ",
+			"thước",
+			"bút",
+			"mực",
+			"phấn",
+			"bảng",
+			"sách",
+			"vở",
+			"giấy",
+			"tranh",
+			"ảnh",
+			"báo",
+			"đài",
+			"chuông",
+			"cờ",
+			"trống",
+			"đàn",
+			"sáo",
+			"kèn",
+			"gậy",
+			"cuốc",
+			"xẻng",
+			"liềm",
+			"cày",
+			"bừa",
+			"đinh",
+			"búa",
+			"kìm",
+			"cưa",
+			"đục",
+			"thang",
+			"dây",
+			"thừng",
+			"xích",
+			"xe",
+			"tàu",
+			"thuyền",
+			"bè",
+			"phà",
+			"ga",
+			"cầu",
+
+			// Hành động, động từ
 			"đi",
 			"đến",
 			"về",
@@ -432,256 +532,363 @@ const BIG_WORD_BANKS = {
 			"qua",
 			"lại",
 			"chạy",
-			"đi",
+			"nhảy",
+			"bước",
 			"đứng",
 			"ngồi",
 			"nằm",
+			"bò",
+			"trườn",
 			"bay",
+			"lượn",
 			"bơi",
-			"nhảy",
-			"đánh",
-			"đá",
-			"mở",
-			"đóng",
-			"bật",
-			"tắt",
+			"lặn",
+			"trèo",
+			"leo",
+			"trượt",
+			"ngã",
+			"té",
+			"bổ",
+			"nhào",
+			"ăn",
+			"uống",
+			"nhai",
+			"nuốt",
+			"cắn",
+			"ngậm",
+			"mút",
+			"liếm",
+			"húp",
+			"nếm",
+			"ngủ",
+			"thức",
+			"mơ",
+			"dậy",
+			"tắm",
+			"giặt",
+			"gội",
+			"rửa",
+			"lau",
+			"chùi",
+			"quét",
+			"dọn",
+			"xem",
+			"nhìn",
+			"ngắm",
+			"trông",
+			"dòm",
+			"ngó",
+			"thấy",
+			"nghe",
+			"ngửi",
+			"hít",
+			"thở",
+			"nói",
+			"cười",
+			"khóc",
+			"kêu",
+			"gào",
+			"la",
+			"hét",
+			"hát",
+			"múa",
+			"đọc",
+			"viết",
+			"vẽ",
+			"may",
+			"vá",
+			"đan",
+			"thêu",
+			"gọt",
+			"tỉa",
+			"chặt",
+			"chém",
+			"cắt",
+			"xẻ",
+			"mổ",
+			"xé",
+			"bẻ",
+			"vặn",
+			"xoay",
+			"kéo",
+			"đẩy",
+			"giật",
+			"lôi",
+			"bê",
+			"vác",
+			"khiêng",
+			"gánh",
+			"xách",
+			"ôm",
+			"bế",
+			"cõng",
+			"dắt",
+			"dẫn",
 			"đưa",
-			"nhận",
+			"đón",
+			"tiễn",
+			"chào",
+			"hỏi",
+			"mời",
+			"xin",
 			"cho",
+			"biếu",
+			"tặng",
+			"nhận",
 			"lấy",
 			"giữ",
-			"mất",
+			"giấu",
+			"cất",
+			"bỏ",
+			"vứt",
+			"quăng",
+			"ném",
+			"đập",
+			"đánh",
+			"đấm",
+			"đá",
+			"tát",
+			"cào",
+			"cấu",
+			"phạt",
+			"khen",
+			"chê",
+			"yêu",
+			"ghét",
+			"giận",
+			"hờn",
+			"thương",
+			"nhớ",
+			"mong",
+			"chờ",
 			"tìm",
+			"kiếm",
 			"gặp",
-			"gọi",
-			"hỏi",
-			"trả",
-			"mua",
-			"bán",
-			"dùng",
-			"làm",
+			"quên",
+			"hiểu",
+			"biết",
 			"học",
 			"dạy",
-			"làm",
-			"sống",
-			"chết",
-			"sinh",
-			"giúp",
-			"cần",
+			"răn",
+			"khuyên",
+			"hẹn",
+			"hứa",
+			"ước",
 			"muốn",
-			"có",
-			"không",
-			"rất",
-			"cũng",
-			"đã",
-			"đang",
-			"sẽ",
-			"vẫn",
-			"chỉ",
-			"còn",
-			"được",
-			"bị",
-			"và",
-			"hay",
-			"hoặc",
-			"nhưng",
-			"vì",
-			"nên",
-			"nếu",
-			"khi",
-			"mà",
-			"để",
-			"với",
-			"cho",
-			"từ",
-			"theo",
-			"trên",
-			"dưới",
-			"trong",
-			"ngoài",
-			"trước",
-			"sau",
-			"bên",
-			"giữa",
-			"gần",
-			"xa",
-			"cùng",
-			"khác",
-			"mỗi",
-			"mọi",
-			"nhiều",
-			"ít",
-			"đủ",
-			"thiếu",
-			"hết",
-			"thêm",
-			"bớt",
-			"đầu",
-			"cuối",
-			"giữa",
-			"trái",
-			"phải",
-			"trong",
-			"ngoài",
-			"sau",
-			"trước",
-			"bóng",
-			"hình",
-			"màu",
-			"âm",
-			"ánh",
-			"sáng",
-			"đường",
-			"phố",
-			"làng",
-			"chợ",
-			"trường",
-			"lớp",
-			"phòng",
-			"cửa",
-			"tường",
-			"sân",
-			"vườn",
-			"ruộng",
-			"đồng",
-			"bãi",
-			"bờ",
-			"cầu",
-			"sách",
-			"vở",
-			"giấy",
-			"mực",
-			"kim",
-			"đồng",
-			"vàng",
-			"bạc",
-			"đá",
-			"gỗ",
-			"sắt",
-			"vải",
-			"da",
-			"len",
-			"bát",
-			"đĩa",
-			"cốc",
-			"ly",
-			"nồi",
-			"chén",
-			"dao",
-			"kéo",
-			"muỗng",
-			"thìa",
-			"bánh",
-			"kẹo",
-			"đường",
-			"muối",
-			"cá",
-			"thịt",
-			"trứng",
-			"rau",
-			"quả",
-			"gạo",
-			"bếp",
-			"nồi",
-			"xoong",
-			"chảo",
-			"bếp",
-			"cơm",
-			"cháo",
-			"canh",
-			"súp",
-			"mì",
-			"phở",
-			"bún",
-			"bánh",
-			"sữa",
-			"trà",
-			"cà",
-			"nước",
-			"mật",
-			"mía",
-			"dừa",
-			"cam",
-			"chanh",
-			"xoài",
-			"ổi",
-			"mít",
-			"na",
-			"lê",
-			"đào",
-			"mận",
-			"dưa",
-			"bí",
-			"đậu",
-			"ngô",
-			"khoai",
-			"sắn",
-			"lạc",
-			"vừng",
-			"mè",
+			"cần",
+			"mua",
+			"bán",
+			"đổi",
+			"trả",
+			"vay",
+			"mượn",
 			"tiêu",
-			"tỏi",
-			"gừng",
-			"ớt",
-			"hành",
-			"tôm",
-			"cua",
-			"ốc",
-			"nghêu",
-			"sò",
-			"lươn",
-			"ếch",
-			"gà",
-			"vịt",
-			"heo",
-			"bò",
-			"dê",
-			"ngựa",
-			"trâu",
-			"voi",
-			"hổ",
-			"sư tử",
-			"gấu",
-			"khỉ",
-			"nai",
-			"hươu",
-			"cáo",
-			"sói",
-			"mèo",
-			"thỏ",
-			"chuột",
-			"rắn",
-			"rùa",
-			"ếch",
-			"ong",
-			"kiến",
-			"muỗi",
-			"ruồi",
-			"bướm",
-			"sâu",
-			"nhện",
-			"dế",
-			"đỏ",
-			"xanh",
-			"vàng",
+			"đếm",
+			"tính",
+			"đo",
+			"cân",
+			"đong",
+			"xây",
+			"dựng",
+			"đắp",
+			"đào",
+			"bới",
+			"cuốc",
+			"gieo",
+			"trồng",
+			"cấy",
+			"gặt",
+			"hái",
+			"tưới",
+			"bón",
+			"chăm",
+			"nuôi",
+			"dưỡng",
+			"cứu",
+			"giúp",
+			"đỡ",
+			"nhường",
+			"nhịn",
+			"tha",
+			"chịu",
+			"kìm",
+			"ngăn",
+			"chặn",
+			"vây",
+			"bắt",
+			"thả",
+			"trốn",
+			"thoát",
+			"đuổi",
+			"theo",
+			"kịp",
+
+			// Tính từ, trạng thái & màu sắc
+			"tốt",
+			"xấu",
+			"đẹp",
+			"xinh",
+			"tươi",
+			"héo",
+			"sạch",
+			"bẩn",
+			"thơm",
+			"thối",
+			"khét",
+			"ngọt",
+			"mặn",
+			"chua",
+			"cay",
+			"đắng",
+			"chát",
+			"bùi",
+			"béo",
+			"ngon",
+			"dở",
+			"đậm",
+			"nhạt",
+			"nồng",
+			"gắt",
+			"cao",
+			"thấp",
+			"dài",
+			"ngắn",
+			"rộng",
+			"hẹp",
+			"to",
+			"nhỏ",
+			"bé",
+			"lớn",
+			"dày",
+			"mỏng",
+			"nặng",
+			"nhẹ",
+			"cứng",
+			"mềm",
+			"dẻo",
+			"dai",
+			"giòn",
+			"xốp",
+			"nhẵn",
+			"ráp",
+			"trơn",
+			"thẳng",
+			"cong",
+			"tròn",
+			"vuông",
+			"méo",
+			"dẹp",
+			"nhọn",
+			"tù",
+			"sắc",
+			"bén",
+			"cùn",
+			"nhanh",
+			"chậm",
+			"mau",
+			"lẹ",
+			"gấp",
+			"đúng",
+			"sai",
+			"dễ",
+			"khó",
+			"tiện",
+			"lợi",
+			"vui",
+			"buồn",
+			"sướng",
+			"khổ",
+			"đau",
+			"xót",
+			"rát",
+			"ngứa",
+			"tê",
+			"mỏi",
+			"nhức",
+			"mệt",
+			"khỏe",
+			"yếu",
+			"lành",
+			"rách",
+			"vỡ",
+			"nát",
+			"đầy",
+			"vơi",
+			"cạn",
+			"rỗng",
+			"chật",
+			"tối",
+			"sáng",
+			"mờ",
+			"rõ",
 			"trắng",
 			"đen",
+			"đỏ",
+			"vàng",
+			"xanh",
 			"tím",
 			"hồng",
 			"nâu",
-			"cam",
 			"xám",
-			"tròn",
-			"vuông",
-			"thẳng",
-			"cong",
-			"mềm",
-			"cứng",
-			"nóng",
-			"lạnh",
-			"ấm",
-			"mát",
+			"bạc",
+			"giàu",
+			"nghèo",
+			"sang",
+			"hèn",
+			"quý",
+			"rẻ",
+			"đắt",
+			"thật",
+			"giả",
+			"cũ",
+			"mới",
+			"lạ",
+			"quen",
+
+			// Số từ & liên từ
+			"một",
+			"hai",
+			"ba",
+			"bốn",
+			"năm",
+			"sáu",
+			"bảy",
+			"tám",
+			"chín",
+			"mười",
+			"trăm",
+			"nghìn",
+			"vạn",
+			"triệu",
+			"tỉ",
+			"nửa",
+			"đôi",
+			"cặp",
+			"vài",
+			"dăm",
+			"và",
+			"với",
+			"cùng",
+			"hay",
+			"hoặc",
+			"nhưng",
+			"mà",
+			"vì",
+			"bởi",
+			"do",
+			"nên",
+			"thì",
+			"nếu",
+			"giá",
+			"dẫu",
+			"dù",
+			"tuy",
+			"rằng",
+			"là",
+			"để",
 		],
+
+		// 150 TỪ TIẾNG VIỆT NÂNG CAO / KHÓ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -718,7 +925,6 @@ const BIG_WORD_BANKS = {
 			"nghiêm",
 			"nghiệm",
 			"nghiệp",
-			"nghiêng",
 			"nguyễn",
 			"quyết",
 			"quyền",
@@ -727,37 +933,29 @@ const BIG_WORD_BANKS = {
 			"quyến",
 			"quyện",
 			"uyển",
-			"uyển",
 			"uyết",
 			"huyễn",
 			"huyền",
 			"huyện",
 			"chuyển",
 			"chuyến",
-			"chuyện",
 			"chuyễn",
 			"tuyển",
 			"tuyến",
 			"tuyệt",
 			"tuyên",
 			"duyên",
-			"duyệt",
 			"khuyết",
-			"khuyến",
 			"khuyên",
 			"khuyển",
 			"khuya",
 			"khuây",
 			"khuất",
 			"khuẩn",
-			"khuếch",
 			"khuôn",
 			"nguệch",
 			"nguẩy",
-			"nguẩy",
-			"nguyện",
 			"nguyệt",
-			"nguyền",
 			"nguyền",
 			"nghịch",
 			"nghiệt",
@@ -766,627 +964,82 @@ const BIG_WORD_BANKS = {
 			"nghễnh",
 			"nghệch",
 			"nghênh",
-			"nghiêm",
-			"nghiễm",
-			"nguyễn",
 			"ngoảnh",
 			"ngoặt",
-			"ngoằn",
 			"ngoẵng",
 			"ngoẹo",
 			"ngoét",
 			"xoẹt",
-			"xoắn",
 			"xoạc",
 			"xoạch",
 			"quạnh",
 			"quẫy",
-			"quệt",
 			"khuỷu",
-			"khuất",
 			"khuynh",
 			"khuấy",
-			"khuya",
 			"khoắng",
-			"khoảnh",
-			"khoẻn",
-			"khuyến",
-			"khuyết",
-			"khuyển",
-			"khuyếch",
-			"nghiêng",
-			"nghiễm",
-			"nghiến",
-			"nghễnh",
-			"nghệch",
-			"nghênh",
-			"nguyện",
-			"nguyệt",
-			"nguyền",
-			"nguyền",
-			"nguệch",
-			"nguẩy",
-			"ngoảnh",
-			"ngoặt",
-			"ngoằn",
-			"ngoẵng",
-			"ngoẹo",
-			"ngoét",
-			"xoẹt",
-			"xoạc",
-			"xoạch",
-			"xoắn",
-			"quạnh",
+			"khỏe",
+			"loãng",
+			"ngoạm",
+			"loạng",
+			"choạng",
+			"loằng",
+			"khoẵng",
+			"toác",
+			"thoảng",
+			"xoang",
+			"quăng",
+			"quắc",
+			"xoặc",
+			"toát",
+			"thoát",
+			"thoắt",
+			"khoắt",
+			"choắt",
+			"nhuộm",
+			"suộm",
+			"nguấy",
+			"quấy",
+			"loay",
+			"hoay",
+			"ngoáy",
+			"khoáy",
+			"xoay",
+			"toay",
+			"khoeo",
+			"khoèo",
+			"quỵt",
+			"trĩu",
+			"suyễn",
+			"hoạnh",
+			"quánh",
+			"chễm",
+			"chệ",
+			"nghẽn",
+			"ngẫm",
+			"nghĩ",
+			"bẽn",
+			"lẽn",
+			"nũng",
+			"nịu",
+			"nguội",
+			"chuỗi",
+			"nguẩn",
+			"quẩn",
+			"huých",
+			"uỵch",
+			"huỵch",
 			"quẫy",
-			"quệt",
-			"quyến",
-			"quyện",
-			"quyền",
-			"quyết",
-			"quỳnh",
-			"huyễn",
-			"huyện",
-			"uyển",
-			"tuyển",
-			"tuyến",
-			"tuyệt",
-			"duyên",
-			"khuyết",
-		],
-	},
-	vi_nodau: {
-		easy: [
-			"ngay",
-			"dem",
-			"mua",
-			"nang",
-			"gio",
-			"may",
-			"song",
-			"nui",
-			"bien",
-			"rung",
-			"troi",
-			"dat",
-			"lua",
-			"nuoc",
-			"cay",
-			"hoa",
-			"la",
-			"co",
-			"chim",
-			"ca",
-			"nha",
-			"xe",
-			"com",
-			"ao",
-			"tien",
-			"sach",
-			"but",
-			"ban",
-			"ghe",
-			"den",
-			"tay",
-			"chan",
-			"mat",
-			"mui",
-			"tai",
-			"mieng",
-			"toc",
-			"rang",
-			"mat",
-			"lung",
-			"anh",
-			"em",
-			"ong",
-			"ba",
-			"cha",
-			"me",
-			"con",
-			"chu",
-			"bac",
-			"co",
-			"thay",
-			"ban",
-			"nguoi",
-			"be",
-			"tre",
-			"gia",
-			"nam",
-			"nu",
-			"toi",
-			"ta",
-			"minh",
-			"ban",
-			"ho",
-			"ai",
-			"gi",
-			"dau",
-			"day",
-			"do",
-			"nay",
-			"kia",
-			"sang",
-			"trua",
-			"chieu",
-			"toi",
-			"hom",
-			"mai",
-			"nay",
-			"som",
-			"muon",
-			"luc",
-			"gio",
-			"nam",
-			"thang",
-			"tuan",
-			"phut",
-			"mua",
-			"xuan",
-			"he",
-			"thu",
-			"dong",
-			"mot",
-			"hai",
-			"ba",
-			"bon",
-			"nam",
-			"sau",
-			"bay",
-			"tam",
-			"chin",
-			"muoi",
-			"lon",
-			"nho",
-			"cao",
-			"thap",
-			"dai",
-			"ngan",
-			"to",
-			"be",
-			"moi",
-			"cu",
-			"tot",
-			"xau",
-			"dep",
-			"hay",
-			"do",
-			"nhanh",
-			"cham",
-			"dung",
-			"sai",
-			"de",
-			"kho",
-			"vui",
-			"buon",
-			"yeu",
-			"ghet",
-			"thich",
-			"so",
-			"lo",
-			"tin",
-			"nho",
-			"quen",
-			"cuoi",
-			"khoc",
-			"noi",
-			"nghe",
-			"doc",
-			"viet",
-			"xem",
-			"an",
-			"uong",
-			"ngu",
-			"di",
-			"den",
-			"ve",
-			"ra",
-			"vao",
-			"len",
-			"xuong",
-			"qua",
-			"lai",
-			"chay",
-			"di",
-			"dung",
-			"ngoi",
-			"nam",
-			"bay",
-			"boi",
-			"nhay",
-			"danh",
-			"da",
-			"mo",
-			"dong",
-			"bat",
-			"tat",
-			"dua",
-			"nhan",
-			"cho",
-			"lay",
-			"giu",
-			"mat",
-			"tim",
-			"gap",
-			"goi",
-			"hoi",
-			"tra",
-			"mua",
-			"ban",
-			"dung",
-			"lam",
-			"hoc",
-			"day",
-			"lam",
-			"song",
-			"chet",
-			"sinh",
-			"giup",
-			"can",
-			"muon",
-			"co",
-			"khong",
-			"rat",
-			"cung",
-			"da",
-			"dang",
-			"se",
-			"van",
-			"chi",
-			"con",
-			"duoc",
-			"bi",
-			"va",
-			"hay",
-			"hoac",
-			"nhung",
-			"vi",
-			"nen",
-			"neu",
-			"khi",
-			"ma",
-			"de",
-			"voi",
-			"cho",
-			"tu",
-			"theo",
-			"tren",
-			"duoi",
-			"trong",
-			"ngoai",
-			"truoc",
-			"sau",
-			"ben",
-			"giua",
-			"gan",
-			"xa",
-			"cung",
-			"khac",
-			"moi",
-			"moi",
-			"nhieu",
-			"it",
-			"du",
-			"thieu",
-			"het",
-			"them",
-			"bot",
-			"dau",
-			"cuoi",
-			"giua",
-			"trai",
-			"phai",
-			"trong",
-			"ngoai",
-			"sau",
-			"truoc",
-			"bong",
-			"hinh",
-			"mau",
-			"am",
-			"anh",
-			"sang",
-			"duong",
-			"pho",
-			"lang",
-			"cho",
-			"truong",
-			"lop",
-			"phong",
-			"cua",
-			"tuong",
-			"san",
-			"vuon",
-			"ruong",
-			"dong",
-			"bai",
-			"bo",
-			"cau",
-			"sach",
-			"vo",
-			"giay",
-			"muc",
-			"kim",
-			"dong",
-			"vang",
-			"bac",
-			"da",
-			"go",
-			"sat",
-			"vai",
-			"da",
-			"len",
-			"bat",
-			"dia",
-			"coc",
-			"ly",
-			"noi",
-			"chen",
-			"dao",
-			"keo",
-			"muong",
-			"thia",
-			"banh",
-			"keo",
-			"duong",
-			"muoi",
-			"ca",
-			"thit",
-			"trung",
-			"rau",
-			"qua",
-			"gao",
-			"bep",
-			"noi",
-			"xoong",
-			"chao",
-			"bep",
-			"com",
-			"chao",
-			"canh",
-			"sup",
-			"mi",
-			"pho",
-			"bun",
-			"banh",
-			"sua",
-			"tra",
-			"ca",
-			"nuoc",
-			"mat",
-			"mia",
-			"dua",
-			"cam",
-			"chanh",
-			"xoai",
-			"oi",
-			"mit",
-			"na",
-			"le",
-			"dao",
-			"man",
-			"dua",
-			"bi",
-			"dau",
-			"ngo",
-			"khoai",
-			"san",
-			"lac",
-			"vung",
-			"me",
-			"tieu",
-			"toi",
-			"gung",
-			"ot",
-			"hanh",
-			"tom",
-			"cua",
-			"oc",
-			"ngheu",
-			"so",
-			"luon",
-			"ech",
-			"ga",
-			"vit",
-			"heo",
-			"bo",
-			"de",
-			"ngua",
-			"trau",
-			"voi",
-			"ho",
-			"su tu",
-			"gau",
-			"khi",
-			"nai",
-			"huou",
-			"cao",
-			"soi",
-			"meo",
-			"tho",
-			"chuot",
-			"ran",
-			"rua",
-			"ech",
-			"ong",
-			"kien",
-			"muoi",
-			"ruoi",
-			"buom",
-			"sau",
-			"nhen",
-			"de",
-			"do",
-			"xanh",
-			"vang",
-			"trang",
-			"den",
-			"tim",
-			"hong",
-			"nau",
-			"cam",
-			"xam",
-			"tron",
-			"vuong",
-			"thang",
-			"cong",
-			"mem",
-			"cung",
-			"nong",
-			"lanh",
-			"am",
-			"mat",
-		],
-		hard: [
-			"khoanh",
-			"nghieng",
-			"khuech",
-			"khuyu",
-			"ngoeo",
-			"thuo",
-			"ngoan",
-			"ngheo",
-			"nghien",
-			"nguyen",
-			"truyen",
-			"khuyen",
-			"chuyen",
-			"quyen",
-			"quy",
-			"ngheu",
-			"nghieu",
-			"soan",
-			"duyet",
-			"chuong",
-			"hoang",
-			"khoang",
-			"ngheo",
-			"xoan",
-			"ngoac",
-			"khoac",
-			"hoat",
-			"hoang",
-			"thuan",
-			"khuan",
-			"ngoai",
-			"quet",
-			"nghiem",
-			"nghiem",
-			"nghiep",
-			"nghieng",
-			"nguyen",
-			"quyet",
-			"quyen",
-			"quynh",
-			"quynh",
-			"quyen",
-			"quyen",
-			"uyen",
-			"uyen",
-			"uyet",
-			"huyen",
-			"huyen",
-			"huyen",
-			"chuyen",
-			"chuyen",
-			"chuyen",
-			"chuyen",
-			"tuyen",
-			"tuyen",
-			"tuyet",
-			"tuyen",
-			"duyen",
-			"duyet",
-			"khuyet",
-			"khuyen",
-			"khuyen",
-			"khuyen",
-			"khuya",
-			"khuay",
-			"khuat",
-			"khuan",
-			"khuech",
-			"khuon",
-			"nguech",
-			"nguy",
-			"nguy",
-			"nguyen",
-			"nguyet",
-			"nguyen",
-			"nguyen",
-			"nghich",
-			"nghiet",
-			"nghiem",
-			"nghia",
-			"nghenh",
-			"nghech",
-			"nghenh",
-			"nghiem",
-			"nghiem",
-			"nguyen",
-			"ngoanh",
-			"ngoat",
-			"ngoan",
-			"ngoang",
-			"ngoeo",
-			"ngoet",
-			"xoet",
-			"xoan",
-			"xoac",
-			"xoach",
-			"quanh",
-			"quay",
-			"quet",
-			"khuyu",
-			"khuat",
-			"khuynh",
-			"khuay",
-			"khuya",
-			"khoang",
-			"khoanh",
-			"khoen",
-			"khuyen",
-			"khuyet",
-			"khuyen",
-			"khuech",
-			"nghieng",
-			"nghiem",
-			"nghien",
-			"nghenh",
-			"nghech",
-			"nghenh",
-			"nguyen",
-			"nguyet",
-			"nguyen",
-			"nguyen",
-			"nguech",
-			"nguay",
-			"ngoanh",
-			"ngoat",
-			"ngoan",
-			"ngoang",
-			"ngoeo",
-			"ngoet",
-			"xoet",
-			"xoac",
-			"xoach",
-			"xoan",
-			"quanh",
-			"quay",
-			"quet",
-			"quyen",
-			"quyen",
-			"quyen",
-			"quyet",
-			"quynh",
-			"huyen",
-			"huyen",
-			"uyen",
-			"tuyen",
-			"tuyen",
-			"tuyet",
-			"duyen",
-			"khuyet",
+			"nghẹn",
+			"xòe",
+			"ngoe",
+			"xuệ",
+			"lũy",
+			"thủy",
+			"túy",
+			"nhuần",
+			"chuẩn",
+			"xuất",
 		],
 	},
 	en: {
@@ -1426,7 +1079,6 @@ const BIG_WORD_BANKS = {
 			"meat",
 			"beef",
 			"pork",
-			"fish",
 			"chicken",
 			"duck",
 			"horse",
@@ -1558,14 +1210,18 @@ const BIG_WORD_BANKS = {
 			"adventure",
 			"challenge",
 			"experience",
-			"knowledge",
 			"language",
 			"question",
-			"strength",
 			"throughout",
 		],
 	},
 };
+
+BIG_WORD_BANKS.vi_nodau = {
+	easy: BIG_WORD_BANKS.vi_dau.easy.map(removeVietnameseTones),
+	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
+};
+
 const runnerIcons = [
 	"🤖",
 	"🐶",
@@ -1589,67 +1245,241 @@ const runnerIcons = [
 	"🦭",
 ];
 
-function generateNgauHungItems(count = NGAU_HUNG_TOTAL_ROUNDS) {
-	const list = [];
-	const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
-	const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
-
-	for (let i = 0; i < count; i++) {
-		const type = Math.floor(Math.random() * 3);
-		if (type === 0) {
-			list.push(viPool[Math.floor(Math.random() * viPool.length)]);
-		} else if (type === 1) {
-			list.push(enPool[Math.floor(Math.random() * enPool.length)]);
-		} else {
-			list.push(Math.floor(10000 + Math.random() * 90000).toString());
-		}
+// Sinh kho từ vựng (Chế độ Săn Boss: 20% English, 40% Tiếng Việt Không Dấu, 40% Zipcode 5 số)
+function generateWords(lang, count = 150) {
+	if (lang === "san_boss") {
+		const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
+		const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
+		return Array.from({ length: 400 }, () => {
+			const rand = Math.random();
+			if (rand < 0.2) {
+				return enPool[Math.floor(Math.random() * enPool.length)];
+			} else if (rand < 0.6) {
+				return viPool[Math.floor(Math.random() * viPool.length)];
+			} else {
+				return Math.floor(10000 + Math.random() * 90000).toString();
+			}
+		});
 	}
-	return list;
-}
-
-function generateWords(lang, count = 100) {
 	if (lang === "ngau_hung") {
-		return generateNgauHungItems(NGAU_HUNG_TOTAL_ROUNDS);
+		const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
+		const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
+		return Array.from({ length: NGAU_HUNG_TOTAL_ROUNDS }, () => {
+			const type = Math.floor(Math.random() * 3);
+			return type === 0
+				? viPool[Math.floor(Math.random() * viPool.length)]
+				: type === 1
+					? enPool[Math.floor(Math.random() * enPool.length)]
+					: Math.floor(10000 + Math.random() * 90000).toString();
+		});
 	}
 	if (lang === "numpad") {
-		const zipList = [];
-		for (let i = 0; i < 500; i++)
-			zipList.push(Math.floor(10000 + Math.random() * 90000).toString());
-		return zipList;
+		return Array.from({ length: 500 }, () => Math.floor(10000 + Math.random() * 90000).toString());
 	}
 	const bank = BIG_WORD_BANKS[lang] || BIG_WORD_BANKS.vi_dau;
-	const result = [];
-	for (let i = 0; i < count; i++) {
-		const isHard = Math.random() < 0.3;
-		const pool = isHard ? bank.hard : bank.easy;
-		result.push(pool[Math.floor(Math.random() * pool.length)]);
-	}
-	return result;
+	return Array.from({ length: count }, () => {
+		const pool = Math.random() < 0.35 ? bank.hard : bank.easy;
+		return pool[Math.floor(Math.random() * pool.length)];
+	});
 }
 
-const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [] };
+// ==========================================
+// 2. HIGH SCORES & TỰ ĐỘNG RESET 0H GMT+7
+// ==========================================
+const HIGHSCORES_FILE = path.join(__dirname, "highscores.json");
+const defaultHighScores = {
+	vi_dau: null,
+	vi_nodau: null,
+	en: null,
+	numpad: null,
+	ngau_hung: null,
+	san_boss: null,
+};
+let highScores = { ...defaultHighScores };
+
+function loadHighScores() {
+	try {
+		if (fs.existsSync(HIGHSCORES_FILE)) {
+			highScores = {
+				...defaultHighScores,
+				...JSON.parse(fs.readFileSync(HIGHSCORES_FILE, "utf8")),
+			};
+		}
+	} catch (e) {
+		console.error("Lỗi load high scores:", e.message);
+	}
+}
+
+function saveHighScores() {
+	try {
+		fs.writeFileSync(HIGHSCORES_FILE, JSON.stringify(highScores, null, 2), "utf8");
+	} catch (e) {
+		console.error("Lỗi save high scores:", e.message);
+	}
+}
+
+function scheduleDailyReset() {
+	const now = new Date();
+	const gmt7Ms = now.getTime() + (now.getTimezoneOffset() + 420) * 60000;
+	const nextReset = new Date(gmt7Ms);
+	nextReset.setHours(24, 0, 0, 0);
+
+	setTimeout(() => {
+		console.log("[SYSTEM] Đã đến 0h GMT+7: Reset bảng điểm...");
+		highScores = { ...defaultHighScores };
+		saveHighScores();
+		io.emit("update_high_scores", highScores);
+		scheduleDailyReset();
+	}, nextReset.getTime() - gmt7Ms);
+}
+
+loadHighScores();
+scheduleDailyReset();
+
+function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount, score = 0) {
+	if (playerCount < 3) return;
+	const curr = highScores[lang];
+	const isNew =
+		lang === "ngau_hung" || lang === "san_boss"
+			? !curr || score > (curr.score || 0) || (score === (curr.score || 0) && errors < curr.errors)
+			: !curr || wpm > curr.wpm || (wpm === curr.wpm && errors < curr.errors);
+
+	if (isNew) {
+		highScores[lang] = { username, wpm, score, errors, timestamp: Date.now() };
+		saveHighScores();
+		io.emit("update_high_scores", highScores);
+	}
+}
+
+// ==========================================
+// 3. TIN NHẮN CHAT & CHỐNG SPAM
+// ==========================================
+const MESSAGES_FILE = path.join(__dirname, "messages.json");
+let chatMessages = [];
+const userChatHistory = new Map();
+const mutedUsers = new Map();
+
+function loadMessages() {
+	try {
+		if (fs.existsSync(MESSAGES_FILE))
+			chatMessages = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf8"));
+		cleanOldMessages();
+	} catch (e) {
+		chatMessages = [];
+	}
+}
+
+function cleanOldMessages() {
+	const now = Date.now();
+	const initLen = chatMessages.length;
+	chatMessages = chatMessages.filter((msg) => now - msg.timestamp < MESSAGE_TTL);
+	if (chatMessages.length !== initLen) {
+		fs.writeFileSync(MESSAGES_FILE, JSON.stringify(chatMessages, null, 2), "utf8");
+		io.emit("load_initial_messages", chatMessages);
+	}
+}
+
+setInterval(cleanOldMessages, 10000);
+loadMessages();
+
+function checkSpamLimit(socketId) {
+	const now = Date.now(),
+		unmuteTime = mutedUsers.get(socketId);
+	if (unmuteTime) {
+		if (now < unmuteTime)
+			return { allowed: false, remainingSec: Math.ceil((unmuteTime - now) / 1000) };
+		mutedUsers.delete(socketId);
+		userChatHistory.delete(socketId);
+	}
+	let history = (userChatHistory.get(socketId) || []).filter((time) => now - time < 5000);
+	if (history.length >= 5) {
+		mutedUsers.set(socketId, now + 5000);
+		userChatHistory.delete(socketId);
+		return { allowed: false, remainingSec: 5 };
+	}
+	history.push(now);
+	userChatHistory.set(socketId, history);
+	return { allowed: true };
+}
+
+// ==========================================
+// 4. ADMIN & BAN USER
+// ==========================================
+const connectedUsers = new Map();
+const bannedUsers = new Map();
+
+function isUserBanned(socketId) {
+	if (!socketId || !bannedUsers.has(socketId)) return false;
+	const b = bannedUsers.get(socketId);
+	if (Date.now() > b.expiresAt) {
+		unbanUser(socketId);
+		return false;
+	}
+	return true;
+}
+
+function unbanUser(socketId) {
+	if (bannedUsers.has(socketId)) {
+		clearTimeout(bannedUsers.get(socketId).timeoutId);
+		bannedUsers.delete(socketId);
+		broadcastAdminData();
+	}
+}
+
+function broadcastAdminData() {
+	const now = Date.now();
+	const onlineList = [...connectedUsers.values()]
+		.map((u) => ({
+			id: u.id,
+			username: u.username || "Vô danh",
+			isAdmin: !!u.isAdmin,
+			isBanned: u.isAdmin ? false : isUserBanned(u.id),
+		}))
+		.sort((a, b) => (b.isAdmin ? 1 : 0) - (a.isAdmin ? 1 : 0));
+
+	const bannedList = [...bannedUsers.values()].map((b) => ({
+		id: b.id,
+		username: b.username || "Vô danh",
+		bannedAt: b.bannedAt,
+		expiresAt: b.expiresAt,
+		remainingSec: Math.max(0, Math.ceil((b.expiresAt - now) / 1000)),
+	}));
+
+	io.sockets.sockets.forEach((s) => {
+		if (s.isAdmin) {
+			s.emit("admin_online_users", onlineList);
+			s.emit("admin_banned_users", bannedList);
+		}
+	});
+}
+
+// ==========================================
+// 5. QUẢN LÝ PHÒNG ĐẤU & BOSS RAID ENGINE
+// ==========================================
+const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [], san_boss: [] };
 let totalOnlineUsers = 0;
 
 function getOrCreateRoom(lang) {
 	let roomList = rooms[lang] || rooms.vi_dau;
 	let room = roomList.find((r) => r.state === "waiting" && r.players.length < 10);
-
 	if (!room) {
 		room = {
-			id: "room_" + lang + "_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
-			lang: lang,
+			id: `room_${lang}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+			lang,
 			state: "waiting",
 			players: [],
 			words: generateWords(lang),
 			matchInterval: null,
+			matchTimeout: null,
 			startTime: null,
-			finishedCount: 0,
 			currentRound: 0,
 			totalRounds: NGAU_HUNG_TOTAL_ROUNDS,
 			roundWinners: [],
 			roundActive: false,
 			roundTimer: null,
 			roundIntermissionTimer: null,
+			boss: null,
+			bossSkillTimer: null,
 		};
 		roomList.push(room);
 	}
@@ -1657,49 +1487,40 @@ function getOrCreateRoom(lang) {
 }
 
 function clearRoomTimers(room) {
-	if (room.matchInterval) clearInterval(room.matchInterval);
-	if (room.roundTimer) clearTimeout(room.roundTimer);
-	if (room.roundIntermissionTimer) clearTimeout(room.roundIntermissionTimer);
+	clearInterval(room.matchInterval);
+	clearTimeout(room.matchTimeout);
+	clearTimeout(room.roundTimer);
+	clearTimeout(room.roundIntermissionTimer);
+	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
 }
 
 function checkMatchCompletion(room) {
 	if (room.lang === "ngau_hung") return;
-	const activeOrFinished = room.players.filter(
-		(p) => p.isFinished || p.isSurrendered || p.isDisconnected,
-	);
-	if (activeOrFinished.length >= room.players.length) finishMatch(room);
+	const finished = room.players.filter((p) => p.isFinished || p.isSurrendered || p.isDisconnected);
+	if (finished.length >= room.players.length) finishMatch(room);
 }
 
 function startNgauHungRound(room) {
 	if (room.state !== "playing") return;
-
-	room.currentRound++;
-	if (room.currentRound > room.totalRounds) {
-		finishMatch(room);
-		return;
-	}
+	if (++room.currentRound > room.totalRounds) return finishMatch(room);
 
 	room.roundWinners = [];
 	room.roundActive = true;
-	const currentWord = room.words[room.currentRound - 1];
-
 	io.to(room.id).emit("ngau_hung_new_round", {
 		round: room.currentRound,
 		totalRounds: room.totalRounds,
-		targetWord: currentWord,
-		duration: NGAU_HUNG_ROUND_DURATION, // 7 giây
+		targetWord: room.words[room.currentRound - 1],
+		duration: NGAU_HUNG_ROUND_DURATION,
 	});
 
-	if (room.roundTimer) clearTimeout(room.roundTimer);
-	room.roundTimer = setTimeout(() => {
-		endNgauHungRound(room);
-	}, NGAU_HUNG_ROUND_DURATION * 1000); // 7000ms
+	clearTimeout(room.roundTimer);
+	room.roundTimer = setTimeout(() => endNgauHungRound(room), NGAU_HUNG_ROUND_DURATION * 1000);
 }
 
 function endNgauHungRound(room) {
 	if (!room.roundActive || room.state !== "playing") return;
 	room.roundActive = false;
-	if (room.roundTimer) clearTimeout(room.roundTimer);
+	clearTimeout(room.roundTimer);
 
 	io.to(room.id).emit("ngau_hung_round_ended", {
 		round: room.currentRound,
@@ -1708,16 +1529,35 @@ function endNgauHungRound(room) {
 	});
 
 	if (room.currentRound >= room.totalRounds) {
-		setTimeout(() => {
-			finishMatch(room);
-		}, 1500);
+		setTimeout(() => finishMatch(room), 1500);
 	} else {
-		io.to(room.id).emit("ngau_hung_intermission", { duration: NGAU_HUNG_INTERMISSION_DURATION }); // 3 giây
-		if (room.roundIntermissionTimer) clearTimeout(room.roundIntermissionTimer);
-		room.roundIntermissionTimer = setTimeout(() => {
-			startNgauHungRound(room);
-		}, NGAU_HUNG_INTERMISSION_DURATION * 1000); // 3000ms
+		io.to(room.id).emit("ngau_hung_intermission", { duration: NGAU_HUNG_INTERMISSION_DURATION });
+		clearTimeout(room.roundIntermissionTimer);
+		room.roundIntermissionTimer = setTimeout(
+			() => startNgauHungRound(room),
+			NGAU_HUNG_INTERMISSION_DURATION * 1000,
+		);
 	}
+}
+
+// Bắt đầu vòng lặp Kỹ năng Boss
+function startBossSkillLoop(room) {
+	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
+	const skills = ["shake", "fog", "reverse"];
+
+	room.bossSkillTimer = setInterval(() => {
+		if (room.state !== "playing" || !room.boss || room.boss.hp <= 0) {
+			return clearInterval(room.bossSkillTimer);
+		}
+		const skill = skills[Math.floor(Math.random() * skills.length)];
+		io.to(room.id).emit("boss_skill_warning", { skill, countdown: 2 });
+
+		setTimeout(() => {
+			if (room.state === "playing" && room.boss && room.boss.hp > 0) {
+				io.to(room.id).emit("boss_skill_cast", { skill, duration: 5 });
+			}
+		}, 2000);
+	}, 14000);
 }
 
 function finishMatch(room) {
@@ -1725,35 +1565,30 @@ function finishMatch(room) {
 	room.state = "finished";
 	clearRoomTimers(room);
 
-	// Thuật toán sắp xếp: Người bị AFK/Đầu hàng xếp dưới, nếu nhiều người AFK thì ai nhiều ký tự hơn xếp trên
+	const isBoss = room.lang === "san_boss";
+	const isVictory = isBoss ? room.boss && room.boss.hp <= 0 : true;
+
 	const leaderboard = [...room.players].sort((a, b) => {
-		const isInactiveA = a.isSurrendered || a.isDisconnected || a.isAFK;
-		const isInactiveB = b.isSurrendered || b.isDisconnected || b.isAFK;
-
-		if (isInactiveA && !isInactiveB) return 1;
-		if (!isInactiveA && isInactiveB) return -1;
-
-		if (isInactiveA && isInactiveB) {
+		const inactA = a.isSurrendered || a.isDisconnected || a.isAFK;
+		const inactB = b.isSurrendered || b.isDisconnected || b.isAFK;
+		if (inactA !== inactB) return inactA ? 1 : -1;
+		if (inactA && inactB)
 			return (b.correctChars || 0) - (a.correctChars || 0) || (a.errors || 0) - (b.errors || 0);
-		}
 
-		if (room.lang === "ngau_hung") {
-			return (
-				(b.score || 0) - (a.score || 0) ||
-				(b.correctChars || 0) - (a.correctChars || 0) ||
-				(a.errors || 0) - (b.errors || 0)
-			);
-		}
+		const scoreA = room.lang === "ngau_hung" || isBoss ? a.score || 0 : a.wpm || 0;
+		const scoreB = room.lang === "ngau_hung" || isBoss ? b.score || 0 : b.wpm || 0;
 		return (
-			(b.wpm || 0) - (a.wpm || 0) ||
+			scoreB - scoreA ||
 			(b.correctChars || 0) - (a.correctChars || 0) ||
 			(a.errors || 0) - (b.errors || 0)
 		);
 	});
 
 	io.to(room.id).emit("game_over", {
-		leaderboard: leaderboard,
+		leaderboard,
 		language: room.lang,
+		isBossVictory: isVictory,
+		boss: room.boss,
 	});
 
 	leaderboard.forEach((p) => {
@@ -1769,184 +1604,146 @@ function finishMatch(room) {
 		}
 	});
 
-	if (rooms[room.lang]) {
-		rooms[room.lang] = rooms[room.lang].filter((r) => r.id !== room.id);
-	}
+	if (rooms[room.lang]) rooms[room.lang] = rooms[room.lang].filter((r) => r.id !== room.id);
 }
 
 // ==========================================
-// SOCKET.IO EVENTS
+// 6. SOCKET.IO EVENTS
 // ==========================================
 io.on("connection", (socket) => {
 	totalOnlineUsers++;
-
-	connectedUsers.set(socket.id, {
-		id: socket.id,
-		username: "Vô danh",
-		isAdmin: false,
-	});
+	connectedUsers.set(socket.id, { id: socket.id, username: "Vô danh", isAdmin: false });
 
 	io.emit("update_online_count", totalOnlineUsers);
 	socket.emit("init_high_scores", highScores);
 	socket.emit("load_initial_messages", chatMessages);
 	broadcastAdminData();
 
-	let currentRoom = null;
-	let player = null;
+	let currentRoom = null,
+		player = null;
 
 	function leaveCurrentLobby() {
-		if (currentRoom && player) {
-			socket.leave(currentRoom.id);
+		if (!currentRoom || !player) return;
+		socket.leave(currentRoom.id);
 
-			if (currentRoom.state === "playing") {
-				player.isDisconnected = true;
-				io.to(currentRoom.id).emit("race_update", currentRoom.players);
-
-				if (currentRoom.lang === "ngau_hung") {
-					const activeRemaining = currentRoom.players.filter(
-						(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
-					);
-					if (activeRemaining.length === 0) {
-						finishMatch(currentRoom);
-					}
-				} else {
-					checkMatchCompletion(currentRoom);
-				}
+		if (currentRoom.state === "playing") {
+			player.isDisconnected = true;
+			io.to(currentRoom.id).emit("race_update", currentRoom.players);
+			const active = currentRoom.players.filter(
+				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+			);
+			if (
+				(currentRoom.lang === "ngau_hung" || currentRoom.lang === "san_boss") &&
+				active.length === 0
+			) {
+				finishMatch(currentRoom);
 			} else {
-				currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
-				if (currentRoom.players.length === 0) {
-					clearRoomTimers(currentRoom);
-					if (rooms[currentRoom.lang]) {
-						rooms[currentRoom.lang] = rooms[currentRoom.lang].filter(
-							(r) => r.id !== currentRoom.id,
-						);
-					}
-				} else if (currentRoom.state === "waiting") {
-					io.to(currentRoom.id).emit("update_lobby", {
-						players: currentRoom.players,
-						language: currentRoom.lang,
-					});
-				}
+				checkMatchCompletion(currentRoom);
 			}
-			currentRoom = null;
-			player = null;
+		} else {
+			currentRoom.players = currentRoom.players.filter((p) => p.id !== socket.id);
+			if (currentRoom.players.length === 0) {
+				clearRoomTimers(currentRoom);
+				rooms[currentRoom.lang] = rooms[currentRoom.lang].filter((r) => r.id !== currentRoom.id);
+			} else {
+				io.to(currentRoom.id).emit("update_lobby", {
+					players: currentRoom.players,
+					language: currentRoom.lang,
+				});
+			}
 		}
+		currentRoom = player = null;
 	}
 
-	// --- ADMIN SOCKET EVENTS ---
+	// Admin Events
 	socket.on("admin_login", ({ password }) => {
-		if (password === ADMIN_PASSWORD) {
-			socket.isAdmin = true;
-			const u = connectedUsers.get(socket.id);
-			if (u) u.isAdmin = true;
-
-			socket.emit("admin_login_response", { success: true });
-			broadcastAdminData();
-		} else {
-			socket.emit("admin_login_response", {
-				success: false,
-				message: "Mật khẩu Admin không chính xác!",
-			});
-		}
+		const success = password === ADMIN_PASSWORD;
+		socket.isAdmin = success;
+		const u = connectedUsers.get(socket.id);
+		if (u) u.isAdmin = success;
+		socket.emit("admin_login_response", {
+			success,
+			message: success ? "" : "Mật khẩu Admin không chính xác!",
+		});
+		if (success) broadcastAdminData();
 	});
 
 	socket.on("admin_logout", () => {
 		socket.isAdmin = false;
 		const u = connectedUsers.get(socket.id);
 		if (u) u.isAdmin = false;
-
 		socket.emit("admin_logout_response");
 		broadcastAdminData();
 	});
 
 	socket.on("admin_ban_user", ({ targetSocketId }) => {
 		if (!socket.isAdmin) return;
-		const targetSocket = io.sockets.sockets.get(targetSocketId);
-		const targetUser = connectedUsers.get(targetSocketId);
-
 		const expiresAt = Date.now() + 5 * 60 * 1000;
-		const timeoutId = setTimeout(
-			() => {
-				unbanUser(targetSocketId);
-			},
-			5 * 60 * 1000,
-		);
-
+		const targetUser = connectedUsers.get(targetSocketId);
 		bannedUsers.set(targetSocketId, {
 			id: targetSocketId,
 			username: targetUser ? targetUser.username : "Vô danh",
 			bannedAt: Date.now(),
-			expiresAt: expiresAt,
-			timeoutId: timeoutId,
+			expiresAt,
+			timeoutId: setTimeout(() => unbanUser(targetSocketId), 5 * 60 * 1000),
 		});
-
-		if (targetSocket) {
-			targetSocket.emit("banned_notice", {
-				message: "Bạn đã bị Admin tạm cấm 5 phút!",
-				expiresAt: expiresAt,
-			});
-		}
-
+		io.to(targetSocketId).emit("banned_notice", {
+			message: "Bạn đã bị Admin tạm cấm 5 phút!",
+			expiresAt,
+		});
 		broadcastAdminData();
 	});
 
 	socket.on("admin_unban_user", ({ targetId }) => {
-		if (!socket.isAdmin) return;
-		unbanUser(targetId);
+		if (socket.isAdmin) unbanUser(targetId);
 	});
 
 	socket.on("admin_clear_chat", () => {
 		if (!socket.isAdmin) return;
 		chatMessages = [];
-		saveMessagesToFile();
+		fs.writeFileSync(MESSAGES_FILE, JSON.stringify([], null, 2), "utf8");
 		io.emit("clear_global_chat");
 	});
 
 	socket.on("admin_reset_highscore", ({ lang }) => {
-		if (!socket.isAdmin) return;
-		if (highScores.hasOwnProperty(lang)) {
+		if (socket.isAdmin && highScores[lang] !== undefined) {
 			highScores[lang] = null;
-			saveHighScoresToFile();
+			saveHighScores();
 			io.emit("update_high_scores", highScores);
 		}
 	});
 
 	socket.on("admin_kick_lobby_player", ({ targetSocketId }) => {
-		if (!socket.isAdmin) return;
-		const targetSocket = io.sockets.sockets.get(targetSocketId);
-		if (targetSocket) {
-			targetSocket.emit("kicked_from_lobby", {
-				message: "Bạn đã bị Admin đá ra khỏi phòng chờ!",
+		if (socket.isAdmin)
+			io.to(targetSocketId).emit("kicked_from_lobby", {
+				message: "Bạn đã bị Admin đá khỏi phòng chờ!",
 			});
-		}
 	});
 
-	// --- GAME & CHAT EVENTS ---
+	// Chat & Game Events
 	socket.on("update_username", (data) => {
 		const u = connectedUsers.get(socket.id);
-		if (u) u.username = data.username;
-		broadcastAdminData();
+		if (u) {
+			u.username = data.username;
+			broadcastAdminData();
+		}
 	});
 
 	socket.on("send_global_chat", (data) => {
-		const spamStatus = checkSpamLimit(socket.id);
-		if (!spamStatus.allowed) {
-			socket.emit("chat_error", {
-				message: `Bạn thao tác quá nhanh! Vui lòng chờ ${spamStatus.remainingSec}s để tiếp tục nhắn.`,
+		const spam = checkSpamLimit(socket.id);
+		if (!spam.allowed)
+			return socket.emit("chat_error", {
+				message: `Thao tác quá nhanh! Chờ ${spam.remainingSec}s.`,
 			});
-			return;
-		}
 
 		const msgData = {
 			username: data.username || "Vô danh",
 			message: data.message,
 			timestamp: Date.now(),
 		};
-
 		chatMessages.push(msgData);
 		cleanOldMessages();
-		saveMessagesToFile();
-
+		fs.writeFileSync(MESSAGES_FILE, JSON.stringify(chatMessages, null, 2), "utf8");
 		io.emit("receive_global_chat", msgData);
 	});
 
@@ -1962,26 +1759,18 @@ io.on("connection", (socket) => {
 
 	socket.on("join_lobby", (data) => {
 		if (isUserBanned(socket.id)) {
-			const b = bannedUsers.get(socket.id);
-			socket.emit("join_lobby_banned", {
-				message: "Bạn đang bị cấm tham gia phòng chờ!",
-				expiresAt: b ? b.expiresAt : Date.now(),
+			return socket.emit("join_lobby_banned", {
+				message: "Bạn đang bị cấm tham gia phòng!",
+				expiresAt: bannedUsers.get(socket.id)?.expiresAt,
 			});
-			return;
 		}
-
 		leaveCurrentLobby();
-
 		const lang = data.language || "vi_dau";
-		const username = data.username || "Vô danh";
-		const selectedIcon = data.selectedIcon || runnerIcons[0];
-
 		currentRoom = getOrCreateRoom(lang);
-
 		player = {
 			id: socket.id,
-			username: username,
-			icon: selectedIcon,
+			username: data.username || "Vô danh",
+			icon: data.selectedIcon || runnerIcons[0],
 			progress: 0,
 			wpm: 0,
 			score: 0,
@@ -1992,10 +1781,8 @@ io.on("connection", (socket) => {
 			isAFK: false,
 			isDisconnected: false,
 		};
-
 		currentRoom.players.push(player);
 		socket.join(currentRoom.id);
-
 		io.to(currentRoom.id).emit("update_lobby", {
 			players: currentRoom.players,
 			language: currentRoom.lang,
@@ -2017,87 +1804,150 @@ io.on("connection", (socket) => {
 			currentRoom.state = "playing";
 			currentRoom.startTime = Date.now();
 
+			if (currentRoom.lang === "san_boss") {
+				const pCount = Math.max(1, currentRoom.players.length);
+				const maxHp = pCount * 450;
+				currentRoom.boss = {
+					name: "HẮC LONG MA VƯƠNG",
+					icon: "🐉",
+					hp: maxHp,
+					maxHp: maxHp,
+					duration: BOSS_RAID_DURATION,
+				};
+
+				// Bộ đếm thời gian máy chủ chuẩn 120s (kèm 3s đếm ngược)
+				clearTimeout(currentRoom.matchTimeout);
+				currentRoom.matchTimeout = setTimeout(
+					() => {
+						if (currentRoom && currentRoom.state === "playing") {
+							finishMatch(currentRoom);
+						}
+					},
+					(BOSS_RAID_DURATION + 3) * 1000,
+				);
+			}
+
 			io.to(currentRoom.id).emit("game_start", {
 				words: currentRoom.words,
 				players: currentRoom.players,
 				countdown: 3,
 				language: currentRoom.lang,
+				boss: currentRoom.boss,
 			});
 
 			if (currentRoom.lang === "ngau_hung") {
 				currentRoom.currentRound = 0;
 				setTimeout(() => {
-					if (currentRoom && currentRoom.state === "playing") {
-						startNgauHungRound(currentRoom);
-					}
+					if (currentRoom?.state === "playing") startNgauHungRound(currentRoom);
+				}, 3000);
+			} else if (currentRoom.lang === "san_boss") {
+				setTimeout(() => {
+					if (currentRoom?.state === "playing") startBossSkillLoop(currentRoom);
 				}, 3000);
 			}
 		}
 	});
 
-	socket.on("submit_ngau_hung_word", (data) => {
-		if (!currentRoom || currentRoom.lang !== "ngau_hung" || !currentRoom.roundActive || !player)
+	// Xử lý sát thương Boss & cập nhật lỗi
+	socket.on("deal_boss_damage", (data) => {
+		if (
+			!currentRoom ||
+			currentRoom.lang !== "san_boss" ||
+			currentRoom.state !== "playing" ||
+			!player ||
+			!currentRoom.boss
+		)
 			return;
 		if (player.isSurrendered || player.isDisconnected || player.isAFK) return;
 
+		const dmg = Math.max(0, data.damage || 0);
+		player.score = (player.score || 0) + dmg;
+		player.correctChars = (player.correctChars || 0) + dmg;
 		if (typeof data.errors === "number") {
 			player.errors = data.errors;
 		}
 
-		const targetWord = currentRoom.words[currentRoom.currentRound - 1];
-		if (data.word === targetWord && !currentRoom.roundWinners.includes(socket.id)) {
-			currentRoom.roundWinners.push(socket.id);
-			const rank = currentRoom.roundWinners.length;
-			const pts = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+		if (dmg > 0) {
+			currentRoom.boss.hp = Math.max(0, currentRoom.boss.hp - dmg);
+		}
 
-			player.score = (player.score || 0) + pts;
-			player.correctChars = (player.correctChars || 0) + targetWord.length;
-			player.progress = Math.round((currentRoom.currentRound / currentRoom.totalRounds) * 100);
+		player.progress = Math.min(
+			100,
+			Math.round(((currentRoom.boss.maxHp - currentRoom.boss.hp) / currentRoom.boss.maxHp) * 100),
+		);
 
-			socket.emit("ngau_hung_player_success", {
-				rank: rank,
-				pointsAwarded: pts,
-				totalScore: player.score,
-			});
+		io.to(currentRoom.id).emit("boss_hp_update", {
+			hp: currentRoom.boss.hp,
+			maxHp: currentRoom.boss.maxHp,
+			damager: player.username,
+			damage: dmg,
+			players: currentRoom.players,
+		});
 
-			io.to(currentRoom.id).emit("race_update", currentRoom.players);
-
-			const activePlayersCount = currentRoom.players.filter(
-				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
-			).length;
-
-			if (
-				currentRoom.roundWinners.length >= 3 ||
-				currentRoom.roundWinners.length >= activePlayersCount
-			) {
-				endNgauHungRound(currentRoom);
-			}
+		if (currentRoom.boss.hp <= 0) {
+			currentRoom.boss.hp = 0;
+			finishMatch(currentRoom);
 		}
 	});
 
-	socket.on("leave_lobby", () => {
-		leaveCurrentLobby();
+	socket.on("submit_ngau_hung_word", (data) => {
+		if (
+			!currentRoom ||
+			currentRoom.lang !== "ngau_hung" ||
+			!currentRoom.roundActive ||
+			!player ||
+			player.isSurrendered
+		)
+			return;
+		if (typeof data.errors === "number") player.errors = data.errors;
+
+		const target = currentRoom.words[currentRoom.currentRound - 1];
+		if (data.word === target && !currentRoom.roundWinners.includes(socket.id)) {
+			currentRoom.roundWinners.push(socket.id);
+			const rank = currentRoom.roundWinners.length;
+			const pts = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+			player.score = (player.score || 0) + pts;
+			player.correctChars = (player.correctChars || 0) + target.length;
+			player.progress = Math.round((currentRoom.currentRound / currentRoom.totalRounds) * 100);
+
+			socket.emit("ngau_hung_player_success", {
+				rank,
+				pointsAwarded: pts,
+				totalScore: player.score,
+			});
+			io.to(currentRoom.id).emit("race_update", currentRoom.players);
+
+			const activeCount = currentRoom.players.filter(
+				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+			).length;
+			if (currentRoom.roundWinners.length >= Math.min(3, activeCount))
+				endNgauHungRound(currentRoom);
+		}
 	});
+
+	socket.on("leave_lobby", leaveCurrentLobby);
 
 	socket.on("update_progress", (data) => {
 		if (currentRoom && player) {
-			player.progress = data.progress;
-			player.wpm = data.wpm;
-			player.correctChars = data.correctChars;
-			player.errors = data.errors;
-
+			Object.assign(player, {
+				progress: data.progress,
+				wpm: data.wpm,
+				correctChars: data.correctChars,
+				errors: data.errors,
+			});
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
 		}
 	});
 
 	socket.on("player_finished", (data) => {
 		if (currentRoom && player) {
-			player.progress = 100;
-			player.wpm = data.wpm;
-			player.correctChars = data.correctChars;
-			player.errors = data.errors;
-			player.isFinished = true;
-
+			Object.assign(player, {
+				progress: 100,
+				wpm: data.wpm,
+				correctChars: data.correctChars,
+				errors: data.errors,
+				isFinished: true,
+			});
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
 			checkMatchCompletion(currentRoom);
 		}
@@ -2106,18 +1956,16 @@ io.on("connection", (socket) => {
 	socket.on("surrender", (data) => {
 		if (currentRoom && player) {
 			player.isSurrendered = true;
-			if (data && data.isAFK) {
-				player.isAFK = true;
-			}
+			if (data?.isAFK) player.isAFK = true;
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
-
-			if (currentRoom.lang === "ngau_hung") {
-				const activeRemaining = currentRoom.players.filter(
-					(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
-				);
-				if (activeRemaining.length === 0) {
-					finishMatch(currentRoom);
-				}
+			const active = currentRoom.players.filter(
+				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+			);
+			if (
+				(currentRoom.lang === "ngau_hung" || currentRoom.lang === "san_boss") &&
+				active.length === 0
+			) {
+				finishMatch(currentRoom);
 			} else {
 				checkMatchCompletion(currentRoom);
 			}
@@ -2127,15 +1975,11 @@ io.on("connection", (socket) => {
 	socket.on("disconnect", () => {
 		totalOnlineUsers = Math.max(0, totalOnlineUsers - 1);
 		connectedUsers.delete(socket.id);
-
 		leaveCurrentLobby();
-
 		io.emit("update_online_count", totalOnlineUsers);
 		broadcastAdminData();
 	});
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-	console.log(`Server đang chạy tại http://localhost:${PORT}`);
-});
+server.listen(PORT, () => console.log(`Server đang chạy tại http://localhost:${PORT}`));
