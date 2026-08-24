@@ -13,9 +13,32 @@ const BOSS_RAID_DURATION = 120;
 const DEFAULT_ICON = "🤖";
 const AFK_TIMEOUT = 30000;
 
+// Cookie helper functions
+function setCookie(n, v, d = 365) {
+	document.cookie = `${n}=${v || ""}; max-age=${d * 86400}; path=/; SameSite=Lax`;
+}
+function getCookie(n) {
+	const m = document.cookie.match(new RegExp(`(^| )${n}=([^;]+)`));
+	return m ? m[2] : null;
+}
+function eraseCookie(n) {
+	document.cookie = `${n}=; max-age=0; path=/`;
+}
+
+// Khôi phục phong cách đã lưu từ localStorage hoặc Cookie
+const savedInitialStyle =
+	localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
+
 let currentLanguage = "vi_dau",
 	myUsername = "bot_1000",
-	mySelectedIcon = DEFAULT_ICON;
+	mySelectedIcon = DEFAULT_ICON,
+	currentStyle = savedInitialStyle;
+
+// Áp dụng phong cách ngay lập tức vào DOM gốc để chống FOUC (nhấp nháy giao diện)
+if (document.documentElement) {
+	document.documentElement.setAttribute("data-style", currentStyle);
+}
+
 let currentWords = [],
 	wordIndex = 0,
 	correctChars = 0,
@@ -70,6 +93,7 @@ const chatEmojis = [
 	"😭",
 	"😤",
 ];
+
 const runnerIcons = [
 	"🤖",
 	"🐶",
@@ -92,6 +116,7 @@ const runnerIcons = [
 	"🦑",
 	"🦭",
 ];
+
 const modeNames = {
 	vi_dau: "🇻🇳 Tiếng Việt",
 	vi_nodau: "🔤 Không Dấu",
@@ -99,6 +124,12 @@ const modeNames = {
 	numpad: "🔢 Numpad",
 	ngau_hung: "🎲 Ngẫu Hứng",
 	san_boss: "🐉 Săn Boss",
+};
+
+const styleNames = {
+	cyberpunk: "⚡ Cyberpunk",
+	vintage: "📜 Cổ Điển",
+	xianxia: "🪷 Tiên Hiệp",
 };
 
 let serverHighScores = {
@@ -109,17 +140,6 @@ let serverHighScores = {
 	ngau_hung: null,
 	san_boss: null,
 };
-
-function setCookie(n, v, d) {
-	document.cookie = `${n}=${v || ""}; max-age=${d * 86400}; path=/`;
-}
-function getCookie(n) {
-	const m = document.cookie.match(new RegExp(`(^| )${n}=([^;]+)`));
-	return m ? m[2] : null;
-}
-function eraseCookie(n) {
-	document.cookie = `${n}=; max-age=0; path=/`;
-}
 
 function initBotWorker() {
 	if (!botWorker && window.Worker) {
@@ -191,14 +211,45 @@ window.resetHighScore = (lang) => {
 };
 
 function applyTheme(theme) {
-	document.documentElement.toggleAttribute("data-theme", theme === "light");
+	if (theme === "light") {
+		document.documentElement.setAttribute("data-theme", "light");
+	} else {
+		document.documentElement.removeAttribute("data-theme");
+	}
 	const btn = $("theme-toggle-btn");
 	if (btn) btn.innerText = theme === "light" ? "☀️ Sáng" : "🌙 Tối";
 	localStorage.setItem("racer_theme", theme);
+	setCookie("racer_theme", theme, 365);
+}
+
+// Hàm cập nhật và lưu trữ phong cách vĩnh viễn
+function applyStyle(style) {
+	currentStyle = style || "cyberpunk";
+	document.documentElement.setAttribute("data-style", currentStyle);
+
+	const btn = $("style-toggle-btn");
+	if (btn) btn.innerText = styleNames[currentStyle] || "⚡ Cyberpunk";
+
+	// Lưu song song vào localStorage và Cookie (365 ngày)
+	localStorage.setItem("racer_style", currentStyle);
+	setCookie("racer_style", currentStyle, 365);
+
+	// Đánh dấu thẻ đang active trong popup chọn phong cách
+	$$(".style-card").forEach((card) => {
+		card.classList.toggle("selected", card.dataset.style === currentStyle);
+	});
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	applyTheme(localStorage.getItem("racer_theme") || "dark");
+	// Khôi phục Theme Sáng/Tối
+	const savedTheme = localStorage.getItem("racer_theme") || getCookie("racer_theme") || "dark";
+	applyTheme(savedTheme);
+
+	// Khôi phục Phong cách giao diện đã lưu
+	const savedStyle = localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
+	applyStyle(savedStyle);
+
+	// Khôi phục Tên người chơi
 	myUsername =
 		localStorage.getItem("racer_username") || `bot_${Math.floor(1000 + Math.random() * 9000)}`;
 	localStorage.setItem("racer_username", myUsername);
@@ -222,7 +273,21 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	$("theme-toggle-btn")?.addEventListener("click", () => {
-		applyTheme(document.documentElement.hasAttribute("data-theme") ? "dark" : "light");
+		const isLight = document.documentElement.getAttribute("data-theme") === "light";
+		applyTheme(isLight ? "dark" : "light");
+	});
+
+	// Mở Popup chọn phong cách
+	$("style-toggle-btn")?.addEventListener("click", () => {
+		$("style-select-popup")?.classList.remove("hidden");
+	});
+
+	// Chọn phong cách trong popup
+	$$(".style-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			applyStyle(card.dataset.style);
+			$("style-select-popup")?.classList.add("hidden");
+		});
 	});
 
 	$("join-btn")?.addEventListener("click", () => {
@@ -276,7 +341,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		$("popup-name-input").focus();
 	});
 
-	$("btn-save-popup-name")?.addEventListener("click", () => {
+	// Lưu tên và tự động cập nhật ngay lập tức
+	const saveNameAction = () => {
 		const newName = $("popup-name-input").value.trim();
 		if (newName) {
 			myUsername = newName;
@@ -285,6 +351,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			$("rename-popup").classList.add("hidden");
 			socket.emit("update_username", { username: myUsername });
 		}
+	};
+
+	$("btn-save-popup-name")?.addEventListener("click", saveNameAction);
+	$("popup-name-input")?.addEventListener("keydown", (e) => {
+		if (e.key === "Enter") saveNameAction();
 	});
 
 	const typeInput = $("type-input");
@@ -745,6 +816,7 @@ function renderWords() {
 	wd.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// Xử lý logic gõ phím & tự động khôi phục giao diện khi nhấn Space xóa từ sai
 function handleTypingInput() {
 	if (!isPlaying) return;
 	const input = $("type-input"),
@@ -762,7 +834,8 @@ function handleTypingInput() {
 				if (wordEl) wordEl.className = "word correct";
 			} else {
 				totalErrors++;
-				if (wordEl) wordEl.className = "word current incorrect-typing";
+				// Reset chữ focus về trạng thái bình thường sau khi xóa input
+				if (wordEl) wordEl.className = "word current correct-typing";
 				socket.emit("update_progress", {
 					progress: Math.round((ngauHungCurrentRound / 15) * 100),
 					wpm: 0,
@@ -787,7 +860,6 @@ function handleTypingInput() {
 			wordIndex++;
 			input.value = "";
 
-			// Nếu là chế độ Săn Boss: Gửi sát thương trừ máu Boss kèm lỗi
 			if (currentLanguage === "san_boss") {
 				socket.emit("deal_boss_damage", { damage: wordLength, errors: totalErrors });
 			}
@@ -800,9 +872,9 @@ function handleTypingInput() {
 		} else {
 			totalErrors++;
 			input.value = "";
-			if (currSpan) currSpan.className = "word current incorrect-typing";
+			// Reset chữ focus về trạng thái bình thường sau khi xóa input
+			if (currSpan) currSpan.className = "word current correct-typing";
 
-			// Gửi lỗi lên máy chủ trong chế độ Săn Boss khi gõ sai
 			if (currentLanguage === "san_boss") {
 				socket.emit("deal_boss_damage", { damage: 0, errors: totalErrors });
 			}

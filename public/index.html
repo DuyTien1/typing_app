@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-style="cyberpunk">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,8 +30,9 @@
 		<link rel="stylesheet" href="style.css" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!-- HỆ THỐNG FONT ĐA PHONG CÁCH HỖ TRỢ 100% TIẾNG VIỆT -->
 		<link
-			href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&display=swap"
+			href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&family=Noto+Serif:ital,wght@0,600;0,700;1,400&family=Philosopher:wght@700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Orbitron:wght@700;900&display=swap"
 			rel="stylesheet"
 		/>
 		<script src="/socket.io/socket.io.js"></script>
@@ -43,6 +44,8 @@
 			<span class="admin-badge admin-only hidden">ADMIN</span>
 			<button id="btn-change-name" class="btn-small">ĐỔI TÊN</button>
 			<button id="theme-toggle-btn" class="btn-small theme-btn">🌙 Tối</button>
+			<!-- NÚT CHỌN PHONG CÁCH -->
+			<button id="style-toggle-btn" class="btn-small style-btn">⚡ Cyberpunk</button>
 		</div>
 
 		<!-- THANH GÓC TRÊN PHẢI -->
@@ -144,6 +147,43 @@
 				</section>
 			</div>
 		</main>
+
+		<!-- MODAL CHỌN PHONG CÁCH GIAO DIỆN -->
+		<div id="style-select-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3 class="style-popup-title">🎨 CHỌN PHONG CÁCH GIAO DIỆN</h3>
+				<div class="style-cards-grid">
+					<div class="style-card selected" data-style="cyberpunk">
+						<div class="style-card-icon">⚡</div>
+						<div class="style-card-name">Cyberpunk</div>
+						<div class="style-card-desc">Tương lai công nghệ cao, đèn neon dạ quang rực rỡ</div>
+					</div>
+					<div class="style-card" data-style="vintage">
+						<div class="style-card-icon">📜</div>
+						<div class="style-card-name">CỔ ĐIỂN - TÔN TRỌNG</div>
+						<div class="style-card-desc">
+							Châu Âu cổ điển, da nâu, đồng thau quý phái & viền hoa văn
+						</div>
+					</div>
+					<div class="style-card" data-style="xianxia">
+						<div class="style-card-icon">🪷</div>
+						<div class="style-card-name">TIÊN HIỆP - WỶBU</div>
+						<div class="style-card-desc">
+							Tiên phong đạo cốt, ngọc bích linh khí & sương khói bồng lai
+						</div>
+					</div>
+				</div>
+				<div style="margin-top: 20px">
+					<button
+						class="cyber-btn"
+						data-close="style-select-popup"
+						style="padding: 8px 25px; font-size: 14px; width: auto; margin: 0 auto"
+					>
+						ĐÓNG
+					</button>
+				</div>
+			</div>
+		</div>
 
 		<!-- POPUP ĐĂNG NHẬP ADMIN -->
 		<div id="admin-login-popup" class="custom-popup hidden">
@@ -325,33 +365,13 @@
 				<button id="btn-open-icon-select" class="cyber-btn btn-icon-corner">🕹️ ĐỔI ICON</button>
 
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
-				<div
-					id="lobby-mode-display"
-					style="
-						color: var(--accent);
-						font-family: &quot;Orbitron&quot;, sans-serif;
-						font-weight: bold;
-						font-size: 16px;
-						margin-bottom: 12px;
-					"
-				>
-					CHẾ ĐỘ: ---
-				</div>
+				<div id="lobby-mode-display" class="lobby-mode-tag">CHẾ ĐỘ: ---</div>
 				<div class="lobby-players-title">
 					DANH SÁCH NGƯỜI CHƠI ( <span id="lobby-count">1/10</span> )
 				</div>
 				<div id="lobby-players-grid"></div>
 
-				<button
-					id="start-game-now-btn"
-					class="cyber-btn"
-					style="
-						margin-top: 20px;
-						background: linear-gradient(45deg, #00ff66, #0088ff);
-						color: #000;
-						font-weight: 900;
-					"
-				>
+				<button id="start-game-now-btn" class="cyber-btn lobby-start-btn">
 					🚀 BẮT ĐẦU TRẬN ĐẤU NGAY
 				</button>
 
@@ -449,6 +469,7 @@
 			<div id="typing-area" class="cyber-box" style="position: relative; overflow: hidden">
 				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
 				<div id="ngau-hung-status" class="ngau-hung-badge hidden">VÒNG 1/15</div>
+				<!-- VÙNG GÕ PHÍM KHÔNG ĐỔI FONT ĐỂ ĐẢM BẢO ĐỘ ĐỌC TỐI ĐA -->
 				<div id="words-display"></div>
 				<input
 					type="text"
@@ -503,7 +524,7 @@
 					<button
 						id="btn-play-again"
 						class="cyber-btn"
-						style="background: linear-gradient(45deg, #00f0ff, #0088ff)"
+						style="background: linear-gradient(45deg, var(--primary), #0088ff)"
 					>
 						🔄 CHƠI TIẾP
 					</button>

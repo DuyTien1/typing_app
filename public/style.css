@@ -1,4 +1,12 @@
-:root {
+/* ========================================================= */
+/* 1. ĐỊNH NGHĨA BIẾN MÀU & PHONG CÁCH (STYLES & THEMES)     */
+/* ========================================================= */
+
+/* --- PHONG CÁCH 1: CYBERPUNK (MẶC ĐỊNH) --- */
+:root,
+[data-style="cyberpunk"] {
+	--font-heading: "Orbitron", sans-serif;
+	--font-ui: "Inter", sans-serif;
 	--bg-color: #05050a;
 	--panel-bg: #0d0d1a;
 	--modal-bg: rgba(2, 2, 5, 0.95);
@@ -12,10 +20,13 @@
 	--incorrect: #ff4d4d;
 	--track-bg: rgba(255, 255, 255, 0.04);
 	--border-color: rgba(0, 240, 255, 0.3);
-	--boss-color: #ff0055;
+	--border-radius-box: 8px;
+	--box-shadow-style: 0 4px 20px rgba(0, 240, 255, 0.15);
+	--btn-gradient: linear-gradient(45deg, #ff0055, #b0003a);
+	--glow: 0 0 12px var(--primary);
 }
 
-[data-theme="light"] {
+[data-style="cyberpunk"][data-theme="light"] {
 	--bg-color: #f4f6f9;
 	--panel-bg: #ffffff;
 	--modal-bg: rgba(244, 246, 249, 0.95);
@@ -23,30 +34,104 @@
 	--primary: #0088ff;
 	--secondary: #e6005c;
 	--accent: #d97706;
-	--text-main: #1f2937;
-	--text-muted: #6b7280;
+	--text-main: #111827;
+	--text-muted: #4b5563;
 	--correct: #10b981;
 	--incorrect: #dc2626;
 	--track-bg: rgba(0, 0, 0, 0.05);
-	--border-color: rgba(0, 136, 255, 0.3);
-	--boss-color: #e6005c;
+	--border-color: rgba(0, 136, 255, 0.35);
 }
 
+/* --- PHONG CÁCH 2: CỔ ĐIỂN HOÀNG GIA (VINTAGE / ROYAL RETRO) --- */
+/* SỬ DỤNG PLAYFAIR DISPLAY & EB GARAMOND ĐẠT CHUẨN 100% TIẾNG VIỆT KHÔNG LỖI DẤU */
+[data-style="vintage"] {
+	--font-heading: "Playfair Display", "EB Garamond", serif;
+	--font-ui: "EB Garamond", "Playfair Display", serif;
+	--bg-color: #160f0a;
+	--panel-bg: #23170f;
+	--modal-bg: rgba(22, 15, 10, 0.96);
+	--input-bg: #110b07;
+	--primary: #d4a373;
+	--secondary: #c2593f;
+	--accent: #e9c46a;
+	--text-main: #fcf6ed;
+	--text-muted: #b5a999;
+	--correct: #74a860;
+	--incorrect: #d9534f;
+	--track-bg: rgba(233, 196, 106, 0.08);
+	--border-color: rgba(212, 163, 115, 0.45);
+	--border-radius-box: 4px;
+	--box-shadow-style: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(233, 196, 106, 0.2);
+	--btn-gradient: linear-gradient(45deg, #a34828, #602814);
+	--glow: 0 0 8px rgba(233, 196, 106, 0.4);
+}
+
+[data-style="vintage"][data-theme="light"] {
+	--bg-color: #f5ede2;
+	--panel-bg: #fffbf5;
+	--modal-bg: rgba(245, 237, 226, 0.97);
+	--input-bg: #ffffff;
+	--primary: #8c531b;
+	--secondary: #a72d1d;
+	--accent: #b07d12;
+	--text-main: #1f140e;
+	--text-muted: #5e5146;
+	--correct: #2e6930;
+	--incorrect: #b8282b;
+	--track-bg: rgba(140, 83, 27, 0.08);
+	--border-color: rgba(140, 83, 27, 0.4);
+}
+
+/* --- PHONG CÁCH 3: TIÊN HIỆP THỦY MẶC (XIANXIA / ORIENTAL FANTASY) --- */
+[data-style="xianxia"] {
+	--font-heading: "Philosopher", "Noto Serif", serif;
+	--font-ui: "Noto Serif", serif;
+	--bg-color: #060e14;
+	--panel-bg: #0b1a24;
+	--modal-bg: rgba(6, 14, 20, 0.95);
+	--input-bg: #04090d;
+	--primary: #00e699;
+	--secondary: #ff3366;
+	--accent: #ffd166;
+	--text-main: #e6f7f2;
+	--text-muted: #7ca19a;
+	--correct: #00ffaa;
+	--incorrect: #ff4d6d;
+	--track-bg: rgba(0, 230, 153, 0.05);
+	--border-color: rgba(0, 230, 153, 0.35);
+	--border-radius-box: 14px;
+	--box-shadow-style: 0 0 25px rgba(0, 230, 153, 0.12), inset 0 0 15px rgba(0, 230, 153, 0.05);
+	--btn-gradient: linear-gradient(45deg, #00b377, #006644);
+	--glow: 0 0 15px rgba(0, 230, 153, 0.5);
+}
+
+[data-style="xianxia"][data-theme="light"] {
+	--bg-color: #ecf7f4;
+	--panel-bg: #ffffff;
+	--modal-bg: rgba(236, 247, 244, 0.96);
+	--input-bg: #ffffff;
+	--primary: #008f5d;
+	--secondary: #d62246;
+	--accent: #b45309;
+	--text-main: #0c241e;
+	--text-muted: #4b6b63;
+	--correct: #047857;
+	--incorrect: #be123c;
+	--track-bg: rgba(0, 143, 93, 0.08);
+	--border-color: rgba(0, 143, 93, 0.35);
+}
+
+/* ========================================================= */
+/* 2. THIẾT KẾ CƠ BẢN VÀ BỐ CỤC                             */
+/* ========================================================= */
 * {
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	font-family: "Rajdhani", sans-serif;
+	font-family: var(--font-ui);
 }
 
 body {
-	font-family:
-		"Inter",
-		-apple-system,
-		BlinkMacSystemFont,
-		"Segoe UI",
-		Roboto,
-		sans-serif;
 	background: var(--bg-color);
 	color: var(--text-main);
 	display: flex;
@@ -56,9 +141,7 @@ body {
 	min-height: 100vh;
 	width: 100vw;
 	overflow-x: hidden;
-	transition:
-		background-color 0.3s ease,
-		color 0.3s ease;
+	transition: all 0.3s ease;
 	position: relative;
 }
 
@@ -69,12 +152,38 @@ body {
 .cyber-box {
 	background: var(--panel-bg);
 	border: 1px solid var(--border-color);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	border-radius: 8px;
+	box-shadow: var(--box-shadow-style);
+	border-radius: var(--border-radius-box);
 	position: relative;
+	transition: all 0.3s ease;
 }
 
-/* THANH GÓC TRÊN PHẢI */
+[data-style="vintage"] .cyber-box {
+	border: 2px solid var(--border-color);
+	outline: 1px solid rgba(212, 163, 115, 0.25);
+	outline-offset: -5px;
+}
+[data-style="xianxia"] .cyber-box {
+	backdrop-filter: blur(8px);
+	border: 1.5px solid var(--border-color);
+}
+
+/* THANH GÓC TRÊN TRÁI & PHẢI */
+#user-profile-bar.left-bar {
+	position: fixed;
+	top: 12px;
+	left: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--panel-bg);
+	border: 1px solid var(--primary);
+	padding: 6px 12px;
+	border-radius: var(--border-radius-box);
+	box-shadow: var(--box-shadow-style);
+	z-index: 1000;
+}
+
 .top-right-bar {
 	position: fixed;
 	top: 12px;
@@ -93,10 +202,11 @@ body {
 	border: 1px solid var(--correct);
 	color: var(--correct);
 	padding: 6px 12px;
-	border-radius: 8px;
+	border-radius: var(--border-radius-box);
 	font-size: 12px;
 	font-weight: bold;
 	user-select: none;
+	font-family: var(--font-heading);
 }
 
 .online-badge.clickable {
@@ -110,9 +220,6 @@ body {
 	color: var(--secondary) !important;
 	cursor: pointer;
 }
-.banned-badge:hover {
-	background: rgba(255, 0, 85, 0.15);
-}
 
 .btn-gear {
 	background: var(--panel-bg);
@@ -120,7 +227,7 @@ body {
 	color: var(--primary);
 	width: 32px;
 	height: 32px;
-	border-radius: 8px;
+	border-radius: var(--border-radius-box);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -132,7 +239,7 @@ body {
 .btn-gear:hover {
 	background: var(--primary);
 	color: #000;
-	box-shadow: 0 0 10px var(--primary);
+	box-shadow: var(--glow);
 }
 
 .online-dot {
@@ -154,60 +261,65 @@ body {
 	}
 }
 
-/* MODALS & POPUPS ADMIN */
-.modal-large {
-	max-width: 620px !important;
-}
-.admin-table-wrapper {
-	max-height: 320px;
-	overflow-y: auto;
-	margin-top: 10px;
-}
-.admin-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 13px;
-}
-.admin-table th,
-.admin-table td {
-	padding: 8px 10px;
-	border-bottom: 1px solid var(--border-color);
-	text-align: center;
-	vertical-align: middle;
-}
-.admin-table th {
-	color: var(--primary);
-	font-family: "Orbitron", sans-serif;
-	font-size: 11px;
-}
-
-.btn-danger {
-	background: rgba(255, 0, 85, 0.2) !important;
-	border-color: var(--secondary) !important;
-	color: var(--secondary) !important;
-	cursor: pointer;
-	padding: 4px 10px;
+.admin-badge {
+	background: var(--secondary);
+	color: #ffffff;
+	font-size: 10px;
+	font-weight: 800;
+	font-family: var(--font-heading);
+	padding: 2px 6px;
 	border-radius: 4px;
 }
-.btn-danger:hover {
+
+#profile-name {
+	color: var(--accent);
+	font-weight: bold;
+	font-size: 15px;
+	font-family: var(--font-heading);
+}
+
+.btn-small {
+	background: rgba(0, 240, 255, 0.12);
+	border: 1px solid var(--primary);
+	color: var(--primary);
+	padding: 4px 8px;
+	font-size: 11px;
+	cursor: pointer;
+	border-radius: 4px;
+	font-weight: bold;
+	font-family: var(--font-heading);
+	transition: 0.2s;
+}
+.btn-small:hover {
+	background: var(--primary);
+	color: #000;
+	box-shadow: var(--glow);
+}
+
+.theme-btn {
+	background: rgba(255, 230, 0, 0.15) !important;
+	border-color: var(--accent) !important;
+	color: var(--accent) !important;
+}
+.style-btn {
+	background: rgba(0, 230, 153, 0.15) !important;
+	border-color: var(--primary) !important;
+	color: var(--primary) !important;
+}
+
+.btn-surrender-style {
+	background: rgba(255, 0, 85, 0.15) !important;
+	border-color: var(--secondary) !important;
+	color: var(--secondary) !important;
+}
+.btn-surrender-style:hover {
 	background: var(--secondary) !important;
 	color: #fff !important;
 }
 
-.btn-success {
-	background: rgba(0, 255, 102, 0.2) !important;
-	border-color: var(--correct) !important;
-	color: var(--correct) !important;
-	cursor: pointer;
-	padding: 4px 10px;
-	border-radius: 4px;
-}
-.btn-success:hover {
-	background: var(--correct) !important;
-	color: #000 !important;
-}
-
-/* MODAL TRANG CHỦ */
+/* ========================================================= */
+/* 3. MODAL TRANG CHỦ & PHONG THẦN BẢNG                      */
+/* ========================================================= */
 .modal {
 	position: fixed;
 	inset: 0;
@@ -223,7 +335,7 @@ body {
 .modal-content.home-main-container {
 	padding: 25px 20px;
 	width: 100%;
-	max-width: 860px;
+	max-width: 880px;
 	text-align: center;
 	border-color: var(--primary);
 	max-height: 88vh;
@@ -245,8 +357,8 @@ body {
 }
 
 .section-label {
-	font-family: "Orbitron", sans-serif;
-	font-size: 11px;
+	font-family: var(--font-heading);
+	font-size: 12px;
 	font-weight: bold;
 	color: var(--primary);
 	margin-bottom: 8px;
@@ -257,7 +369,7 @@ body {
 .high-score-board {
 	background: var(--track-bg);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--border-radius-box);
 	padding: 10px;
 	flex: 1;
 	display: flex;
@@ -272,7 +384,7 @@ body {
 }
 .leaderboard-table th {
 	color: var(--text-muted);
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 11px;
 	border-bottom: 1px solid var(--border-color);
 	padding-bottom: 6px;
@@ -292,131 +404,166 @@ body {
 }
 
 .glitch-title {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 32px;
 	font-weight: 900;
 	color: var(--primary);
-	text-shadow: 0 0 12px var(--primary);
+	text-shadow: var(--glow);
+	letter-spacing: 2px;
 }
 
 .subtitle {
+	font-family: var(--font-heading);
 	font-size: 13px;
 	color: var(--secondary);
-	letter-spacing: 4px;
+	letter-spacing: 3px;
 	font-weight: bold;
 	margin-bottom: 15px;
 }
 
-#user-profile-bar.left-bar {
-	position: fixed;
-	top: 12px;
-	left: 12px;
+/* ========================================================= */
+/* LỰA CHỌN PHONG CÁCH CARDS - ĐỘ TƯƠNG PHẢN CAO CHO MÀU SÁNG & TỐI */
+/* ========================================================= */
+.style-popup-title {
+	color: var(--primary);
+	font-family: var(--font-heading);
+	margin-bottom: 15px;
+	font-size: 20px;
+}
+.style-cards-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+	gap: 14px;
+	margin: 15px 0;
+}
+.style-card {
+	background: var(--panel-bg);
+	border: 2px solid var(--border-color);
+	border-radius: var(--border-radius-box);
+	padding: 18px 12px;
+	cursor: pointer;
+	text-align: center;
+	transition: all 0.2s ease;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	gap: 8px;
-	background: var(--panel-bg);
-	border: 1px solid var(--primary);
-	padding: 6px 12px;
-	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
-	z-index: 1000;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
-
-.admin-badge {
-	background: var(--secondary);
-	color: #ffffff;
-	font-size: 10px;
+.style-card:hover {
+	border-color: var(--primary);
+	transform: translateY(-3px);
+}
+.style-card.selected {
+	border-color: var(--accent) !important;
+	background: rgba(255, 230, 0, 0.15) !important;
+	box-shadow: 0 0 16px rgba(255, 230, 0, 0.35) !important;
+}
+.style-card-icon {
+	font-size: 34px;
+}
+.style-card-name {
+	font-family: var(--font-heading);
 	font-weight: 800;
-	font-family: "Orbitron", sans-serif;
-	padding: 2px 6px;
-	border-radius: 4px;
-	box-shadow: 0 0 8px var(--secondary);
+	font-size: 15px;
+	color: var(--text-main);
+	letter-spacing: 0.5px;
+}
+.style-card-desc {
+	font-size: 12px;
+	color: var(--text-muted);
+	line-height: 1.45;
+	font-weight: 500;
 }
 
-#profile-name {
-	color: var(--accent);
+/* ĐẶC TRỊ RÕ NÉT TRÊN NỀN SÁNG (LIGHT THEME) CHO BẢNG PHONG CÁCH */
+[data-theme="light"] .style-card {
+	background: #ffffff !important;
+	border-color: rgba(0, 0, 0, 0.15) !important;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .style-card:hover {
+	border-color: var(--primary) !important;
+}
+[data-theme="light"] .style-card-name {
+	color: #111827 !important;
+	font-weight: 900;
+}
+[data-theme="light"] .style-card-desc {
+	color: #4b5563 !important;
+}
+[data-theme="light"] .style-card.selected {
+	background: #fffbeb !important;
+	border-color: #d97706 !important;
+	box-shadow: 0 0 15px rgba(217, 119, 6, 0.3) !important;
+}
+[data-theme="light"] .style-card.selected .style-card-name {
+	color: #92400e !important;
+}
+
+/* CHỌN CHẾ ĐỘ THI ĐẤU (MODE CARDS) */
+.mode-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+	gap: 8px;
+}
+.mode-card {
+	background: var(--track-bg);
+	border: 2px solid var(--border-color);
+	border-radius: var(--border-radius-box);
+	padding: 10px 4px;
+	cursor: pointer;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transition: 0.2s;
+}
+.mode-card:hover {
+	border-color: var(--primary);
+	transform: translateY(-2px);
+}
+.mode-card.selected {
+	border-color: var(--secondary);
+	background: rgba(255, 0, 85, 0.15);
+}
+.mode-card .icon {
+	font-size: 22px;
+}
+.mode-card .title {
+	font-family: var(--font-heading);
+	font-size: 11px;
+	color: var(--text-main);
+	font-weight: bold;
+	margin-top: 4px;
+}
+
+.cyber-btn {
+	width: 100%;
+	padding: 12px 14px;
+	background: var(--btn-gradient);
+	border: none;
+	color: #fff;
+	font-family: var(--font-heading);
 	font-weight: bold;
 	font-size: 15px;
-}
-
-.theme-btn {
-	margin-left: 2px;
-	background: rgba(255, 230, 0, 0.15) !important;
-	border-color: var(--accent) !important;
-	color: var(--accent) !important;
-}
-.theme-btn:hover {
-	background: var(--accent) !important;
-	color: #000 !important;
-}
-
-.btn-small {
-	background: rgba(0, 240, 255, 0.15);
-	border: 1px solid var(--primary);
-	color: var(--primary);
-	padding: 4px 8px;
-	font-size: 11px;
 	cursor: pointer;
-	border-radius: 4px;
-	font-weight: bold;
-	font-family: "Orbitron", sans-serif;
+	border-radius: var(--border-radius-box);
+	transition: 0.2s;
 }
-.btn-small:hover {
-	background: var(--primary);
-	color: #000;
-	box-shadow: 0 0 10px var(--primary);
+.cyber-btn:hover {
+	filter: brightness(1.2);
+	box-shadow: var(--glow);
 }
 
-.btn-surrender-style {
-	background: rgba(255, 0, 85, 0.15) !important;
-	border-color: var(--secondary) !important;
-	color: var(--secondary) !important;
-}
-.btn-surrender-style:hover {
-	background: var(--secondary) !important;
-	color: #fff !important;
-}
-
-.status-tag {
-	font-family: "Orbitron", sans-serif;
-	font-size: 11px;
-	font-weight: bold;
-	padding: 2px 6px;
-	border-radius: 4px;
-	min-width: 90px;
-	display: inline-block;
-	text-align: center;
-}
-.status-tag.online {
-	background: rgba(0, 255, 102, 0.15);
-	color: var(--correct);
-	border: 1px solid var(--correct);
-}
-.status-tag.afk {
-	background: rgba(255, 230, 0, 0.15);
-	color: var(--accent);
-	border: 1px solid var(--accent);
-}
-.status-tag.surrendered {
-	background: rgba(255, 0, 85, 0.15);
-	color: var(--secondary);
-	border: 1px solid var(--secondary);
-}
-.status-tag.disconnected {
-	background: rgba(139, 148, 158, 0.2);
-	color: var(--text-muted);
-	border: 1px solid var(--text-muted);
-}
-.disabled-track {
-	opacity: 0.5;
-	filter: grayscale(0.8);
-}
-
+/* ========================================================= */
+/* 4. CHAT GLOBAL & IN-GAME (ĐÃ FIX CHỐNG RỚT DÒNG)         */
+/* ========================================================= */
 .global-chat-box {
 	margin-top: 15px;
 	background: var(--panel-bg);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--border-radius-box);
 	padding: 12px;
 	text-align: left;
 }
@@ -426,7 +573,7 @@ body {
 	color: var(--primary);
 	font-weight: bold;
 	margin-bottom: 8px;
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 }
 .global-chat-messages {
 	height: 110px;
@@ -447,6 +594,7 @@ body {
 	font-weight: bold;
 	color: var(--accent);
 	margin-right: 6px;
+	font-family: var(--font-heading);
 }
 .chat-msg-time {
 	font-size: 10px;
@@ -455,17 +603,19 @@ body {
 }
 .global-chat-input-wrapper {
 	display: flex;
+	flex-wrap: nowrap;
 	gap: 8px;
 	width: 100%;
 	align-items: center;
 }
 .global-chat-input {
 	flex: 1;
+	min-width: 0;
 	background: var(--input-bg);
 	border: 1px solid var(--border-color);
 	color: var(--text-main);
 	padding: 8px 12px;
-	border-radius: 6px;
+	border-radius: var(--border-radius-box);
 	font-size: 14px;
 	outline: none;
 }
@@ -474,30 +624,50 @@ body {
 	border: 1px solid var(--primary);
 	color: var(--primary);
 	padding: 8px 14px;
-	border-radius: 6px;
-	font-family: "Orbitron", sans-serif;
+	border-radius: var(--border-radius-box);
+	font-family: var(--font-heading);
 	font-size: 12px;
 	font-weight: bold;
 	cursor: pointer;
+	flex-shrink: 0;
+	white-space: nowrap;
 }
 
-/* IN GAME CHAT & EMOJI */
+/* CHAT IN-GAME WRAPPER */
+#chat-container {
+	padding: 12px;
+	width: 100%;
+}
 .in-game-chat-wrapper {
 	display: flex;
+	flex-wrap: nowrap;
 	gap: 8px;
 	width: 100%;
 	align-items: center;
+}
+#chat-input {
+	flex: 1;
+	min-width: 0;
+	width: auto;
+	padding: 8px 12px;
+	background: var(--input-bg);
+	border: 1px solid var(--primary);
+	color: var(--text-main);
+	border-radius: var(--border-radius-box);
+	outline: none;
+	font-size: 14px;
 }
 .in-game-chat-send-btn {
 	background: rgba(0, 240, 255, 0.12);
 	border: 1px solid var(--primary);
 	color: var(--primary);
 	padding: 8px 14px;
-	border-radius: 6px;
-	font-family: "Orbitron", sans-serif;
+	border-radius: var(--border-radius-box);
+	font-family: var(--font-heading);
 	font-size: 12px;
 	font-weight: bold;
 	cursor: pointer;
+	flex-shrink: 0;
 	white-space: nowrap;
 }
 .chat-emoji-btn {
@@ -508,101 +678,13 @@ body {
 	padding: 6px 10px !important;
 	cursor: pointer;
 	border-radius: 6px;
-}
-.chat-emoji-picker {
-	position: fixed;
-	z-index: 10000;
-	background: var(--panel-bg);
-	border: 2px solid var(--accent);
-	border-radius: 10px;
-	padding: 8px;
-	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-	max-width: 340px;
-}
-.chat-emoji-grid {
-	display: grid;
-	grid-template-columns: repeat(8, 1fr);
-	gap: 4px;
-}
-.chat-emoji-item {
-	background: var(--input-bg);
-	border: 1px solid var(--border-color);
-	border-radius: 6px;
-	font-size: 18px;
-	padding: 4px;
-	cursor: pointer;
-	text-align: center;
+	flex-shrink: 0;
+	white-space: nowrap;
 }
 
-/* MODE GRID */
-.mode-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
-	gap: 8px;
-}
-.mode-card {
-	background: var(--track-bg);
-	border: 2px solid var(--border-color);
-	border-radius: 8px;
-	padding: 10px 4px;
-	cursor: pointer;
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	transition: 0.2s;
-}
-.mode-card:hover {
-	border-color: var(--primary);
-	transform: translateY(-2px);
-}
-.mode-card.selected {
-	border-color: var(--secondary);
-	background: rgba(255, 0, 85, 0.15);
-}
-.mode-card.boss-mode-card {
-	border-color: rgba(255, 0, 85, 0.4);
-}
-.mode-card.boss-mode-card.selected {
-	border-color: var(--secondary);
-	box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
-}
-.mode-card .icon {
-	font-size: 22px;
-}
-.mode-card .title {
-	font-family: "Orbitron", sans-serif;
-	font-size: 11px;
-	color: var(--text-main);
-	font-weight: bold;
-	margin-top: 4px;
-}
-
-.cyber-btn {
-	width: 100%;
-	padding: 12px 14px;
-	background: linear-gradient(45deg, var(--secondary), #b0003a);
-	border: none;
-	color: #fff;
-	font-family: "Orbitron", sans-serif;
-	font-weight: bold;
-	font-size: 15px;
-	cursor: pointer;
-	border-radius: 4px;
-}
-.cyber-btn:hover {
-	filter: brightness(1.2);
-}
-.surrender-btn-danger {
-	background: linear-gradient(45deg, #ff0055, #dc2626) !important;
-	color: #ffffff !important;
-}
-.surrender-btn-cancel {
-	background: linear-gradient(45deg, #00ff66, #10b981) !important;
-	color: #000000 !important;
-	font-weight: 900 !important;
-}
-
+/* ========================================================= */
+/* 5. PHÒNG CHỜ & ARENA THI ĐẤU                              */
+/* ========================================================= */
 .screen {
 	width: 100%;
 	max-width: 900px;
@@ -622,10 +704,17 @@ body {
 	margin: auto;
 }
 .lobby-title {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	color: var(--primary);
 	margin-bottom: 8px;
-	font-size: 20px;
+	font-size: 22px;
+}
+.lobby-mode-tag {
+	color: var(--accent);
+	font-family: var(--font-heading);
+	font-weight: bold;
+	font-size: 16px;
+	margin-bottom: 12px;
 }
 .lobby-players-title {
 	font-size: 13px;
@@ -633,6 +722,7 @@ body {
 	margin-bottom: 12px;
 	text-align: left;
 	font-weight: bold;
+	font-family: var(--font-heading);
 }
 #lobby-players-grid {
 	display: grid;
@@ -644,7 +734,7 @@ body {
 	position: relative;
 	background: var(--input-bg);
 	border: 1px solid var(--primary);
-	border-radius: 8px;
+	border-radius: var(--border-radius-box);
 	padding: 10px 24px 10px 12px;
 	text-align: center;
 	font-weight: 600;
@@ -653,19 +743,13 @@ body {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.kick-player-btn {
-	position: absolute;
-	top: 3px;
-	right: 5px;
-	background: transparent;
-	border: none;
-	color: var(--secondary);
-	font-size: 16px;
-	font-weight: bold;
-	cursor: pointer;
+.lobby-start-btn {
+	margin-top: 20px;
+	background: linear-gradient(45deg, var(--correct), var(--primary));
+	color: #000;
+	font-weight: 900;
 }
 
-/* HEADER & ARENA */
 header {
 	width: 100%;
 	display: flex;
@@ -675,25 +759,25 @@ header {
 	gap: 10px;
 }
 header .logo {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-weight: 900;
 	color: var(--primary);
 	font-size: 18px;
 }
 #status-box {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 14px;
 	font-weight: bold;
 	color: var(--accent);
 }
 #timer-box {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 14px;
 	color: var(--correct);
 }
 .race-title {
 	text-align: center;
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 18px;
 	font-weight: 800;
 	color: var(--primary);
@@ -718,7 +802,7 @@ header .logo {
 .track-header {
 	display: flex;
 	justify-content: space-between;
-	font-family: "Rajdhani", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 14px;
 	font-weight: bold;
 }
@@ -765,140 +849,14 @@ header .logo {
 }
 
 /* ========================================================= */
-/* GIAO DIỆN BOSS ARENA & KỸ NĂNG MA QUÁI */
-/* ========================================================= */
-.boss-arena-container {
-	width: 100%;
-	padding: 15px;
-	border-color: var(--secondary) !important;
-	background: radial-gradient(circle at center, rgba(255, 0, 85, 0.12) 0%, var(--panel-bg) 80%);
-	box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);
-}
-
-.boss-profile {
-	display: flex;
-	align-items: center;
-	gap: 15px;
-}
-.boss-avatar-wrapper {
-	font-size: 40px;
-	animation: bossPulse 2s infinite ease-in-out;
-}
-@keyframes bossPulse {
-	0%,
-	100% {
-		transform: scale(1);
-	}
-	50% {
-		transform: scale(1.15);
-		filter: drop-shadow(0 0 10px #ff0055);
-	}
-}
-
-.boss-info {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-.boss-header-row {
-	display: flex;
-	justify-content: space-between;
-	font-family: "Orbitron", sans-serif;
-	font-weight: 900;
-	font-size: 14px;
-	color: var(--secondary);
-}
-.boss-hp-text {
-	color: var(--accent);
-}
-
-.boss-hp-bar-bg {
-	width: 100%;
-	height: 20px;
-	background: rgba(0, 0, 0, 0.6);
-	border: 1px solid var(--secondary);
-	border-radius: 10px;
-	overflow: hidden;
-}
-
-.boss-hp-bar-fill {
-	height: 100%;
-	background: linear-gradient(90deg, #ff0055, #ff7700);
-	box-shadow: 0 0 12px #ff0055;
-	transition: width 0.2s ease-out;
-}
-
-.boss-skill-alert {
-	margin-top: 10px;
-	padding: 6px 12px;
-	background: rgba(255, 0, 85, 0.25);
-	border: 1px dashed var(--secondary);
-	color: var(--accent);
-	font-family: "Orbitron", sans-serif;
-	font-size: 13px;
-	font-weight: bold;
-	text-align: center;
-	border-radius: 6px;
-	animation: blink 0.8s infinite;
-}
-
-/* HIỆU ỨNG KỸ NĂNG: ĐỘNG ĐẤT (RUNG MÀN HÌNH) */
-.boss-shake-active {
-	animation: screenTremor 0.15s infinite;
-}
-@keyframes screenTremor {
-	0% {
-		transform: translate(0, 0);
-	}
-	25% {
-		transform: translate(-3px, 2px);
-	}
-	50% {
-		transform: translate(3px, -2px);
-	}
-	75% {
-		transform: translate(-2px, -3px);
-	}
-	100% {
-		transform: translate(2px, 3px);
-	}
-}
-
-/* HIỆU ỨNG KỸ NĂNG: ẢO GIÁC (ĐẢO NGƯỢC CHỮ GƯƠNG) */
-.boss-reverse-active .word {
-	transform: scaleX(-1);
-	display: inline-block;
-}
-
-/* HIỆU ỨNG KỸ NĂNG: MÀN ĐÊM / KHÓI MÙ */
-.boss-fog-layer {
-	position: absolute;
-	inset: 0;
-	background: radial-gradient(circle, rgba(13, 13, 26, 0.6) 0%, rgba(5, 5, 10, 0.95) 90%);
-	backdrop-filter: blur(4px);
-	z-index: 50;
-	pointer-events: none;
-	animation: fogDrift 3s infinite alternate;
-}
-@keyframes fogDrift {
-	0% {
-		opacity: 0.8;
-	}
-	100% {
-		opacity: 0.98;
-	}
-}
-
-/* ========================================================= */
-/* TYPING AREA & CHỮ */
+/* 6. TYPING AREA & CHỮ (BẢO LƯU FONT LEXEND CHO TẤT CẢ STYLE)*/
 /* ========================================================= */
 #typing-area {
 	width: 100%;
 	padding: 15px;
 }
 .ngau-hung-badge {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 14px;
 	font-weight: 900;
 	color: var(--accent);
@@ -907,7 +865,7 @@ header .logo {
 }
 
 #words-display {
-	font-family: "Lexend", sans-serif;
+	font-family: "Lexend", sans-serif !important;
 	font-size: 20px;
 	font-weight: 500;
 	line-height: 1.6;
@@ -915,7 +873,7 @@ header .logo {
 	overflow-y: auto;
 	padding: 12px;
 	background: var(--input-bg);
-	border-radius: 6px;
+	border-radius: var(--border-radius-box);
 	border: 1px solid var(--border-color);
 	margin-bottom: 15px;
 	user-select: none;
@@ -935,6 +893,7 @@ header .logo {
 }
 
 .word {
+	font-family: "Lexend", sans-serif !important;
 	display: inline-block;
 	white-space: nowrap;
 	color: var(--text-muted);
@@ -999,23 +958,148 @@ header .logo {
 }
 
 #type-input {
+	font-family: "Lexend", sans-serif !important;
 	width: 100%;
 	padding: 12px;
-	font-family: "Lexend", sans-serif;
 	font-size: 18px;
 	background: var(--input-bg);
 	border: 2px solid var(--border-color);
 	color: var(--text-main);
-	border-radius: 6px;
+	border-radius: var(--border-radius-box);
 	outline: none;
 	transition: 0.2s;
 }
 #type-input:focus {
 	border-color: var(--primary);
-	box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+	box-shadow: var(--glow);
 }
 
-/* SUMMARY MODAL */
+/* ========================================================= */
+/* 7. BOSS ARENA & KỸ NĂNG MA QUÁI                           */
+/* ========================================================= */
+.boss-arena-container {
+	width: 100%;
+	padding: 15px;
+	border-color: var(--secondary) !important;
+	background: radial-gradient(circle at center, rgba(255, 0, 85, 0.12) 0%, var(--panel-bg) 80%);
+	box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);
+}
+
+.boss-profile {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+.boss-avatar-wrapper {
+	font-size: 40px;
+	animation: bossPulse 2s infinite ease-in-out;
+}
+@keyframes bossPulse {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.15);
+		filter: drop-shadow(0 0 10px #ff0055);
+	}
+}
+
+.boss-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.boss-header-row {
+	display: flex;
+	justify-content: space-between;
+	font-family: var(--font-heading);
+	font-weight: 900;
+	font-size: 14px;
+	color: var(--secondary);
+}
+.boss-hp-text {
+	color: var(--accent);
+}
+
+.boss-hp-bar-bg {
+	width: 100%;
+	height: 20px;
+	background: rgba(0, 0, 0, 0.6);
+	border: 1px solid var(--secondary);
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.boss-hp-bar-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #ff0055, #ff7700);
+	box-shadow: 0 0 12px #ff0055;
+	transition: width 0.2s ease-out;
+}
+
+.boss-skill-alert {
+	margin-top: 10px;
+	padding: 6px 12px;
+	background: rgba(255, 0, 85, 0.25);
+	border: 1px dashed var(--secondary);
+	color: var(--accent);
+	font-family: var(--font-heading);
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	border-radius: 6px;
+	animation: blink 0.8s infinite;
+}
+
+.boss-shake-active {
+	animation: screenTremor 0.15s infinite;
+}
+@keyframes screenTremor {
+	0% {
+		transform: translate(0, 0);
+	}
+	25% {
+		transform: translate(-3px, 2px);
+	}
+	50% {
+		transform: translate(3px, -2px);
+	}
+	75% {
+		transform: translate(-2px, -3px);
+	}
+	100% {
+		transform: translate(2px, 3px);
+	}
+}
+
+.boss-reverse-active .word {
+	transform: scaleX(-1);
+	display: inline-block;
+}
+
+.boss-fog-layer {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(circle, rgba(13, 13, 26, 0.6) 0%, rgba(5, 5, 10, 0.95) 90%);
+	backdrop-filter: blur(4px);
+	z-index: 50;
+	pointer-events: none;
+	animation: fogDrift 3s infinite alternate;
+}
+@keyframes fogDrift {
+	0% {
+		opacity: 0.8;
+	}
+	100% {
+		opacity: 0.98;
+	}
+}
+
+/* ========================================================= */
+/* 8. SUMMARY MODAL, POPUPS & TIỆN ÍCH                      */
+/* ========================================================= */
 .summary-box {
 	width: 95% !important;
 	max-width: 750px !important;
@@ -1026,9 +1110,10 @@ header .logo {
 .summary-modal-title {
 	font-size: 20px;
 	text-align: center !important;
+	font-family: var(--font-heading);
 }
 .boss-result-subtitle {
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 15px;
 	font-weight: bold;
 	margin-top: 5px;
@@ -1048,7 +1133,7 @@ header .logo {
 }
 #summary-table th {
 	color: var(--primary);
-	font-family: "Orbitron", sans-serif;
+	font-family: var(--font-heading);
 	font-size: 12px;
 }
 
@@ -1065,44 +1150,6 @@ header .logo {
 	background: rgba(255, 77, 77, 0.1);
 }
 
-#chat-container {
-	padding: 12px;
-	width: 100%;
-}
-#chat-input {
-	width: 100%;
-	padding: 10px;
-	background: var(--input-bg);
-	border: 1px solid var(--primary);
-	color: var(--text-main);
-	border-radius: 4px;
-	outline: none;
-}
-#chat-popups {
-	position: fixed;
-	top: 60px;
-	right: 10px;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	z-index: 999;
-	pointer-events: none;
-}
-.chat-bubble {
-	background: var(--panel-bg);
-	border: 2px solid var(--primary);
-	color: var(--text-main);
-	padding: 10px 12px;
-	border-radius: 10px;
-	font-size: 13px;
-}
-.chat-bubble .sender {
-	font-size: 11px;
-	color: var(--accent);
-	font-weight: bold;
-	font-family: "Orbitron", sans-serif;
-}
-
 .custom-popup {
 	position: fixed;
 	inset: 0;
@@ -1117,11 +1164,15 @@ header .logo {
 .popup-content {
 	background: var(--panel-bg);
 	border: 2px solid var(--primary);
-	border-radius: 12px;
+	border-radius: var(--border-radius-box);
 	padding: 20px;
 	width: 100%;
 	max-width: 380px;
 	text-align: center;
+	box-shadow: var(--box-shadow-style);
+}
+.modal-large {
+	max-width: 640px !important;
 }
 
 .btn-icon-corner,
@@ -1130,8 +1181,8 @@ header .logo {
 	top: 12px;
 	padding: 5px 12px;
 	font-size: 12px;
-	background: linear-gradient(45deg, #00f0ff, #0088ff);
-	border: 1px solid #00f0ff;
+	background: linear-gradient(45deg, var(--primary), var(--accent));
+	border: 1px solid var(--primary);
 	color: #000;
 	font-weight: bold;
 	cursor: pointer;
@@ -1167,15 +1218,16 @@ header .logo {
 	transform: translateX(-50%);
 	font-size: 12px;
 	font-weight: 700;
-	color: #ffffff;
-	background: rgba(13, 13, 26, 0.85);
-	border: 1px solid rgba(0, 240, 255, 0.4);
+	color: var(--text-main);
+	background: var(--panel-bg);
+	border: 1px solid var(--border-color);
 	padding: 5px 16px;
 	border-radius: 20px;
 	z-index: 1001;
 	pointer-events: none;
 	user-select: none;
 	backdrop-filter: blur(8px);
+	font-family: var(--font-heading);
 }
 
 #fireworks-canvas {
@@ -1183,4 +1235,55 @@ header .logo {
 	inset: 0;
 	pointer-events: none;
 	z-index: 9999;
+}
+
+/* BONG BÓNG TIN NHẮN & EMOJI PICKER */
+#chat-popups {
+	position: fixed;
+	top: 60px;
+	right: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	z-index: 999;
+	pointer-events: none;
+}
+.chat-bubble {
+	background: var(--panel-bg);
+	border: 2px solid var(--primary);
+	color: var(--text-main);
+	padding: 10px 12px;
+	border-radius: 10px;
+	font-size: 13px;
+	box-shadow: var(--box-shadow-style);
+}
+.chat-bubble .sender {
+	font-size: 11px;
+	color: var(--accent);
+	font-weight: bold;
+	font-family: var(--font-heading);
+}
+.chat-emoji-picker {
+	position: fixed;
+	z-index: 10000;
+	background: var(--panel-bg);
+	border: 2px solid var(--accent);
+	border-radius: 10px;
+	padding: 8px;
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+	max-width: 340px;
+}
+.chat-emoji-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 4px;
+}
+.chat-emoji-item {
+	background: var(--input-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	font-size: 18px;
+	padding: 4px;
+	cursor: pointer;
+	text-align: center;
 }

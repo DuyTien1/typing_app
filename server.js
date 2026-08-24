@@ -1245,20 +1245,15 @@ const runnerIcons = [
 	"🦭",
 ];
 
-// Sinh kho từ vựng (Chế độ Săn Boss: 20% English, 40% Tiếng Việt Không Dấu, 40% Zipcode 5 số)
 function generateWords(lang, count = 150) {
 	if (lang === "san_boss") {
 		const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
 		const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
 		return Array.from({ length: 400 }, () => {
 			const rand = Math.random();
-			if (rand < 0.2) {
-				return enPool[Math.floor(Math.random() * enPool.length)];
-			} else if (rand < 0.6) {
-				return viPool[Math.floor(Math.random() * viPool.length)];
-			} else {
-				return Math.floor(10000 + Math.random() * 90000).toString();
-			}
+			if (rand < 0.2) return enPool[Math.floor(Math.random() * enPool.length)];
+			if (rand < 0.6) return viPool[Math.floor(Math.random() * viPool.length)];
+			return Math.floor(10000 + Math.random() * 90000).toString();
 		});
 	}
 	if (lang === "ngau_hung") {
@@ -1540,7 +1535,6 @@ function endNgauHungRound(room) {
 	}
 }
 
-// Bắt đầu vòng lặp Kỹ năng Boss
 function startBossSkillLoop(room) {
 	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
 	const skills = ["shake", "fog", "reverse"];
@@ -1720,12 +1714,28 @@ io.on("connection", (socket) => {
 			});
 	});
 
-	// Chat & Game Events
+	// Chat & Game Events (ĐỒNG BỘ ĐỔI TÊN NGAY LẬP TỨC TRONG PHÒNG)
 	socket.on("update_username", (data) => {
+		const newName = (data.username || "").trim() || "Vô danh";
 		const u = connectedUsers.get(socket.id);
 		if (u) {
-			u.username = data.username;
+			u.username = newName;
 			broadcastAdminData();
+		}
+
+		if (player) {
+			player.username = newName;
+		}
+
+		if (currentRoom) {
+			if (currentRoom.state === "waiting") {
+				io.to(currentRoom.id).emit("update_lobby", {
+					players: currentRoom.players,
+					language: currentRoom.lang,
+				});
+			} else if (currentRoom.state === "playing") {
+				io.to(currentRoom.id).emit("race_update", currentRoom.players);
+			}
 		}
 	});
 
@@ -1815,7 +1825,6 @@ io.on("connection", (socket) => {
 					duration: BOSS_RAID_DURATION,
 				};
 
-				// Bộ đếm thời gian máy chủ chuẩn 120s (kèm 3s đếm ngược)
 				clearTimeout(currentRoom.matchTimeout);
 				currentRoom.matchTimeout = setTimeout(
 					() => {
@@ -1848,7 +1857,6 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// Xử lý sát thương Boss & cập nhật lỗi
 	socket.on("deal_boss_damage", (data) => {
 		if (
 			!currentRoom ||
