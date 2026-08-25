@@ -316,6 +316,21 @@
 			</div>
 		</div>
 
+		<!-- POPUP THÔNG BÁO BỊ KICK KHỎI PHÒNG (THEMED) -->
+		<div id="kicked-notice-popup" class="custom-popup hidden">
+			<div class="popup-content kicked-popup-content">
+				<h3 class="kicked-title">TRỤC XUẤT KHỎI PHÒNG</h3>
+				<p id="kicked-notice-msg" class="kicked-desc">Bạn đã bị Quản trị viên đá khỏi phòng chờ!</p>
+				<button
+					id="btn-confirm-kicked"
+					class="cyber-btn kicked-btn-confirm"
+					data-close="kicked-notice-popup"
+				>
+					ĐÃ HIỂU
+				</button>
+			</div>
+		</div>
+
 		<!-- POPUP ĐỔI TÊN -->
 		<div id="rename-popup" class="custom-popup hidden">
 			<div class="popup-content">
@@ -451,11 +466,41 @@
 							<span id="boss-name" class="boss-name">HẮC LONG MA VƯƠNG</span>
 							<span id="boss-hp-text" class="boss-hp-text">1000/1000 HP</span>
 						</div>
+						<!-- THANH MÁU BOSS -->
 						<div class="boss-hp-bar-bg">
 							<div id="boss-hp-fill" class="boss-hp-bar-fill" style="width: 100%"></div>
 						</div>
+						<!-- THANH GIÁP HỘ THỂ (HIỆN KHI BOSS BẬT SKILL GIÁP) -->
+						<div id="boss-shield-wrapper" class="boss-shield-wrapper hidden">
+							<div class="boss-shield-header-row">
+								<span class="boss-shield-title">🛡️ GIÁP HỘ THỂ MA PHÁP (DPS CHECK!)</span>
+								<span id="boss-shield-text" class="boss-shield-text">0/0</span>
+							</div>
+							<div class="boss-shield-bar-bg">
+								<div id="boss-shield-fill" class="boss-shield-bar-fill" style="width: 100%"></div>
+							</div>
+						</div>
 					</div>
 				</div>
+
+				<!-- KHUNG COMBO ĐỘC QUYỀN SĂN BOSS -->
+				<div id="boss-combo-hud" class="boss-combo-hud">
+					<div class="combo-main-badge">
+						<span class="combo-title">COMBO</span>
+						<span id="boss-combo-num" class="combo-num">0</span>
+					</div>
+					<div class="combo-details">
+						<div class="combo-multiplier-tag" id="boss-combo-mult-tag">SÁT THƯƠNG: x1.0</div>
+						<div
+							class="combo-backspace-gauge"
+							title="Tích lũy 10 lần Backspace/Numpad - sẽ làm hỏng Combo"
+						>
+							<span>XÓA TỪ: </span>
+							<span id="boss-backspace-count">0/10</span>
+						</div>
+					</div>
+				</div>
+
 				<div id="boss-skill-alert" class="boss-skill-alert hidden">
 					⚠️ BOSS ĐANG GẬM NHẤM BÓNG TỐI!
 				</div>
@@ -494,6 +539,10 @@
 			</div>
 		</div>
 
+		<!-- CONTAINER CHỨA THÔNG BÁO NỔI TỰ BẠO BẮT MẮT -->
+		<div id="boss-toast-container" class="boss-toast-container"></div>
+
+		<!-- POPUP TIN NHẮN TRONG TRẬN ĐẤU NỔI BẬT -->
 		<div id="chat-popups"></div>
 
 		<!-- POPUP BẢNG ICON NHẮN TIN -->

@@ -9,7 +9,7 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 
 const ZIPCODE_TEST_DURATION = 90;
 const NORMAL_RACE_DURATION = 300;
-const BOSS_RAID_DURATION = 120;
+const BOSS_RAID_DURATION = 150;
 const DEFAULT_ICON = "🤖";
 const AFK_TIMEOUT = 30000;
 
@@ -34,7 +34,6 @@ let currentLanguage = "vi_dau",
 	mySelectedIcon = DEFAULT_ICON,
 	currentStyle = savedInitialStyle;
 
-// Áp dụng phong cách ngay lập tức vào DOM gốc để chống FOUC (nhấp nháy giao diện)
 if (document.documentElement) {
 	document.documentElement.setAttribute("data-style", currentStyle);
 }
@@ -56,6 +55,14 @@ let ngauHungTargetWord = "",
 	ngauHungCurrentRound = 0;
 let currentBossData = null;
 
+// ==========================================
+// HỆ THỐNG COMBO & KỸ NĂNG BOSS
+// ==========================================
+let bossComboCount = 0;
+let bossFractionalDamageBuffer = 0.0;
+let bossBackspaceCount = 0;
+let isBossCapsLockActive = false;
+
 // Admin & Bot state
 let isAdmin = false,
 	lastEnteredAdminPassword = "",
@@ -66,6 +73,9 @@ let bannedModalTimer = null,
 	autoTyperActive = false,
 	botWorker = null,
 	activeChatInput = null;
+
+let isRenderTracksPending = false;
+let latestPlayersData = null;
 
 const chatEmojis = [
 	"😀",
@@ -169,11 +179,11 @@ function scrollActiveWordToCenter() {
 	const firstRowTop = firstWord ? firstWord.offsetTop : 0;
 
 	if (activeWord.offsetTop <= firstRowTop + 5) {
-		container.scrollTo({ top: 0, behavior: "smooth" });
+		container.scrollTop = 0;
 	} else {
 		const targetScroll =
 			activeWord.offsetTop - container.clientHeight / 2 + activeWord.offsetHeight / 2;
-		container.scrollTo({ top: Math.max(0, targetScroll), behavior: "smooth" });
+		container.scrollTop = Math.max(0, targetScroll);
 	}
 }
 
@@ -222,7 +232,6 @@ function applyTheme(theme) {
 	setCookie("racer_theme", theme, 365);
 }
 
-// Hàm cập nhật và lưu trữ phong cách vĩnh viễn
 function applyStyle(style) {
 	currentStyle = style || "cyberpunk";
 	document.documentElement.setAttribute("data-style", currentStyle);
@@ -230,26 +239,56 @@ function applyStyle(style) {
 	const btn = $("style-toggle-btn");
 	if (btn) btn.innerText = styleNames[currentStyle] || "⚡ Cyberpunk";
 
-	// Lưu song song vào localStorage và Cookie (365 ngày)
 	localStorage.setItem("racer_style", currentStyle);
 	setCookie("racer_style", currentStyle, 365);
 
-	// Đánh dấu thẻ đang active trong popup chọn phong cách
 	$$(".style-card").forEach((card) => {
 		card.classList.toggle("selected", card.dataset.style === currentStyle);
 	});
 }
 
+// ==========================================
+// QUẢN LÝ COMBO HUD
+// ==========================================
+function getComboMultiplier(combo) {
+	if (combo >= 40) return 2.0;
+	if (combo >= 30) return 1.75;
+	if (combo >= 20) return 1.5;
+	if (combo >= 10) return 1.25;
+	return 1.0;
+}
+
+function updateBossComboUI() {
+	const comboNum = $("boss-combo-num");
+	const multTag = $("boss-combo-mult-tag");
+	const bsCount = $("boss-backspace-count");
+
+	if (comboNum) comboNum.innerText = bossComboCount;
+	if (multTag) {
+		const mult = getComboMultiplier(bossComboCount);
+		multTag.innerText = `SÁT THƯƠNG: x${mult}`;
+		multTag.style.color = mult > 1.0 ? "var(--accent)" : "var(--correct)";
+	}
+	if (bsCount) {
+		bsCount.innerText = `${bossBackspaceCount}/10`;
+		bsCount.style.color = bossBackspaceCount >= 7 ? "var(--secondary)" : "var(--text-muted)";
+	}
+}
+
+function resetBossCombo(reason = "") {
+	bossComboCount = 0;
+	bossFractionalDamageBuffer = 0.0;
+	bossBackspaceCount = 0;
+	updateBossComboUI();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-	// Khôi phục Theme Sáng/Tối
 	const savedTheme = localStorage.getItem("racer_theme") || getCookie("racer_theme") || "dark";
 	applyTheme(savedTheme);
 
-	// Khôi phục Phong cách giao diện đã lưu
 	const savedStyle = localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
 	applyStyle(savedStyle);
 
-	// Khôi phục Tên người chơi
 	myUsername =
 		localStorage.getItem("racer_username") || `bot_${Math.floor(1000 + Math.random() * 9000)}`;
 	localStorage.setItem("racer_username", myUsername);
@@ -277,12 +316,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		applyTheme(isLight ? "dark" : "light");
 	});
 
-	// Mở Popup chọn phong cách
 	$("style-toggle-btn")?.addEventListener("click", () => {
 		$("style-select-popup")?.classList.remove("hidden");
 	});
 
-	// Chọn phong cách trong popup
 	$$(".style-card").forEach((card) => {
 		card.addEventListener("click", () => {
 			applyStyle(card.dataset.style);
@@ -325,6 +362,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	$("btn-lobby-home")?.addEventListener("click", returnHome);
 	$("btn-home")?.addEventListener("click", returnHome);
+	$("btn-confirm-kicked")?.addEventListener("click", returnHome);
+
 	$("btn-play-again")?.addEventListener("click", () => {
 		["summary-modal", "game-container"].forEach((id) => $(id).classList.add("hidden"));
 		$("lobby-screen").classList.remove("hidden");
@@ -341,7 +380,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		$("popup-name-input").focus();
 	});
 
-	// Lưu tên và tự động cập nhật ngay lập tức
 	const saveNameAction = () => {
 		const newName = $("popup-name-input").value.trim();
 		if (newName) {
@@ -362,10 +400,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	typeInput?.addEventListener("input", handleTypingInput);
 	typeInput?.addEventListener("keydown", (e) => {
 		resetAFKTimer();
-		if (e.key === "-" || e.code === "NumpadMinus") {
-			e.preventDefault();
-			typeInput.value = typeInput.value.slice(0, -1);
-			typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+		if (e.key === "Backspace" || e.key === "-" || e.code === "NumpadMinus") {
+			if (currentLanguage === "san_boss" && isPlaying) {
+				bossBackspaceCount++;
+				if (bossBackspaceCount >= 10) {
+					resetBossCombo("Xóa từ 10 lần");
+				} else {
+					updateBossComboUI();
+				}
+			}
+
+			if (e.key === "-" || e.code === "NumpadMinus") {
+				e.preventDefault();
+				typeInput.value = typeInput.value.slice(0, -1);
+				typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+			}
 		}
 	});
 
@@ -476,7 +526,7 @@ function renderOnlineUsersModal() {
 		<tr>
 			<td style="font-weight: bold;">${u.username} ${u.isAdmin ? "👑" : ""}</td>
 			<td style="font-size: 11px; color: var(--text-muted);">${u.id}</td>
-			<td><span class="status-tag ${u.isBanned ? "surrendered" : "online"}">${u.isBanned ? "Đang Ban" : "Online"}</span></td>
+			<td><span class="status-tag ${u.isBanned ? "status-surrendered" : "status-online"}">${u.isBanned ? "Đang Ban" : "Online"}</span></td>
 			<td>${
 				u.isAdmin || u.id === socket.id
 					? `<span style="color: var(--text-muted); font-size: 11px;">(${u.id === socket.id ? "Bạn" : "Admin"})</span>`
@@ -551,10 +601,22 @@ socket.on("banned_notice", (d) => {
 	$("btn-home").click();
 });
 socket.on("join_lobby_banned", (d) => showNoticePopup("ban-notice-popup", d.message, d.expiresAt));
+
 socket.on("kicked_from_lobby", (d) => {
-	alert(d.message);
-	$("btn-lobby-home").click();
+	const p = $("kicked-notice-popup");
+	if (p) {
+		$("kicked-notice-msg").innerText = d.message || "Bạn đã bị Quản trị viên đá khỏi phòng chờ!";
+		p.classList.remove("hidden");
+	}
+	socket.emit("leave_lobby");
+	["lobby-screen", "game-container", "summary-modal"].forEach((id) =>
+		$(id).classList.add("hidden"),
+	);
+	$("login-modal").classList.remove("hidden");
+	loadHighScores();
+	updateAdminUI();
 });
+
 socket.on("clear_global_chat", () =>
 	$$(".global-chat-messages").forEach((el) => (el.innerHTML = "")),
 );
@@ -625,6 +687,13 @@ socket.on("game_start", (data) => {
 	wordIndex = correctChars = totalErrors = 0;
 	isPlaying = false;
 
+	// Reset Combo state
+	bossComboCount = 0;
+	bossFractionalDamageBuffer = 0.0;
+	bossBackspaceCount = 0;
+	isBossCapsLockActive = false;
+	updateBossComboUI();
+
 	const isNgauHung = currentLanguage === "ngau_hung";
 	const isBoss = currentLanguage === "san_boss";
 
@@ -643,7 +712,9 @@ socket.on("game_start", (data) => {
 		$("boss-avatar").innerText = data.boss.icon;
 		$("boss-hp-text").innerText = `${data.boss.hp}/${data.boss.maxHp} HP`;
 		$("boss-hp-fill").style.width = "100%";
+		$("boss-shield-wrapper")?.classList.add("hidden");
 		$("boss-skill-alert").classList.add("hidden");
+		$("boss-arena-box")?.classList.remove("boss-stunned");
 	}
 
 	if (isNgauHung)
@@ -679,7 +750,7 @@ function startCountdown(seconds) {
 					currentLanguage === "numpad"
 						? ZIPCODE_TEST_DURATION
 						: currentLanguage === "san_boss"
-							? BOSS_RAID_DURATION
+							? currentBossData?.duration || BOSS_RAID_DURATION
 							: NORMAL_RACE_DURATION;
 
 				$("timer").innerText = duration;
@@ -707,25 +778,145 @@ function startRaceTimer(duration) {
 	}, 1000);
 }
 
-// Xử lý Sự kiện Boss (Realtime Damage & Skills)
+// ==========================================
+// REALTIME BOSS SKILLS, SHIELD & TỰ BẠO NỔI
+// ==========================================
 socket.on("boss_hp_update", (d) => {
 	currentBossData = d;
-	const percent = Math.max(0, Math.round((d.hp / d.maxHp) * 100));
-	$("boss-hp-fill").style.width = `${percent}%`;
-	$("boss-hp-text").innerText = `${d.hp}/${d.maxHp} HP`;
-	if (d.players) renderRaceTracks(d.players);
+	const hpPercent = Math.max(0, Math.round((d.hp / d.maxHp) * 100));
+	const hpFill = $("boss-hp-fill");
+	const hpText = $("boss-hp-text");
+	if (hpFill) hpFill.style.width = `${hpPercent}%`;
+	if (hpText) hpText.innerText = `${d.hp}/${d.maxHp} HP`;
+
+	const shieldWrapper = $("boss-shield-wrapper");
+	const shieldFill = $("boss-shield-fill");
+	const shieldText = $("boss-shield-text");
+	if (shieldWrapper && shieldFill && shieldText) {
+		if (d.isShieldActive && d.shield > 0 && d.maxShield > 0) {
+			shieldWrapper.classList.remove("hidden");
+			const shieldPercent = Math.max(0, Math.round((d.shield / d.maxShield) * 100));
+			shieldFill.style.width = `${shieldPercent}%`;
+			shieldText.innerText = `${d.shield}/${d.maxShield} GIÁP`;
+		} else if (!d.isShieldActive) {
+			shieldWrapper.classList.add("hidden");
+		}
+	}
+
+	if (d.players) {
+		queueRenderTracks(d.players);
+	}
+});
+
+// THÔNG BÁO NỔI TỰ BẠO OANH TẠC BẮT MẮT
+socket.on("boss_self_destruct_notice", (d) => {
+	const container = $("boss-toast-container");
+	if (!container) return;
+
+	const toast = document.createElement("div");
+	toast.className = "self-destruct-toast";
+	toast.innerHTML = `
+		<div class="toast-blast-icon">💥</div>
+		<div class="toast-content-wrapper">
+			<div class="toast-title-row">
+				<span class="toast-headline">QUYẾT TỬ BỘC PHÁ!</span>
+				<span class="toast-dmg-pill">+${d.damage} DMG</span>
+			</div>
+			<div class="toast-desc">
+				<strong>${d.username}</strong> đã lao thẳng vào boss tự bạo!
+			</div>
+		</div>
+	`;
+
+	container.appendChild(toast);
+	setTimeout(() => {
+		toast.remove();
+	}, 4000);
+});
+
+socket.on("boss_shield_start", (d) => {
+	const alertBox = $("boss-skill-alert");
+	const shieldWrapper = $("boss-shield-wrapper");
+	const shieldFill = $("boss-shield-fill");
+	const shieldText = $("boss-shield-text");
+
+	if (alertBox) {
+		alertBox.innerText = `🛡️ CẢNH BÁO: BOSS KÍCH HOẠT GIÁP HỘ THỂ!`;
+		alertBox.classList.remove("hidden");
+	}
+	if (shieldWrapper && shieldFill && shieldText) {
+		shieldWrapper.classList.remove("hidden");
+		shieldFill.style.width = "100%";
+		shieldText.innerText = `${d.shield}/${d.maxShield} GIÁP`;
+	}
+});
+
+socket.on("boss_shield_broken", (d) => {
+	const alertBox = $("boss-skill-alert");
+	const shieldWrapper = $("boss-shield-wrapper");
+	const arena = $("boss-arena-box");
+
+	if (shieldWrapper) shieldWrapper.classList.add("hidden");
+	if (arena) arena.classList.add("boss-stunned");
+	if (alertBox) {
+		alertBox.innerText = d.message || "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng 3s!";
+		alertBox.classList.remove("hidden");
+	}
+});
+
+socket.on("boss_stun_end", () => {
+	const arena = $("boss-arena-box");
+	const alertBox = $("boss-skill-alert");
+	if (arena) arena.classList.remove("boss-stunned");
+	if (alertBox) alertBox.classList.add("hidden");
+});
+
+socket.on("boss_shield_failed", (d) => {
+	const alertBox = $("boss-skill-alert");
+	const shieldWrapper = $("boss-shield-wrapper");
+
+	if (shieldWrapper) shieldWrapper.classList.add("hidden");
+	if (alertBox) {
+		alertBox.innerText = d.message;
+		alertBox.classList.remove("hidden");
+		setTimeout(() => alertBox.classList.add("hidden"), 3000);
+	}
+	resetBossCombo("Sóng xung kích từ Giáp Boss");
+});
+
+socket.on("boss_capslock_start", (d) => {
+	isBossCapsLockActive = true;
+	const alertBox = $("boss-skill-alert");
+	if (alertBox) {
+		alertBox.innerText = `🔠 CHUẨN BỊ PHÙ PHÉP CHỮ KHUYẾT TẬT!`;
+		alertBox.classList.remove("hidden");
+	}
+	renderWords();
+});
+
+socket.on("boss_capslock_end", () => {
+	isBossCapsLockActive = false;
+	const alertBox = $("boss-skill-alert");
+	if (alertBox) alertBox.classList.add("hidden");
+	renderWords();
 });
 
 socket.on("boss_skill_warning", (d) => {
 	const alertBox = $("boss-skill-alert");
 	const skillDesc =
 		d.skill === "shake"
-			? "🌋 ĐỘNG ĐẤT"
+			? "🌋 BOSS CHUẨN BỊ XÀI MÁY RUNG!"
 			: d.skill === "fog"
-				? "🌫️ MÀN ĐÊM KHÓI MÙ"
-				: "🌀 ẢO GIÁC ĐẢO NGƯỢC";
-	alertBox.innerText = `⚠️ CẢNH BÁO: BOSS CHUẨN BỊ TUNG [${skillDesc}]!`;
-	alertBox.classList.remove("hidden");
+				? "🌫️ BOSS CHUẨN BỊ HÀ HƠI THỔI NGẠT!"
+				: d.skill === "reverse"
+					? "🌀 BOSS CHUẨN BỊ ĐƯA BẠN VÀO CƠN MÊ!"
+					: d.skill === "shield"
+						? "🛡️ BOSS CHUẨN BỊ BUFF GIÁP!"
+						: "🔠 BOSS CHUẨN BỊ PHÙ PHÉP CHỮ KHUYẾT TẬT!";
+	if (alertBox) {
+		alertBox.innerText = `⚠️ CẢNH BÁO: [${skillDesc}]!`;
+		alertBox.classList.remove("hidden");
+	}
 });
 
 socket.on("boss_skill_cast", (d) => {
@@ -734,7 +925,7 @@ socket.on("boss_skill_cast", (d) => {
 	const fogLayer = $("boss-fog-layer");
 	const alertBox = $("boss-skill-alert");
 
-	alertBox.innerText = `🔥 BOSS ĐANG KÍCH HOẠT KỸ NĂNG!`;
+	if (alertBox) alertBox.innerText = `🔥 BOSS ĐANG KÍCH HOẠT KỸ NĂNG!`;
 
 	if (d.skill === "shake") gameContainer.classList.add("boss-shake-active");
 	if (d.skill === "reverse") wordsDisplay.classList.add("boss-reverse-active");
@@ -744,7 +935,7 @@ socket.on("boss_skill_cast", (d) => {
 		gameContainer.classList.remove("boss-shake-active");
 		wordsDisplay.classList.remove("boss-reverse-active");
 		fogLayer.classList.add("hidden");
-		alertBox.classList.add("hidden");
+		if (alertBox) alertBox.classList.add("hidden");
 	}, d.duration * 1000);
 });
 
@@ -804,19 +995,40 @@ socket.on("ngau_hung_intermission", (d) => {
 	}, 1000);
 });
 
+function getRenderedWord(w, idx) {
+	let displayWord = w;
+	if (isBossCapsLockActive && currentLanguage === "san_boss") {
+		displayWord =
+			idx % 2 === 0
+				? w.toUpperCase()
+				: w
+						.split("")
+						.map((c, i) => (i % 2 === 0 ? c.toUpperCase() : c.toLowerCase()))
+						.join("");
+	}
+	return displayWord;
+}
+
+// RENDER CHỮ BẢO LƯU CHÍNH XÁC MÀU CHỮ & CUỘN TÂM
 function renderWords() {
 	const wd = $("words-display");
 	wd.classList.toggle("numpad-mode", currentLanguage === "numpad");
 	wd.innerHTML = currentWords
-		.map(
-			(w, idx) =>
-				`<span class="word ${idx === wordIndex ? "current correct-typing" : ""}">${w}</span>`,
-		)
+		.map((w, idx) => {
+			const wordText = getRenderedWord(w, idx);
+			let cls = "word";
+			if (idx < wordIndex) {
+				cls = "word correct";
+			} else if (idx === wordIndex) {
+				cls = "word current correct-typing";
+			}
+			return `<span class="${cls}">${wordText}</span>`;
+		})
 		.join("");
-	wd.scrollTo({ top: 0, behavior: "smooth" });
+	scrollActiveWordToCenter();
 }
 
-// Xử lý logic gõ phím & tự động khôi phục giao diện khi nhấn Space xóa từ sai
+// Xử lý logic gõ phím
 function handleTypingInput() {
 	if (!isPlaying) return;
 	const input = $("type-input"),
@@ -834,10 +1046,8 @@ function handleTypingInput() {
 				if (wordEl) wordEl.className = "word correct";
 			} else {
 				totalErrors++;
-				// Reset chữ focus về trạng thái bình thường sau khi xóa input
 				if (wordEl) wordEl.className = "word current correct-typing";
 				socket.emit("update_progress", {
-					progress: Math.round((ngauHungCurrentRound / 15) * 100),
 					wpm: 0,
 					correctChars,
 					errors: totalErrors,
@@ -850,8 +1060,10 @@ function handleTypingInput() {
 		return;
 	}
 
-	const target = currentWords[wordIndex],
-		currSpan = $("words-display").children[wordIndex];
+	const baseTarget = currentWords[wordIndex];
+	const target = getRenderedWord(baseTarget, wordIndex);
+	const currSpan = $("words-display").children[wordIndex];
+
 	if (val.endsWith(" ")) {
 		if (val.trim() === target) {
 			const wordLength = target.length + 1;
@@ -861,7 +1073,22 @@ function handleTypingInput() {
 			input.value = "";
 
 			if (currentLanguage === "san_boss") {
-				socket.emit("deal_boss_damage", { damage: wordLength, errors: totalErrors });
+				bossComboCount++;
+				updateBossComboUI();
+
+				const mult = getComboMultiplier(bossComboCount);
+				const calculatedDamage = wordLength * mult;
+				let finalIntegerDamage = Math.floor(calculatedDamage);
+				const fractionPart = calculatedDamage - finalIntegerDamage;
+
+				bossFractionalDamageBuffer += fractionPart;
+				if (bossFractionalDamageBuffer >= 1.0) {
+					const bonus = Math.floor(bossFractionalDamageBuffer);
+					finalIntegerDamage += bonus;
+					bossFractionalDamageBuffer -= bonus;
+				}
+
+				socket.emit("deal_boss_damage", { damage: finalIntegerDamage, errors: totalErrors });
 			}
 
 			if (wordIndex >= currentWords.length) return finishGame();
@@ -872,10 +1099,10 @@ function handleTypingInput() {
 		} else {
 			totalErrors++;
 			input.value = "";
-			// Reset chữ focus về trạng thái bình thường sau khi xóa input
 			if (currSpan) currSpan.className = "word current correct-typing";
 
 			if (currentLanguage === "san_boss") {
+				resetBossCombo("Gõ sai từ");
 				socket.emit("deal_boss_damage", { damage: 0, errors: totalErrors });
 			}
 		}
@@ -930,6 +1157,20 @@ function resetAFKTimer() {
 	}, AFK_TIMEOUT);
 }
 
+function queueRenderTracks(players) {
+	latestPlayersData = players;
+	if (!isRenderTracksPending) {
+		isRenderTracksPending = true;
+		requestAnimationFrame(() => {
+			if (latestPlayersData) {
+				renderRaceTracks(latestPlayersData);
+			}
+			isRenderTracksPending = false;
+		});
+	}
+}
+
+// RENDER THANH TIẾN ĐỘ THI ĐẤU: XỬ LÝ KHÔNG BỊ CẮT ICON & XÁM TOÀN BỘ KHI AFK/OUT/SURRENDER
 function renderRaceTracks(players) {
 	const container = $("race-tracks-container");
 	if (!container) return;
@@ -937,9 +1178,9 @@ function renderRaceTracks(players) {
 		.map((p) => {
 			const isDis = p.isSurrendered || p.isDisconnected || p.isAFK;
 			const status = p.isSurrendered
-				? `<span class="status-tag ${p.isAFK ? "afk" : "surrendered"}">${p.isAFK ? "AFK" : "GIẢNG HÒA"}</span>`
+				? `<span class="status-tag status-surrendered">${p.isAFK ? "AFK" : "GIẢNG HÒA"}</span>`
 				: p.isDisconnected
-					? `<span class="status-tag disconnected">BẢY CHỌ</span>`
+					? `<span class="status-tag status-surrendered">BẢY CHỌ</span>`
 					: currentLanguage === "ngau_hung"
 						? `⭐ ${p.score || 0} ĐIỂM`
 						: currentLanguage === "san_boss"
@@ -953,7 +1194,7 @@ function renderRaceTracks(players) {
 					<span>${status}</span>
 				</div>
 				<div class="track-line-bg">
-					<div class="track-line-fill" style="width: ${p.progress || 0}%; background: ${isDis ? "var(--text-muted)" : p.id === socket.id ? "var(--primary)" : "var(--accent)"};">
+					<div class="track-line-fill" style="width: ${p.progress || 0}%; background: ${isDis ? "#4a4a4a" : p.id === socket.id ? "var(--primary)" : "var(--accent)"};">
 						<div class="runner-icon-badge">${p.icon || DEFAULT_ICON}</div>
 					</div>
 				</div>
@@ -963,7 +1204,7 @@ function renderRaceTracks(players) {
 		.join("");
 }
 
-socket.on("race_update", renderRaceTracks);
+socket.on("race_update", queueRenderTracks);
 
 socket.on("game_over", (d) => {
 	stopAutoTyperBot();
@@ -1016,9 +1257,9 @@ socket.on("game_over", (d) => {
 		.map((p, idx) => {
 			const rank = idx === 0 ? "🥇 MVP" : idx === 1 ? "🥈 2" : idx === 2 ? "🥉 3" : `${idx + 1}`;
 			const status = p.isSurrendered
-				? `<span class="status-tag ${p.isAFK ? "afk" : "surrendered"}">${p.isAFK ? "AFK" : "GIẢNG HÒA"}</span>`
+				? `<span class="status-tag status-surrendered">${p.isAFK ? "AFK" : "GIẢNG HÒA"}</span>`
 				: p.isDisconnected
-					? `<span class="status-tag disconnected">BẢY CHỌ</span>`
+					? `<span class="status-tag status-surrendered">BẢY CHỌ</span>`
 					: isNH
 						? `⭐ ${p.score || 0} ĐIỂM`
 						: `${p.wpm || Math.round((p.correctChars || 0) / 5)} WPM`;
@@ -1093,14 +1334,21 @@ socket.on("load_initial_messages", (msgs) =>
 socket.on("receive_global_chat", (m) =>
 	$$(".global-chat-messages").forEach((c) => appendChatMsg(c, m)),
 );
+
+// POPUP TIN NHẮN TRONG TRẬN ĐẤU NỔI BẬT & RÕ RÀNG
 socket.on("receive_in_game_chat", (d) => {
 	const popups = $("chat-popups");
 	if (!popups) return;
 	const b = document.createElement("div");
 	b.className = "chat-bubble";
-	b.innerHTML = `<span class="sender">${d.username}</span><span class="text">${d.message}</span>`;
+	b.innerHTML = `
+		<span class="sender">${d.username}</span>
+		<span class="text">${d.message}</span>
+	`;
 	popups.appendChild(b);
-	setTimeout(() => b.remove(), 4000);
+	setTimeout(() => {
+		b.remove();
+	}, 4500);
 });
 
 // Emoji Picker
@@ -1211,7 +1459,9 @@ function startAutoTyperBot(targetWPM, targetErrors) {
 			return inp.dispatchEvent(new Event("input", { bubbles: true }));
 		}
 
-		const currTarget = isNH ? ngauHungTargetWord : currentWords[wordIndex];
+		const currTarget = isNH
+			? ngauHungTargetWord
+			: getRenderedWord(currentWords[wordIndex], wordIndex);
 		if (!currTarget) return stopAutoTyperBot();
 
 		if (inp.value.length < currTarget.length) inp.value += currTarget[inp.value.length];

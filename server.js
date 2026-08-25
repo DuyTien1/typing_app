@@ -13,8 +13,21 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const NGAU_HUNG_ROUND_DURATION = 7;
 const NGAU_HUNG_INTERMISSION_DURATION = 3;
 const NGAU_HUNG_TOTAL_ROUNDS = 15;
-const BOSS_RAID_DURATION = 120;
+const BOSS_RAID_DURATION = 150;
 const MESSAGE_TTL = 3 * 60 * 1000;
+
+// ==========================================
+// CẤU HÌNH BIẾN MÁU & KỸ NĂNG BOSS
+// ==========================================
+const BOSS_BASE_HP = 550; // Máu mặc định của Boss
+const BOSS_HP_PER_PLAYER = 500; // Máu cộng thêm cho mỗi người chơi tham gia
+const BOSS_SELF_DESTRUCT_TARGET = 450; // Mốc sát thương tự bạo
+
+const BOSS_SHIELD_BASE_PER_PLAYER = 40; // giáp boss
+const BOSS_SHIELD_DURATION = 6; // thời gian giáp tồn tại
+const BOSS_STUN_DURATION = 3; // 3 giây choáng khi vỡ giáp (x1.5 dmg)
+const BOSS_CAPSLOCK_DURATION = 6; // 6 giây phù phép in hoa
+const BOSS_SKILL_INTERVAL = 14000; // 14 giây boss tung 1 skill
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -1279,7 +1292,7 @@ function generateWords(lang, count = 150) {
 }
 
 // ==========================================
-// 2. HIGH SCORES & TỰ ĐỘNG RESET 0H GMT+7
+// 2. HIGH SCORES & TỰ ĐỘNG RESET
 // ==========================================
 const HIGHSCORES_FILE = path.join(__dirname, "highscores.json");
 const defaultHighScores = {
@@ -1320,7 +1333,6 @@ function scheduleDailyReset() {
 	nextReset.setHours(24, 0, 0, 0);
 
 	setTimeout(() => {
-		console.log("[SYSTEM] Đã đến 0h GMT+7: Reset bảng điểm...");
 		highScores = { ...defaultHighScores };
 		saveHighScores();
 		io.emit("update_high_scores", highScores);
@@ -1347,7 +1359,7 @@ function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount, 
 }
 
 // ==========================================
-// 3. TIN NHẮN CHAT & CHỐNG SPAM
+// 3. TIN NHẮN CHAT
 // ==========================================
 const MESSAGES_FILE = path.join(__dirname, "messages.json");
 let chatMessages = [];
@@ -1487,12 +1499,76 @@ function clearRoomTimers(room) {
 	clearTimeout(room.roundTimer);
 	clearTimeout(room.roundIntermissionTimer);
 	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
+	if (room.boss) {
+		clearTimeout(room.boss.shieldTimer);
+		clearTimeout(room.boss.stunTimer);
+		clearTimeout(room.boss.capsLockTimer);
+	}
 }
 
 function checkMatchCompletion(room) {
 	if (room.lang === "ngau_hung") return;
 	const finished = room.players.filter((p) => p.isFinished || p.isSurrendered || p.isDisconnected);
 	if (finished.length >= room.players.length) finishMatch(room);
+}
+
+// XỬ LÝ TỰ BẠO LAO VÀO BOSS KHI CÓ NGƯỜI OUT / AFK / ĐẦU HÀNG
+function handlePlayerSelfDestruct(room, targetPlayer, reasonText = "đầu hàng") {
+	if (!room || room.lang !== "san_boss" || room.state !== "playing" || !room.boss || !targetPlayer)
+		return;
+	if (targetPlayer.hasSelfDestructed) return;
+	targetPlayer.hasSelfDestructed = true;
+
+	const priorDmg = targetPlayer.score || targetPlayer.correctChars || 0;
+	const selfDestructDmg =
+		priorDmg < BOSS_SELF_DESTRUCT_TARGET ? BOSS_SELF_DESTRUCT_TARGET - priorDmg : 0;
+
+	if (selfDestructDmg > 0) {
+		let remainingDmg = selfDestructDmg;
+		if (room.boss.isShieldActive && room.boss.shield > 0) {
+			if (room.boss.shield >= remainingDmg) {
+				room.boss.shield -= remainingDmg;
+				remainingDmg = 0;
+			} else {
+				remainingDmg -= room.boss.shield;
+				room.boss.shield = 0;
+				room.boss.isShieldActive = false;
+				room.boss.isStunned = true;
+				clearTimeout(room.boss.shieldTimer);
+
+				io.to(room.id).emit("boss_shield_broken", {
+					stunDuration: BOSS_STUN_DURATION,
+					message: "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng 3s (Nhận x1.5 Sát thương)!",
+				});
+			}
+		}
+
+		if (remainingDmg > 0) {
+			room.boss.hp = Math.max(0, room.boss.hp - remainingDmg);
+		}
+	}
+
+	io.to(room.id).emit("boss_self_destruct_notice", {
+		username: targetPlayer.username,
+		damage: selfDestructDmg,
+		reason: reasonText,
+		message: `💥 ${targetPlayer.username} (${reasonText}) đã tự bạo và lao vào Boss gây +${selfDestructDmg} sát thương!`,
+	});
+
+	io.to(room.id).emit("boss_hp_update", {
+		hp: room.boss.hp,
+		maxHp: room.boss.maxHp,
+		shield: room.boss.shield || 0,
+		maxShield: room.boss.maxShield || 0,
+		isShieldActive: room.boss.isShieldActive,
+		isStunned: room.boss.isStunned,
+		players: room.players,
+	});
+
+	if (room.boss.hp <= 0) {
+		room.boss.hp = 0;
+		finishMatch(room);
+	}
 }
 
 function startNgauHungRound(room) {
@@ -1517,6 +1593,14 @@ function endNgauHungRound(room) {
 	room.roundActive = false;
 	clearTimeout(room.roundTimer);
 
+	const roundProgress = Math.round((room.currentRound / room.totalRounds) * 100);
+	room.players.forEach((p) => {
+		if (!p.isSurrendered && !p.isDisconnected && !p.isAFK) {
+			p.progress = roundProgress;
+		}
+	});
+
+	io.to(room.id).emit("race_update", room.players);
 	io.to(room.id).emit("ngau_hung_round_ended", {
 		round: room.currentRound,
 		roundWinners: room.roundWinners,
@@ -1537,21 +1621,79 @@ function endNgauHungRound(room) {
 
 function startBossSkillLoop(room) {
 	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
-	const skills = ["shake", "fog", "reverse"];
+	const skills = ["shield", "capslock", "shake", "fog", "reverse"];
 
 	room.bossSkillTimer = setInterval(() => {
 		if (room.state !== "playing" || !room.boss || room.boss.hp <= 0) {
 			return clearInterval(room.bossSkillTimer);
 		}
+		if (room.boss.isStunned || room.boss.isShieldActive) return;
+
 		const skill = skills[Math.floor(Math.random() * skills.length)];
 		io.to(room.id).emit("boss_skill_warning", { skill, countdown: 2 });
 
 		setTimeout(() => {
 			if (room.state === "playing" && room.boss && room.boss.hp > 0) {
-				io.to(room.id).emit("boss_skill_cast", { skill, duration: 5 });
+				executeBossSkill(room, skill);
 			}
 		}, 2000);
-	}, 14000);
+	}, BOSS_SKILL_INTERVAL);
+}
+
+function executeBossSkill(room, skill) {
+	const boss = room.boss;
+	if (!boss || boss.hp <= 0 || room.state !== "playing") return;
+
+	if (skill === "shield") {
+		const activeCount = Math.max(
+			1,
+			room.players.filter((p) => !p.isSurrendered && !p.isDisconnected).length,
+		);
+		const shieldVal = activeCount * BOSS_SHIELD_BASE_PER_PLAYER;
+		boss.shield = shieldVal;
+		boss.maxShield = shieldVal;
+		boss.isShieldActive = true;
+
+		io.to(room.id).emit("boss_shield_start", {
+			shield: boss.shield,
+			maxShield: boss.maxShield,
+			duration: BOSS_SHIELD_DURATION,
+		});
+
+		clearTimeout(boss.shieldTimer);
+		boss.shieldTimer = setTimeout(() => {
+			if (room.state === "playing" && boss && boss.isShieldActive && boss.shield > 0) {
+				const healAmount = boss.shield;
+				boss.hp = Math.min(boss.maxHp, boss.hp + healAmount);
+				boss.isShieldActive = false;
+				boss.shield = 0;
+
+				io.to(room.id).emit("boss_shield_failed", {
+					healAmount,
+					hp: boss.hp,
+					maxHp: boss.maxHp,
+					message: `⚠️ KHÔNG PHÁ ĐƯỢC GIÁP! Boss hấp thụ ${healAmount} HP & Sóng xung kích làm hỏng Combo!`,
+				});
+				io.to(room.id).emit("boss_hp_update", {
+					hp: boss.hp,
+					maxHp: boss.maxHp,
+					shield: 0,
+					maxShield: boss.maxShield,
+				});
+			}
+		}, BOSS_SHIELD_DURATION * 1000);
+	} else if (skill === "capslock") {
+		boss.isCapsLockActive = true;
+		io.to(room.id).emit("boss_capslock_start", { duration: BOSS_CAPSLOCK_DURATION });
+
+		clearTimeout(boss.capsLockTimer);
+		boss.capsLockTimer = setTimeout(() => {
+			if (boss) boss.isCapsLockActive = false;
+			io.to(room.id).emit("boss_capslock_end");
+		}, BOSS_CAPSLOCK_DURATION * 1000);
+	} else {
+		io.to(room.id).emit("boss_skill_cast", { skill, duration: 5 });
+	}
 }
 
 function finishMatch(room) {
@@ -1622,6 +1764,11 @@ io.on("connection", (socket) => {
 
 		if (currentRoom.state === "playing") {
 			player.isDisconnected = true;
+			// Kích hoạt tự bạo nếu đang chơi Săn Boss
+			if (currentRoom.lang === "san_boss") {
+				handlePlayerSelfDestruct(currentRoom, player, "rời phòng");
+			}
+
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
 			const active = currentRoom.players.filter(
 				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
@@ -1710,11 +1857,11 @@ io.on("connection", (socket) => {
 	socket.on("admin_kick_lobby_player", ({ targetSocketId }) => {
 		if (socket.isAdmin)
 			io.to(targetSocketId).emit("kicked_from_lobby", {
-				message: "Bạn đã bị Admin đá khỏi phòng chờ!",
+				message: "Bạn đã bị Quản trị viên đá khỏi phòng chờ!",
 			});
 	});
 
-	// Chat & Game Events (ĐỒNG BỘ ĐỔI TÊN NGAY LẬP TỨC TRONG PHÒNG)
+	// Chat & Game Events
 	socket.on("update_username", (data) => {
 		const newName = (data.username || "").trim() || "Vô danh";
 		const u = connectedUsers.get(socket.id);
@@ -1790,6 +1937,7 @@ io.on("connection", (socket) => {
 			isSurrendered: false,
 			isAFK: false,
 			isDisconnected: false,
+			hasSelfDestructed: false,
 		};
 		currentRoom.players.push(player);
 		socket.join(currentRoom.id);
@@ -1816,12 +1964,18 @@ io.on("connection", (socket) => {
 
 			if (currentRoom.lang === "san_boss") {
 				const pCount = Math.max(1, currentRoom.players.length);
-				const maxHp = pCount * 450;
+				// CÔNG THỨC MÁU BOSS: MÁU CỐ ĐỊNH 500 + MỖI NGƯỜI CHƠI TĂNG THÊM 500
+				const maxHp = BOSS_BASE_HP + (pCount - 1) * BOSS_HP_PER_PLAYER;
 				currentRoom.boss = {
 					name: "HẮC LONG MA VƯƠNG",
 					icon: "🐉",
 					hp: maxHp,
 					maxHp: maxHp,
+					shield: 0,
+					maxShield: 0,
+					isShieldActive: false,
+					isStunned: false,
+					isCapsLockActive: false,
 					duration: BOSS_RAID_DURATION,
 				};
 
@@ -1868,7 +2022,13 @@ io.on("connection", (socket) => {
 			return;
 		if (player.isSurrendered || player.isDisconnected || player.isAFK) return;
 
-		const dmg = Math.max(0, data.damage || 0);
+		let dmg = Math.max(0, data.damage || 0);
+
+		// Nếu Boss đang bị Choáng (Stun): x1.5 sát thương bạo kích
+		if (currentRoom.boss.isStunned && dmg > 0) {
+			dmg = Math.round(dmg * 1.5);
+		}
+
 		player.score = (player.score || 0) + dmg;
 		player.correctChars = (player.correctChars || 0) + dmg;
 		if (typeof data.errors === "number") {
@@ -1876,7 +2036,39 @@ io.on("connection", (socket) => {
 		}
 
 		if (dmg > 0) {
-			currentRoom.boss.hp = Math.max(0, currentRoom.boss.hp - dmg);
+			if (currentRoom.boss.isShieldActive && currentRoom.boss.shield > 0) {
+				if (currentRoom.boss.shield >= dmg) {
+					currentRoom.boss.shield -= dmg;
+					dmg = 0;
+				} else {
+					dmg -= currentRoom.boss.shield;
+					currentRoom.boss.shield = 0;
+				}
+
+				if (currentRoom.boss.shield <= 0) {
+					currentRoom.boss.isShieldActive = false;
+					currentRoom.boss.shield = 0;
+					currentRoom.boss.isStunned = true;
+					clearTimeout(currentRoom.boss.shieldTimer);
+
+					io.to(currentRoom.id).emit("boss_shield_broken", {
+						stunDuration: BOSS_STUN_DURATION,
+						message: "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng 3s (Nhận x1.5 Sát thương)!",
+					});
+
+					clearTimeout(currentRoom.boss.stunTimer);
+					currentRoom.boss.stunTimer = setTimeout(() => {
+						if (currentRoom?.boss) {
+							currentRoom.boss.isStunned = false;
+							io.to(currentRoom.id).emit("boss_stun_end");
+						}
+					}, BOSS_STUN_DURATION * 1000);
+				}
+			}
+
+			if (dmg > 0) {
+				currentRoom.boss.hp = Math.max(0, currentRoom.boss.hp - dmg);
+			}
 		}
 
 		player.progress = Math.min(
@@ -1887,8 +2079,12 @@ io.on("connection", (socket) => {
 		io.to(currentRoom.id).emit("boss_hp_update", {
 			hp: currentRoom.boss.hp,
 			maxHp: currentRoom.boss.maxHp,
+			shield: currentRoom.boss.shield || 0,
+			maxShield: currentRoom.boss.maxShield || 0,
+			isShieldActive: currentRoom.boss.isShieldActive,
+			isStunned: currentRoom.boss.isStunned,
 			damager: player.username,
-			damage: dmg,
+			damage: data.damage || 0,
 			players: currentRoom.players,
 		});
 
@@ -1937,12 +2133,11 @@ io.on("connection", (socket) => {
 
 	socket.on("update_progress", (data) => {
 		if (currentRoom && player) {
-			Object.assign(player, {
-				progress: data.progress,
-				wpm: data.wpm,
-				correctChars: data.correctChars,
-				errors: data.errors,
-			});
+			if (typeof data.progress === "number") player.progress = data.progress;
+			if (typeof data.wpm === "number") player.wpm = data.wpm;
+			if (typeof data.correctChars === "number") player.correctChars = data.correctChars;
+			if (typeof data.errors === "number") player.errors = data.errors;
+
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
 		}
 	});
@@ -1965,6 +2160,12 @@ io.on("connection", (socket) => {
 		if (currentRoom && player) {
 			player.isSurrendered = true;
 			if (data?.isAFK) player.isAFK = true;
+
+			// Kích hoạt tự bạo khi Đầu Hàng hoặc AFK
+			if (currentRoom.lang === "san_boss") {
+				handlePlayerSelfDestruct(currentRoom, player, data?.isAFK ? "AFK" : "đầu hàng");
+			}
+
 			io.to(currentRoom.id).emit("race_update", currentRoom.players);
 			const active = currentRoom.players.filter(
 				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
