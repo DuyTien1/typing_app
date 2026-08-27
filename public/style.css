@@ -1214,16 +1214,22 @@ header .logo {
 	width: auto;
 }
 
+/* NÚT ĐỘ KHÓ NGẪU HỨNG ĐƯỢC THIẾT KẾ THEO TÔNG ĐỎ CAM ĐẶC TRƯNG */
 .btn-diff-nh {
-	background: linear-gradient(45deg, #00bbff, #ffe600);
-	border: 1px solid var(--accent);
-	color: #000 !important;
+	background: linear-gradient(45deg, #ff0055, #ff5500) !important;
+	border: 1px solid #ff0055 !important;
+	color: #fff !important;
+	box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+}
+.btn-diff-nh:hover {
+	filter: brightness(1.2);
 }
 
 .btn-diff-boss {
 	background: linear-gradient(45deg, var(--secondary), #ff7700);
 	border: 1px solid var(--secondary);
 	color: #fff !important;
+	box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
 }
 
 .btn-icon-corner,

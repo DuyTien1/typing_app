@@ -50,10 +50,12 @@ let clientGameConfig = {
 				roundDuration: 7,
 				intermissionDuration: 3,
 				totalRounds: 15,
-				ratioVi: 45,
-				ratioEn: 45,
+				ratioViDau: 25,
+				ratioViNoDau: 25,
+				ratioEn: 40,
 				ratioNum: 10,
-				hardViRate: 35,
+				hardViDauRate: 35,
+				hardViNoDauRate: 35,
 				hardEnRate: 35,
 			},
 			legendary: {
@@ -64,10 +66,12 @@ let clientGameConfig = {
 				roundDuration: 3.5,
 				intermissionDuration: 1.5,
 				totalRounds: 25,
-				ratioVi: 35,
-				ratioEn: 35,
-				ratioNum: 30,
-				hardViRate: 85,
+				ratioViDau: 25,
+				ratioViNoDau: 25,
+				ratioEn: 25,
+				ratioNum: 25,
+				hardViDauRate: 85,
+				hardViNoDauRate: 85,
 				hardEnRate: 85,
 			},
 		},
@@ -92,6 +96,13 @@ let clientGameConfig = {
 				fogDuration: 5,
 				reverseDuration: 5,
 				capslockDuration: 5,
+				ratioViDau: 20,
+				ratioViNoDau: 40,
+				ratioEn: 30,
+				ratioNum: 10,
+				hardViDauRate: 20,
+				hardViNoDauRate: 20,
+				hardEnRate: 20,
 				enabledSkills: {
 					shield: true,
 					capslock: false,
@@ -117,6 +128,13 @@ let clientGameConfig = {
 				fogDuration: 5,
 				reverseDuration: 5,
 				capslockDuration: 6,
+				ratioViDau: 25,
+				ratioViNoDau: 35,
+				ratioEn: 30,
+				ratioNum: 10,
+				hardViDauRate: 35,
+				hardViNoDauRate: 35,
+				hardEnRate: 35,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -142,6 +160,13 @@ let clientGameConfig = {
 				fogDuration: 6,
 				reverseDuration: 5,
 				capslockDuration: 7,
+				ratioViDau: 30,
+				ratioViNoDau: 30,
+				ratioEn: 25,
+				ratioNum: 15,
+				hardViDauRate: 50,
+				hardViNoDauRate: 50,
+				hardEnRate: 50,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -167,6 +192,13 @@ let clientGameConfig = {
 				fogDuration: 7,
 				reverseDuration: 6,
 				capslockDuration: 8,
+				ratioViDau: 30,
+				ratioViNoDau: 25,
+				ratioEn: 25,
+				ratioNum: 20,
+				hardViDauRate: 80,
+				hardViNoDauRate: 80,
+				hardEnRate: 80,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -652,6 +684,21 @@ function saveActiveDiffInputsToState() {
 		if ($("cfg-diff-skill-interval"))
 			diff.skillInterval = parseInt($("cfg-diff-skill-interval").value) || 14;
 
+		// Tỷ lệ xuất hiện ngôn ngữ & từ khó Boss
+		if ($("cfg-boss-ratio-vi-dau"))
+			diff.ratioViDau = parseInt($("cfg-boss-ratio-vi-dau").value) || 0;
+		if ($("cfg-boss-ratio-vi-nodau"))
+			diff.ratioViNoDau = parseInt($("cfg-boss-ratio-vi-nodau").value) || 0;
+		if ($("cfg-boss-ratio-en")) diff.ratioEn = parseInt($("cfg-boss-ratio-en").value) || 0;
+		if ($("cfg-boss-ratio-num")) diff.ratioNum = parseInt($("cfg-boss-ratio-num").value) || 0;
+
+		if ($("cfg-boss-hard-vi-dau"))
+			diff.hardViDauRate = parseInt($("cfg-boss-hard-vi-dau").value) || 0;
+		if ($("cfg-boss-hard-vi-nodau"))
+			diff.hardViNoDauRate = parseInt($("cfg-boss-hard-vi-nodau").value) || 0;
+		if ($("cfg-boss-hard-en")) diff.hardEnRate = parseInt($("cfg-boss-hard-en").value) || 0;
+
+		// Kỹ năng Boss
 		if ($("cfg-diff-shield-per-player"))
 			diff.shieldBasePerPlayer = parseInt($("cfg-diff-shield-per-player").value) || 40;
 		if ($("cfg-diff-shield-dur"))
@@ -680,11 +727,16 @@ function saveActiveDiffInputsToState() {
 			nh.intermissionDuration = parseFloat($("cfg-nh-inter-dur").value) || 3;
 		if ($("cfg-nh-total-rounds")) nh.totalRounds = parseInt($("cfg-nh-total-rounds").value) || 15;
 
-		if ($("cfg-nh-ratio-vi")) nh.ratioVi = parseInt($("cfg-nh-ratio-vi").value) || 45;
-		if ($("cfg-nh-ratio-en")) nh.ratioEn = parseInt($("cfg-nh-ratio-en").value) || 45;
-		if ($("cfg-nh-ratio-num")) nh.ratioNum = parseInt($("cfg-nh-ratio-num").value) || 10;
-		if ($("cfg-nh-hard-vi")) nh.hardViRate = parseInt($("cfg-nh-hard-vi").value) || 35;
-		if ($("cfg-nh-hard-en")) nh.hardEnRate = parseInt($("cfg-nh-hard-en").value) || 35;
+		if ($("cfg-nh-ratio-vi-dau")) nh.ratioViDau = parseInt($("cfg-nh-ratio-vi-dau").value) || 0;
+		if ($("cfg-nh-ratio-vi-nodau"))
+			nh.ratioViNoDau = parseInt($("cfg-nh-ratio-vi-nodau").value) || 0;
+		if ($("cfg-nh-ratio-en")) nh.ratioEn = parseInt($("cfg-nh-ratio-en").value) || 0;
+		if ($("cfg-nh-ratio-num")) nh.ratioNum = parseInt($("cfg-nh-ratio-num").value) || 0;
+
+		if ($("cfg-nh-hard-vi-dau")) nh.hardViDauRate = parseInt($("cfg-nh-hard-vi-dau").value) || 0;
+		if ($("cfg-nh-hard-vi-nodau"))
+			nh.hardViNoDauRate = parseInt($("cfg-nh-hard-vi-nodau").value) || 0;
+		if ($("cfg-nh-hard-en")) nh.hardEnRate = parseInt($("cfg-nh-hard-en").value) || 0;
 	}
 }
 
@@ -703,6 +755,16 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-diff-hp-per-player")) $("cfg-diff-hp-per-player").value = diff.hpPerPlayer;
 		if ($("cfg-diff-self-destruct")) $("cfg-diff-self-destruct").value = diff.selfDestructTarget;
 		if ($("cfg-diff-skill-interval")) $("cfg-diff-skill-interval").value = diff.skillInterval;
+
+		// Tỷ lệ Boss
+		if ($("cfg-boss-ratio-vi-dau")) $("cfg-boss-ratio-vi-dau").value = diff.ratioViDau ?? 25;
+		if ($("cfg-boss-ratio-vi-nodau")) $("cfg-boss-ratio-vi-nodau").value = diff.ratioViNoDau ?? 35;
+		if ($("cfg-boss-ratio-en")) $("cfg-boss-ratio-en").value = diff.ratioEn ?? 30;
+		if ($("cfg-boss-ratio-num")) $("cfg-boss-ratio-num").value = diff.ratioNum ?? 10;
+
+		if ($("cfg-boss-hard-vi-dau")) $("cfg-boss-hard-vi-dau").value = diff.hardViDauRate ?? 35;
+		if ($("cfg-boss-hard-vi-nodau")) $("cfg-boss-hard-vi-nodau").value = diff.hardViNoDauRate ?? 35;
+		if ($("cfg-boss-hard-en")) $("cfg-boss-hard-en").value = diff.hardEnRate ?? 35;
 
 		if ($("cfg-diff-shield-per-player"))
 			$("cfg-diff-shield-per-player").value = diff.shieldBasePerPlayer;
@@ -736,10 +798,13 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-nh-inter-dur")) $("cfg-nh-inter-dur").value = nh.intermissionDuration;
 		if ($("cfg-nh-total-rounds")) $("cfg-nh-total-rounds").value = nh.totalRounds;
 
-		if ($("cfg-nh-ratio-vi")) $("cfg-nh-ratio-vi").value = nh.ratioVi ?? 45;
-		if ($("cfg-nh-ratio-en")) $("cfg-nh-ratio-en").value = nh.ratioEn ?? 45;
+		if ($("cfg-nh-ratio-vi-dau")) $("cfg-nh-ratio-vi-dau").value = nh.ratioViDau ?? 25;
+		if ($("cfg-nh-ratio-vi-nodau")) $("cfg-nh-ratio-vi-nodau").value = nh.ratioViNoDau ?? 25;
+		if ($("cfg-nh-ratio-en")) $("cfg-nh-ratio-en").value = nh.ratioEn ?? 40;
 		if ($("cfg-nh-ratio-num")) $("cfg-nh-ratio-num").value = nh.ratioNum ?? 10;
-		if ($("cfg-nh-hard-vi")) $("cfg-nh-hard-vi").value = nh.hardViRate ?? 35;
+
+		if ($("cfg-nh-hard-vi-dau")) $("cfg-nh-hard-vi-dau").value = nh.hardViDauRate ?? 35;
+		if ($("cfg-nh-hard-vi-nodau")) $("cfg-nh-hard-vi-nodau").value = nh.hardViNoDauRate ?? 35;
 		if ($("cfg-nh-hard-en")) $("cfg-nh-hard-en").value = nh.hardEnRate ?? 35;
 	}
 }
@@ -774,12 +839,13 @@ function showAdminSaveNotice(success, message) {
 	if (!popup) return;
 
 	if (success) {
-		if (iconEl) iconEl.innerText = "✅";
+		if (iconEl) iconEl.innerText = "✨";
 		if (titleEl) {
 			titleEl.innerText = "LƯU CÀI ĐẶT THÀNH CÔNG";
 			titleEl.style.color = "var(--correct)";
 		}
-		if (descEl) descEl.innerText = message || "Tất cả thông số và kỹ năng trận đấu đã được lưu.";
+		if (descEl)
+			descEl.innerText = message || "Tất cả thông số và tỷ lệ từ vựng trận đấu đã được lưu.";
 	} else {
 		if (iconEl) iconEl.innerText = "❌";
 		if (titleEl) {
@@ -844,6 +910,13 @@ function setupAdminEvents() {
 		"cfg-diff-hp-per-player",
 		"cfg-diff-self-destruct",
 		"cfg-diff-skill-interval",
+		"cfg-boss-ratio-vi-dau",
+		"cfg-boss-ratio-vi-nodau",
+		"cfg-boss-ratio-en",
+		"cfg-boss-ratio-num",
+		"cfg-boss-hard-vi-dau",
+		"cfg-boss-hard-vi-nodau",
+		"cfg-boss-hard-en",
 		"cfg-diff-shield-per-player",
 		"cfg-diff-shield-dur",
 		"cfg-diff-stun-dur",
@@ -859,10 +932,12 @@ function setupAdminEvents() {
 		"cfg-nh-round-dur",
 		"cfg-nh-inter-dur",
 		"cfg-nh-total-rounds",
-		"cfg-nh-ratio-vi",
+		"cfg-nh-ratio-vi-dau",
+		"cfg-nh-ratio-vi-nodau",
 		"cfg-nh-ratio-en",
 		"cfg-nh-ratio-num",
-		"cfg-nh-hard-vi",
+		"cfg-nh-hard-vi-dau",
+		"cfg-nh-hard-vi-nodau",
 		"cfg-nh-hard-en",
 	];
 	diffInputIds.forEach((id) => {

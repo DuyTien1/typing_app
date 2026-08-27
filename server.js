@@ -37,10 +37,12 @@ const GAME_CONFIG = {
 				roundDuration: 7,
 				intermissionDuration: 3,
 				totalRounds: 15,
-				ratioVi: 45,
-				ratioEn: 45,
+				ratioViDau: 25,
+				ratioViNoDau: 25,
+				ratioEn: 40,
 				ratioNum: 10,
-				hardViRate: 35,
+				hardViDauRate: 35,
+				hardViNoDauRate: 35,
 				hardEnRate: 35,
 			},
 			legendary: {
@@ -51,10 +53,12 @@ const GAME_CONFIG = {
 				roundDuration: 3.5,
 				intermissionDuration: 1.5,
 				totalRounds: 25,
-				ratioVi: 35,
-				ratioEn: 35,
-				ratioNum: 30,
-				hardViRate: 85,
+				ratioViDau: 25,
+				ratioViNoDau: 25,
+				ratioEn: 25,
+				ratioNum: 25,
+				hardViDauRate: 85,
+				hardViNoDauRate: 85,
 				hardEnRate: 85,
 			},
 		},
@@ -79,6 +83,13 @@ const GAME_CONFIG = {
 				fogDuration: 5,
 				reverseDuration: 5,
 				capslockDuration: 5,
+				ratioViDau: 20,
+				ratioViNoDau: 40,
+				ratioEn: 30,
+				ratioNum: 10,
+				hardViDauRate: 20,
+				hardViNoDauRate: 20,
+				hardEnRate: 20,
 				enabledSkills: {
 					shield: true,
 					capslock: false,
@@ -104,6 +115,13 @@ const GAME_CONFIG = {
 				fogDuration: 5,
 				reverseDuration: 5,
 				capslockDuration: 6,
+				ratioViDau: 25,
+				ratioViNoDau: 35,
+				ratioEn: 30,
+				ratioNum: 10,
+				hardViDauRate: 35,
+				hardViNoDauRate: 35,
+				hardEnRate: 35,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -129,6 +147,13 @@ const GAME_CONFIG = {
 				fogDuration: 6,
 				reverseDuration: 5,
 				capslockDuration: 7,
+				ratioViDau: 30,
+				ratioViNoDau: 30,
+				ratioEn: 25,
+				ratioNum: 15,
+				hardViDauRate: 50,
+				hardViNoDauRate: 50,
+				hardEnRate: 50,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -154,6 +179,13 @@ const GAME_CONFIG = {
 				fogDuration: 7,
 				reverseDuration: 6,
 				capslockDuration: 8,
+				ratioViDau: 30,
+				ratioViNoDau: 25,
+				ratioEn: 25,
+				ratioNum: 20,
+				hardViDauRate: 80,
+				hardViNoDauRate: 80,
+				hardEnRate: 80,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -181,9 +213,7 @@ function removeVietnameseTones(str) {
 
 const BIG_WORD_BANKS = {
 	vi_dau: {
-		// ~650 TỪ TIẾNG VIỆT CƠ BẢN / DỄ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		easy: [
-			// Thiên nhiên, thời tiết & thời gian
 			"ngày",
 			"đêm",
 			"mưa",
@@ -264,8 +294,6 @@ const BIG_WORD_BANKS = {
 			"mương",
 			"đồi",
 			"dốc",
-
-			// Con người, gia đình, đại từ
 			"ông",
 			"bà",
 			"cha",
@@ -323,8 +351,6 @@ const BIG_WORD_BANKS = {
 			"nhà",
 			"dân",
 			"tộc",
-
-			// Cơ thể con người
 			"đầu",
 			"tóc",
 			"tai",
@@ -375,8 +401,6 @@ const BIG_WORD_BANKS = {
 			"vóc",
 			"dáng",
 			"tiếng",
-
-			// Động vật
 			"chó",
 			"mèo",
 			"gà",
@@ -446,8 +470,6 @@ const BIG_WORD_BANKS = {
 			"châu",
 			"nghé",
 			"bê",
-
-			// Cây cối, rau củ, quả, thực phẩm
 			"cây",
 			"hoa",
 			"lá",
@@ -558,8 +580,6 @@ const BIG_WORD_BANKS = {
 			"bia",
 			"mỡ",
 			"dầu",
-
-			// Đồ vật, nhà cửa, dụng cụ
 			"nhà",
 			"cửa",
 			"sân",
@@ -670,8 +690,6 @@ const BIG_WORD_BANKS = {
 			"phà",
 			"ga",
 			"cầu",
-
-			// Hành động, động từ
 			"đi",
 			"đến",
 			"về",
@@ -872,8 +890,6 @@ const BIG_WORD_BANKS = {
 			"đuổi",
 			"theo",
 			"kịp",
-
-			// Tính từ, trạng thái & màu sắc
 			"tốt",
 			"xấu",
 			"đẹp",
@@ -994,8 +1010,6 @@ const BIG_WORD_BANKS = {
 			"mới",
 			"lạ",
 			"quen",
-
-			// Số từ & liên từ
 			"một",
 			"hai",
 			"ba",
@@ -1037,8 +1051,6 @@ const BIG_WORD_BANKS = {
 			"là",
 			"để",
 		],
-
-		// 150 TỪ TIẾNG VIỆT NÂNG CAO / KHÓ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -1372,52 +1384,62 @@ BIG_WORD_BANKS.vi_nodau = {
 	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
 };
 
+function getRandomWordFromBank(bankEasy, bankHard, hardRatePercent) {
+	const isHard = Math.random() < hardRatePercent / 100;
+	const pool = isHard ? bankHard : bankEasy;
+	return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function generateWords(lang, count, difficulty = "normal") {
-	if (lang === "san_boss") {
-		const total = count || GAME_CONFIG.sanBoss.wordPoolCount;
-		const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
-		const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
+	if (lang === "san_boss" || lang === "ngau_hung") {
+		const diffConfig =
+			lang === "san_boss"
+				? GAME_CONFIG.sanBoss.difficulties[difficulty] || GAME_CONFIG.sanBoss.difficulties.normal
+				: GAME_CONFIG.ngauHung.difficulties[difficulty] || GAME_CONFIG.ngauHung.difficulties.normal;
+
+		const total =
+			count ||
+			(lang === "san_boss" ? GAME_CONFIG.sanBoss.wordPoolCount : diffConfig.totalRounds || 15);
+
+		const ratioViDau = diffConfig.ratioViDau ?? 25;
+		const ratioViNoDau = diffConfig.ratioViNoDau ?? 25;
+		const ratioEn = diffConfig.ratioEn ?? 35;
+		const ratioNum = diffConfig.ratioNum ?? 15;
+		const sumRatio = Math.max(1, ratioViDau + ratioViNoDau + ratioEn + ratioNum);
+
+		const hardViDauRate = diffConfig.hardViDauRate ?? 35;
+		const hardViNoDauRate = diffConfig.hardViNoDauRate ?? 35;
+		const hardEnRate = diffConfig.hardEnRate ?? 35;
+
 		return Array.from({ length: total }, () => {
-			const rand = Math.random();
-			if (rand < 0.2) return enPool[Math.floor(Math.random() * enPool.length)];
-			if (rand < 0.6) return viPool[Math.floor(Math.random() * viPool.length)];
-			return Math.floor(10000 + Math.random() * 90000).toString();
-		});
-	}
-	if (lang === "ngau_hung") {
-		const nhDiff =
-			GAME_CONFIG.ngauHung.difficulties[difficulty] || GAME_CONFIG.ngauHung.difficulties.normal;
-		const totalRounds = count || nhDiff.totalRounds || 15;
-
-		const ratioVi = nhDiff.ratioVi ?? 45;
-		const ratioEn = nhDiff.ratioEn ?? 45;
-		const ratioNum = nhDiff.ratioNum ?? 10;
-		const sumRatio = Math.max(1, ratioVi + ratioEn + ratioNum);
-
-		const hardViRate = (nhDiff.hardViRate ?? 35) / 100;
-		const hardEnRate = (nhDiff.hardEnRate ?? 35) / 100;
-
-		return Array.from({ length: totalRounds }, () => {
 			const rand = Math.random() * sumRatio;
-			if (rand < ratioVi) {
-				const isHard = Math.random() < hardViRate;
-				const pool = isHard ? BIG_WORD_BANKS.vi_nodau.hard : BIG_WORD_BANKS.vi_nodau.easy;
-				return pool[Math.floor(Math.random() * pool.length)];
-			} else if (rand < ratioVi + ratioEn) {
-				const isHard = Math.random() < hardEnRate;
-				const pool = isHard ? BIG_WORD_BANKS.en.hard : BIG_WORD_BANKS.en.easy;
-				return pool[Math.floor(Math.random() * pool.length)];
+			if (rand < ratioViDau) {
+				return getRandomWordFromBank(
+					BIG_WORD_BANKS.vi_dau.easy,
+					BIG_WORD_BANKS.vi_dau.hard,
+					hardViDauRate,
+				);
+			} else if (rand < ratioViDau + ratioViNoDau) {
+				return getRandomWordFromBank(
+					BIG_WORD_BANKS.vi_nodau.easy,
+					BIG_WORD_BANKS.vi_nodau.hard,
+					hardViNoDauRate,
+				);
+			} else if (rand < ratioViDau + ratioViNoDau + ratioEn) {
+				return getRandomWordFromBank(BIG_WORD_BANKS.en.easy, BIG_WORD_BANKS.en.hard, hardEnRate);
 			} else {
 				return Math.floor(10000 + Math.random() * 90000).toString();
 			}
 		});
 	}
+
 	if (lang === "numpad") {
 		const total = count || GAME_CONFIG.numpad.wordCount;
 		return Array.from({ length: total }, () =>
 			Math.floor(10000 + Math.random() * 90000).toString(),
 		);
 	}
+
 	const bank = BIG_WORD_BANKS[lang] || BIG_WORD_BANKS.vi_dau;
 	const total = count || GAME_CONFIG.normalRace.wordCount;
 	return Array.from({ length: total }, () => {
@@ -2143,7 +2165,6 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// CHỌN ĐỘ KHÓ: TÁCH BIỆT XỬ LÝ CHO NGẪU HỨNG & SĂN BOSS
 	socket.on("select_difficulty", (data) => {
 		if (!currentRoom || currentRoom.state !== "waiting") return;
 		const diff = data.difficulty || "normal";
@@ -2185,6 +2206,11 @@ io.on("connection", (socket) => {
 					GAME_CONFIG.sanBoss.difficulties.normal;
 
 				const maxHp = diffConfig.baseHp + (pCount - 1) * diffConfig.hpPerPlayer;
+				currentRoom.words = generateWords(
+					"san_boss",
+					GAME_CONFIG.sanBoss.wordPoolCount,
+					currentRoom.difficulty,
+				);
 
 				currentRoom.boss = {
 					name: "HẮC LONG MA VƯƠNG",
