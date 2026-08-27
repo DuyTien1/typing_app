@@ -22,7 +22,7 @@ function eraseCookie(n) {
 	document.cookie = `${n}=; max-age=0; path=/`;
 }
 
-// Khôi phục phong cách
+// Khôi phục phong cách giao diện
 const savedInitialStyle =
 	localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
 
@@ -318,6 +318,8 @@ const styleNames = {
 	cyberpunk: "⚡ Cyberpunk",
 	vintage: "📜 Cổ Điển",
 	xianxia: "🪷 Tiên Hiệp",
+	steampunk: "⚙️ Cơ Khí",
+	thuymac: "☯️ Thủy Mặc",
 };
 
 const difficultyMeta = {
@@ -393,7 +395,7 @@ function loadHighScores() {
 			<td class="highlight-val">${data ? scoreDisplay : "0"}</td>
 			<td>${data ? data.errors || 0 : "0"}</td>
 			<td class="admin-only-col ${isAdmin ? "" : "hidden"}">
-				${isAdmin ? `<button class="btn-small btn-danger" onclick="resetHighScore('${mode}')">Reset</button>` : ""}
+				${isAdmin ? `<button class="btn-small btn-surrender-style" onclick="resetHighScore('${mode}')">Reset</button>` : ""}
 			</td>
 		`;
 		tbody.appendChild(tr);
@@ -474,6 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		localStorage.getItem("racer_username") || `bot_${Math.floor(1000 + Math.random() * 9000)}`;
 	localStorage.setItem("racer_username", myUsername);
 	$("profile-name").innerText = myUsername;
+	if ($("user-icon-status")) $("user-icon-status").innerText = mySelectedIcon;
 
 	initBotWorker();
 	setupEmojiPicker();
@@ -512,16 +515,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		socket.emit("join_lobby", {
 			username: myUsername,
 			language: currentLanguage,
+			difficulty: currentDifficulty,
 			selectedIcon: mySelectedIcon,
 		});
 	});
 
-	$("btn-open-icon-select")?.addEventListener("click", () => {
+	const openIconSelect = () => {
 		renderIconPicker();
-		$("icon-select-popup").classList.remove("hidden");
-	});
+		$("icon-select-popup")?.classList.remove("hidden");
+	};
 
-	// 1. MỞ POPUP CHỌN ĐỘ KHÓ RIÊNG CHO NGẪU HỨNG
+	$("btn-change-icon")?.addEventListener("click", openIconSelect);
+	$("btn-open-icon-select")?.addEventListener("click", openIconSelect);
+
 	$("btn-open-nh-difficulty-select")?.addEventListener("click", () => {
 		$$("#nh-difficulty-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.nhDiff === currentDifficulty);
@@ -529,7 +535,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		$("nh-difficulty-popup").classList.remove("hidden");
 	});
 
-	// CHỌN ĐỘ KHÓ NGẪU HỨNG
 	$$("#nh-difficulty-popup .diff-card").forEach((card) => {
 		card.addEventListener("click", () => {
 			const diff = card.dataset.nhDiff;
@@ -541,7 +546,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// 2. MỞ POPUP CHỌN ĐỘ KHÓ RIÊNG CHO SĂN BOSS
 	$("btn-open-boss-difficulty-select")?.addEventListener("click", () => {
 		$$("#boss-difficulty-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.bossDiff === currentDifficulty);
@@ -549,7 +553,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		$("boss-difficulty-popup").classList.remove("hidden");
 	});
 
-	// CHỌN ĐỘ KHÓ SĂN BOSS
 	$$("#boss-difficulty-popup .diff-card").forEach((card) => {
 		card.addEventListener("click", () => {
 			const diff = card.dataset.bossDiff;
@@ -573,6 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const returnHome = () => {
 		socket.emit("leave_lobby");
 		mySelectedIcon = DEFAULT_ICON;
+		if ($("user-icon-status")) $("user-icon-status").innerText = mySelectedIcon;
 		["lobby-screen", "game-container", "summary-modal"].forEach((id) =>
 			$(id).classList.add("hidden"),
 		);
@@ -591,6 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		socket.emit("join_lobby", {
 			username: myUsername,
 			language: currentLanguage,
+			difficulty: currentDifficulty,
 			selectedIcon: mySelectedIcon,
 		});
 	});
@@ -670,7 +675,6 @@ socket.on("sync_game_config", (cfg) => {
 });
 
 function saveActiveDiffInputsToState() {
-	// 1. Cấu hình Săn Boss
 	if (tempAdminDifficulties[selectedConfigDiffKey]) {
 		const diff = tempAdminDifficulties[selectedConfigDiffKey];
 		if (!diff.enabledSkills) diff.enabledSkills = {};
@@ -684,21 +688,36 @@ function saveActiveDiffInputsToState() {
 		if ($("cfg-diff-skill-interval"))
 			diff.skillInterval = parseInt($("cfg-diff-skill-interval").value) || 14;
 
-		// Tỷ lệ xuất hiện ngôn ngữ & từ khó Boss
 		if ($("cfg-boss-ratio-vi-dau"))
-			diff.ratioViDau = parseInt($("cfg-boss-ratio-vi-dau").value) || 0;
+			diff.ratioViDau = isNaN(parseInt($("cfg-boss-ratio-vi-dau").value))
+				? 0
+				: parseInt($("cfg-boss-ratio-vi-dau").value);
 		if ($("cfg-boss-ratio-vi-nodau"))
-			diff.ratioViNoDau = parseInt($("cfg-boss-ratio-vi-nodau").value) || 0;
-		if ($("cfg-boss-ratio-en")) diff.ratioEn = parseInt($("cfg-boss-ratio-en").value) || 0;
-		if ($("cfg-boss-ratio-num")) diff.ratioNum = parseInt($("cfg-boss-ratio-num").value) || 0;
+			diff.ratioViNoDau = isNaN(parseInt($("cfg-boss-ratio-vi-nodau").value))
+				? 0
+				: parseInt($("cfg-boss-ratio-vi-nodau").value);
+		if ($("cfg-boss-ratio-en"))
+			diff.ratioEn = isNaN(parseInt($("cfg-boss-ratio-en").value))
+				? 0
+				: parseInt($("cfg-boss-ratio-en").value);
+		if ($("cfg-boss-ratio-num"))
+			diff.ratioNum = isNaN(parseInt($("cfg-boss-ratio-num").value))
+				? 0
+				: parseInt($("cfg-boss-ratio-num").value);
 
 		if ($("cfg-boss-hard-vi-dau"))
-			diff.hardViDauRate = parseInt($("cfg-boss-hard-vi-dau").value) || 0;
+			diff.hardViDauRate = isNaN(parseInt($("cfg-boss-hard-vi-dau").value))
+				? 0
+				: parseInt($("cfg-boss-hard-vi-dau").value);
 		if ($("cfg-boss-hard-vi-nodau"))
-			diff.hardViNoDauRate = parseInt($("cfg-boss-hard-vi-nodau").value) || 0;
-		if ($("cfg-boss-hard-en")) diff.hardEnRate = parseInt($("cfg-boss-hard-en").value) || 0;
+			diff.hardViNoDauRate = isNaN(parseInt($("cfg-boss-hard-vi-nodau").value))
+				? 0
+				: parseInt($("cfg-boss-hard-vi-nodau").value);
+		if ($("cfg-boss-hard-en"))
+			diff.hardEnRate = isNaN(parseInt($("cfg-boss-hard-en").value))
+				? 0
+				: parseInt($("cfg-boss-hard-en").value);
 
-		// Kỹ năng Boss
 		if ($("cfg-diff-shield-per-player"))
 			diff.shieldBasePerPlayer = parseInt($("cfg-diff-shield-per-player").value) || 40;
 		if ($("cfg-diff-shield-dur"))
@@ -719,7 +738,6 @@ function saveActiveDiffInputsToState() {
 		diff.enabledSkills.reverse = $("cfg-skill-enable-reverse")?.checked ?? true;
 	}
 
-	// 2. Cấu hình Ngẫu Hứng
 	if (tempAdminNhDifficulties[selectedConfigNhDiffKey]) {
 		const nh = tempAdminNhDifficulties[selectedConfigNhDiffKey];
 		if ($("cfg-nh-round-dur")) nh.roundDuration = parseFloat($("cfg-nh-round-dur").value) || 7;
@@ -727,21 +745,39 @@ function saveActiveDiffInputsToState() {
 			nh.intermissionDuration = parseFloat($("cfg-nh-inter-dur").value) || 3;
 		if ($("cfg-nh-total-rounds")) nh.totalRounds = parseInt($("cfg-nh-total-rounds").value) || 15;
 
-		if ($("cfg-nh-ratio-vi-dau")) nh.ratioViDau = parseInt($("cfg-nh-ratio-vi-dau").value) || 0;
+		if ($("cfg-nh-ratio-vi-dau"))
+			nh.ratioViDau = isNaN(parseInt($("cfg-nh-ratio-vi-dau").value))
+				? 0
+				: parseInt($("cfg-nh-ratio-vi-dau").value);
 		if ($("cfg-nh-ratio-vi-nodau"))
-			nh.ratioViNoDau = parseInt($("cfg-nh-ratio-vi-nodau").value) || 0;
-		if ($("cfg-nh-ratio-en")) nh.ratioEn = parseInt($("cfg-nh-ratio-en").value) || 0;
-		if ($("cfg-nh-ratio-num")) nh.ratioNum = parseInt($("cfg-nh-ratio-num").value) || 0;
+			nh.ratioViNoDau = isNaN(parseInt($("cfg-nh-ratio-vi-nodau").value))
+				? 0
+				: parseInt($("cfg-nh-ratio-vi-nodau").value);
+		if ($("cfg-nh-ratio-en"))
+			nh.ratioEn = isNaN(parseInt($("cfg-nh-ratio-en").value))
+				? 0
+				: parseInt($("cfg-nh-ratio-en").value);
+		if ($("cfg-nh-ratio-num"))
+			nh.ratioNum = isNaN(parseInt($("cfg-nh-ratio-num").value))
+				? 0
+				: parseInt($("cfg-nh-ratio-num").value);
 
-		if ($("cfg-nh-hard-vi-dau")) nh.hardViDauRate = parseInt($("cfg-nh-hard-vi-dau").value) || 0;
+		if ($("cfg-nh-hard-vi-dau"))
+			nh.hardViDauRate = isNaN(parseInt($("cfg-nh-hard-vi-dau").value))
+				? 0
+				: parseInt($("cfg-nh-hard-vi-dau").value);
 		if ($("cfg-nh-hard-vi-nodau"))
-			nh.hardViNoDauRate = parseInt($("cfg-nh-hard-vi-nodau").value) || 0;
-		if ($("cfg-nh-hard-en")) nh.hardEnRate = parseInt($("cfg-nh-hard-en").value) || 0;
+			nh.hardViNoDauRate = isNaN(parseInt($("cfg-nh-hard-vi-nodau").value))
+				? 0
+				: parseInt($("cfg-nh-hard-vi-nodau").value);
+		if ($("cfg-nh-hard-en"))
+			nh.hardEnRate = isNaN(parseInt($("cfg-nh-hard-en").value))
+				? 0
+				: parseInt($("cfg-nh-hard-en").value);
 	}
 }
 
 function updateSelectedDiffInputsFromState() {
-	// Cập nhật Săn Boss
 	const diff = tempAdminDifficulties[selectedConfigDiffKey];
 	if (diff) {
 		const meta = difficultyMeta[selectedConfigDiffKey] || difficultyMeta.normal;
@@ -756,7 +792,6 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-diff-self-destruct")) $("cfg-diff-self-destruct").value = diff.selfDestructTarget;
 		if ($("cfg-diff-skill-interval")) $("cfg-diff-skill-interval").value = diff.skillInterval;
 
-		// Tỷ lệ Boss
 		if ($("cfg-boss-ratio-vi-dau")) $("cfg-boss-ratio-vi-dau").value = diff.ratioViDau ?? 25;
 		if ($("cfg-boss-ratio-vi-nodau")) $("cfg-boss-ratio-vi-nodau").value = diff.ratioViNoDau ?? 35;
 		if ($("cfg-boss-ratio-en")) $("cfg-boss-ratio-en").value = diff.ratioEn ?? 30;
@@ -785,7 +820,6 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-skill-enable-reverse")) $("cfg-skill-enable-reverse").checked = sk.reverse ?? false;
 	}
 
-	// Cập nhật Ngẫu Hứng
 	const nh = tempAdminNhDifficulties[selectedConfigNhDiffKey];
 	if (nh) {
 		const metaNh = difficultyMeta[selectedConfigNhDiffKey] || difficultyMeta.normal;
@@ -966,7 +1000,6 @@ function setupAdminEvents() {
 
 	socket.on("admin_config_saved", (res) => {
 		showAdminSaveNotice(res.success, res.message);
-		if (res.success) $("admin-settings-modal").classList.add("hidden");
 	});
 
 	$("online-badge")?.addEventListener("click", () => {
@@ -1029,15 +1062,15 @@ function renderOnlineUsersModal() {
 		.map(
 			(u) => `
 		<tr>
-			<td style="font-weight: bold;">${u.username} ${u.isAdmin ? "👑" : ""}</td>
-			<td style="font-size: 11px; color: var(--text-muted);">${u.id}</td>
+			<td style="font-weight: 700;">${u.username} ${u.isAdmin ? "👑" : ""}</td>
+			<td style="font-size: 11px; color: var(--text-muted); font-family: monospace;">${u.id}</td>
 			<td><span class="status-tag ${u.isBanned ? "status-surrendered" : "status-online"}">${u.isBanned ? "Đang Ban" : "Online"}</span></td>
 			<td>${
 				u.isAdmin || u.id === socket.id
-					? `<span style="color: var(--text-muted); font-size: 11px;">(${u.id === socket.id ? "Bạn" : "Admin"})</span>`
+					? `<span style="color: var(--text-muted); font-size: 11px; font-weight: bold;">(${u.id === socket.id ? "Bạn" : "Admin"})</span>`
 					: u.isBanned
-						? `<button class="btn-small btn-danger" disabled style="opacity: 0.5;">Đã Ban</button>`
-						: `<button class="btn-small btn-danger" onclick="socket.emit('admin_ban_user', { targetSocketId: '${u.id}' })">Ban</button>`
+						? `<button class="btn-small btn-surrender-style" disabled style="opacity: 0.5; cursor: not-allowed;">Đã Ban</button>`
+						: `<button class="btn-ban-action" onclick="socket.emit('admin_ban_user', { targetSocketId: '${u.id}' })">🚫 Ban</button>`
 			}</td>
 		</tr>
 	`,
@@ -1051,15 +1084,15 @@ function renderBannedUsersModal() {
 	const now = Date.now();
 	tbody.innerHTML =
 		adminBannedUsers.length === 0
-			? `<tr><td colspan="3" style="color: var(--text-muted);">Không có ai bị ban</td></tr>`
+			? `<tr><td colspan="3" style="color: var(--text-muted); padding: 16px;">Không có ai bị ban</td></tr>`
 			: adminBannedUsers
 					.map((b) => {
 						const rem = Math.max(0, Math.ceil((b.expiresAt - now) / 1000));
 						return `
 				<tr>
-					<td style="font-weight: bold;">${b.username} (${b.id})</td>
-					<td style="color: var(--secondary); font-weight: bold;">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</td>
-					<td><button class="btn-small btn-success" onclick="socket.emit('admin_unban_user', { targetId: '${b.id}' })">Gỡ Ban</button></td>
+					<td style="font-weight: 700;">${b.username} <span style="font-size: 11px; color: var(--text-muted);">(${b.id})</span></td>
+					<td class="banned-timer-text">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</td>
+					<td><button class="btn-unban-action" onclick="socket.emit('admin_unban_user', { targetId: '${b.id}' })">✅ Gỡ Ban</button></td>
 				</tr>
 			`;
 					})
@@ -1093,7 +1126,7 @@ function showNoticePopup(id, msg, expiresAt) {
 		const update = () => {
 			const rem = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
 			$("ban-notice-msg").innerHTML =
-				`${msg}<br><br>⏱️ Còn lại: <strong style="color: var(--secondary); font-size: 16px;">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</strong>`;
+				`${msg}<br><br>⏱️ Còn lại: <strong class="banned-timer-text" style="font-size: 16px;">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</strong>`;
 			if (rem <= 0) clearInterval(banNoticeTimer);
 		};
 		update();
@@ -1160,6 +1193,7 @@ function renderIconPicker() {
 
 window.selectIcon = (icon) => {
 	mySelectedIcon = icon;
+	if ($("user-icon-status")) $("user-icon-status").innerText = icon;
 	socket.emit("select_icon", { icon });
 	$("icon-select-popup").classList.add("hidden");
 };
@@ -1178,7 +1212,7 @@ socket.on("update_lobby", (data) => {
 	$("login-modal").classList.add("hidden");
 	$("lobby-screen").classList.remove("hidden");
 	currentLobbyPlayers = data.players || [];
-	currentDifficulty = data.difficulty || "normal";
+	currentDifficulty = data.difficulty || currentDifficulty;
 	const currentLang = data.language || currentLanguage;
 
 	const isNgauHung = currentLang === "ngau_hung";
@@ -1187,7 +1221,6 @@ socket.on("update_lobby", (data) => {
 	$("lobby-count").innerText = `${currentLobbyPlayers.length}/10`;
 	$("lobby-mode-display").innerText = `CHẾ ĐỘ: ${modeNames[currentLang]}`;
 
-	// Hiển thị nút chọn độ khó riêng cho từng chế độ
 	$("btn-open-nh-difficulty-select")?.classList.toggle("hidden", !isNgauHung);
 	$("btn-open-boss-difficulty-select")?.classList.toggle("hidden", !isSanBoss);
 
@@ -1226,6 +1259,7 @@ socket.on("game_start", (data) => {
 	const isBoss = currentLanguage === "san_boss";
 
 	$("ngau-hung-status")?.classList.toggle("hidden", !isNgauHung);
+	$("ngau-hung-diff-badge")?.classList.toggle("hidden", !isNgauHung);
 	$("boss-arena-box")?.classList.toggle("hidden", !isBoss);
 	$("race-tracks-title").innerText = isNgauHung
 		? "BẢNG ĐIỂM NGẪU HỨNG"
@@ -1234,7 +1268,18 @@ socket.on("game_start", (data) => {
 			: "TIẾN ĐỘ HOÀN THÀNH";
 	$("words-display").classList.toggle("ngau-hung-mode-display", isNgauHung);
 
-	if (isBoss && data.boss) {
+	if (isNgauHung) {
+		const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
+		const diffBadge = $("ngau-hung-diff-badge");
+		if (diffBadge) {
+			diffBadge.innerText = meta.name;
+			diffBadge.style.color = meta.color;
+			diffBadge.style.borderColor = meta.color;
+		}
+		$("ngau-hung-round-text").innerText = `VÒNG 1/${currentWords.length || 15}`;
+		$("words-display").innerHTML =
+			`<span class="word current" style="color: var(--accent);">Chuẩn bị...</span>`;
+	} else if (isBoss && data.boss) {
 		currentBossData = data.boss;
 		$("boss-name").innerText = data.boss.name;
 		$("boss-avatar").innerText = data.boss.icon;
@@ -1252,12 +1297,10 @@ socket.on("game_start", (data) => {
 			bossDiffBadge.style.color = meta.color;
 			bossDiffBadge.style.borderColor = meta.color;
 		}
+		renderWords();
+	} else {
+		renderWords();
 	}
-
-	if (isNgauHung)
-		$("words-display").innerHTML =
-			`<span class="word current" style="color: var(--accent);">Chuẩn bị...</span>`;
-	else renderWords();
 
 	const input = $("type-input");
 	input.value = "";
@@ -1477,7 +1520,18 @@ socket.on("ngau_hung_new_round", (d) => {
 	ngauHungCurrentRound = d.round;
 	isPlaying = true;
 
-	$("ngau-hung-status").innerText = `VÒNG ${d.round}/${d.totalRounds}`;
+	if (d.difficulty) currentDifficulty = d.difficulty;
+	const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
+
+	const diffBadge = $("ngau-hung-diff-badge");
+	if (diffBadge) {
+		diffBadge.innerText = meta.name;
+		diffBadge.style.color = meta.color;
+		diffBadge.style.borderColor = meta.color;
+		diffBadge.classList.remove("hidden");
+	}
+
+	$("ngau-hung-round-text").innerText = `VÒNG ${d.round}/${d.totalRounds}`;
 	$("words-display").innerHTML =
 		`<span id="ngau-hung-word" class="word current correct-typing">${d.targetWord}</span>`;
 
@@ -1754,12 +1808,12 @@ socket.on("game_over", (d) => {
 		bossSubtitle.classList.remove("hidden");
 		const meta = difficultyMeta[d.difficulty || currentDifficulty] || difficultyMeta.normal;
 		if (d.isBossVictory) {
-			modalTitle.innerText = "🎉 LỤM! 🎉";
+			modalTitle.innerText = "🎉 LỤM! CHIẾN THẮNG! 🎉";
 			modalTitle.style.color = "var(--correct)";
 			bossSubtitle.innerText = `Cả đội đã hợp lực tiêu diệt thành công Hắc Long Ma Vương [${meta.name}]!`;
 			bossSubtitle.style.color = "var(--correct)";
 		} else {
-			modalTitle.innerText = "💀 NGU DỐT! 💀";
+			modalTitle.innerText = "💀 THẤT BẠI! 💀";
 			modalTitle.style.color = "var(--secondary)";
 			bossSubtitle.innerText = `Hết giờ! Hắc Long Ma Vương [${meta.name}] đã quét sạch toàn bộ đội hình!`;
 			bossSubtitle.style.color = "var(--secondary)";
@@ -1775,8 +1829,7 @@ socket.on("game_over", (d) => {
 			<th>HẠNG</th>
 			<th>TÊN</th>
 			<th>${isNH ? "KÝ TỰ" : isBoss ? "TỔNG SÁT THƯƠNG" : "KÝ TỰ ĐÚNG"}</th>
-			<th>${isNH ? "TỔNG ĐIỂM" : isBoss ? "TỐC ĐỘ" : "TỐC ĐỘ"}</th>
-			<th>LỖI</th>
+			<th>${isNH ? "TỔNG ĐIỂM" : isBoss ? "TỐC ĐỘ" : "TỐC ĐỘ"}<th>LỖI</th>
 		</tr>
 	`;
 
@@ -1806,7 +1859,7 @@ socket.on("game_over", (d) => {
 });
 
 // ==========================================
-// CHAT ENGINE
+// CHAT ENGINE & TIN NHẮN THỜI GIAN THỰC
 // ==========================================
 function setupChatHandling() {
 	const sendGlobal = (input) => {
@@ -1913,7 +1966,7 @@ function setupEmojiPicker() {
 }
 
 // ==========================================
-// BOT AUTO-TYPER ENGINE
+// BOT AUTO-TYPER ENGINE (TESTING ENGINE)
 // ==========================================
 function setupBotModal() {
 	if ($("bot-config-popup")) return;
@@ -1921,19 +1974,20 @@ function setupBotModal() {
 	div.id = "bot-config-popup";
 	div.className = "custom-popup hidden";
 	div.innerHTML = `
-		<div class="popup-content">
-			<h3 style="color: var(--primary); margin-bottom: 15px;">🤖 THIẾT LẬP AUTO BOT</h3>
-			<div style="margin-bottom: 12px; text-align: left;">
-				<label style="font-size: 12px; color: var(--text-muted);">TỐC ĐỘ (WPM):</label>
-				<input type="number" id="bot-speed-input" value="100" min="10" max="500" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
+		<div class="popup-content modal-auth">
+			<div class="popup-icon-badge">🤖</div>
+			<h3 class="popup-auth-title">THIẾT LẬP AUTO BOT TEST</h3>
+			<div style="margin-bottom: 14px; text-align: left;">
+				<label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">TỐC ĐỘ (WPM):</label>
+				<input type="number" id="bot-speed-input" value="100" min="10" max="500" class="cyber-input" style="margin-top: 5px; margin-bottom: 0;" />
 			</div>
 			<div style="margin-bottom: 20px; text-align: left;">
-				<label style="font-size: 12px; color: var(--text-muted);">SỐ LỖI MONG MUỐN:</label>
-				<input type="number" id="bot-errors-input" value="0" min="0" max="100" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--primary); color: var(--text-main); border-radius: 6px;" />
+				<label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">SỐ LỖI MONG MUỐN:</label>
+				<input type="number" id="bot-errors-input" value="0" min="0" max="100" class="cyber-input" style="margin-top: 5px; margin-bottom: 0;" />
 			</div>
-			<div style="display: flex; gap: 10px; justify-content: center;">
-				<button id="btn-start-bot" class="cyber-btn" style="padding: 8px 20px; font-size: 14px;">BẮT ĐẦU</button>
-				<button class="cyber-btn" data-close="bot-config-popup" style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222);">HỦY</button>
+			<div class="popup-actions-row">
+				<button id="btn-start-bot" class="cyber-btn btn-primary-style">BẮT ĐẦU (F4)</button>
+				<button class="cyber-btn btn-secondary-style" data-close="bot-config-popup">HỦY</button>
 			</div>
 		</div>
 	`;

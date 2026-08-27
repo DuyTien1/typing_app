@@ -29,24 +29,38 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&family=Noto+Serif:ital,wght@0,600;0,700;1,400&family=Philosopher:wght@700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Orbitron:wght@700;900&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Cinzel:wght@600;700;800;900&family=EB+Garamond:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif:ital,wght@0,600;0,700;1,400;1,600&family=Orbitron:wght@600;700;800;900&family=Philosopher:ital,wght@0,700;1,700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&display=swap"
 			rel="stylesheet"
 		/>
 		<script src="/socket.io/socket.io.js"></script>
 	</head>
 	<body>
+		<!-- NỀN HIỆU ỨNG ÁNH SÁNG THEO THEME -->
+		<div class="ambient-background-glow"></div>
+
+		<!-- TOAST CONTAINER CHO THÔNG BÁO TỰ BẠO DIỆT BOSS -->
+		<div id="boss-toast-container" class="boss-toast-container"></div>
+
 		<!-- THANH GÓC TRÊN TRÁI -->
-		<div id="user-profile-bar" class="left-bar">
-			<span>🤖 <span id="profile-name">Vô danh</span></span>
+		<header id="user-profile-bar" class="left-bar">
+			<div class="user-avatar-tag">
+				<span class="user-icon-status">🤖</span>
+				<span id="profile-name">Vô danh</span>
+			</div>
 			<span class="admin-badge admin-only hidden">ADMIN</span>
-			<button id="btn-change-name" class="btn-small">ĐỔI TÊN</button>
-			<button id="theme-toggle-btn" class="btn-small theme-btn">🌙 Tối</button>
-			<button id="style-toggle-btn" class="btn-small style-btn">⚡ Cyberpunk</button>
-		</div>
+			<button id="btn-change-name" class="btn-small btn-hud" title="Thay đổi biệt danh">
+				<span class="btn-icon">✏️</span> ĐỔI TÊN
+			</button>
+			<button id="theme-toggle-btn" class="btn-small theme-btn" title="Chuyển đổi Sáng/Tối">
+				🌙 Tối
+			</button>
+			<button id="style-toggle-btn" class="btn-small style-btn" title="Đổi giao diện">
+				⚡ Cyberpunk
+			</button>
+		</header>
 
 		<!-- THANH GÓC TRÊN PHẢI -->
-		<div class="top-right-bar">
-			<!-- NÚT CÀI ĐẶT DÀNH RIÊNG CHO ADMIN -->
+		<aside class="top-right-bar">
 			<div
 				id="admin-settings-badge"
 				class="online-badge settings-badge admin-only hidden"
@@ -66,39 +80,47 @@
 				🚫 <span id="banned-count">0</span> Bị ban
 			</div>
 			<button id="btn-admin-gear" class="btn-gear" title="Quản trị viên">⚙️</button>
-		</div>
+		</aside>
 
 		<!-- MODAL TRANG CHỦ -->
 		<main id="login-modal" class="modal">
 			<div class="cyber-box modal-content home-main-container">
-				<h1 class="glitch-title">FASTTYPING CHALLENGE</h1>
-				<p class="subtitle">Thử Thách Đánh Máy & NumPad</p>
+				<div class="brand-header">
+					<h1 class="glitch-title" data-text="FASTTYPING CHALLENGE">FASTTYPING CHALLENGE</h1>
+					<p class="subtitle">Thử Thách Đánh Máy & NumPad Đỉnh Cao</p>
+				</div>
 
 				<div class="home-flex-row">
 					<section class="home-left-col">
 						<label class="section-label">CHỌN CHẾ ĐỘ THI ĐẤU</label>
 						<div class="mode-grid">
 							<div class="mode-card selected" data-lang="vi_dau">
+								<div class="mode-card-glow"></div>
 								<div class="icon">🇻🇳</div>
 								<div class="title">Tiếng Việt</div>
 							</div>
 							<div class="mode-card" data-lang="vi_nodau">
+								<div class="mode-card-glow"></div>
 								<div class="icon">🔤</div>
 								<div class="title">Không Dấu</div>
 							</div>
 							<div class="mode-card" data-lang="en">
+								<div class="mode-card-glow"></div>
 								<div class="icon">🔠</div>
 								<div class="title">English</div>
 							</div>
 							<div class="mode-card" data-lang="numpad">
+								<div class="mode-card-glow"></div>
 								<div class="icon">🔢</div>
 								<div class="title">Numpad</div>
 							</div>
 							<div class="mode-card" data-lang="ngau_hung">
+								<div class="mode-card-glow"></div>
 								<div class="icon">🎲</div>
 								<div class="title">Ngẫu Hứng</div>
 							</div>
 							<div class="mode-card" data-lang="san_boss">
+								<div class="mode-card-glow"></div>
 								<div class="icon">🐉</div>
 								<div class="title">Săn Boss</div>
 							</div>
@@ -106,7 +128,7 @@
 					</section>
 
 					<section class="home-right-col">
-						<label class="section-label">PHONG THẦN BẢNG</label>
+						<label class="section-label">PHONG THẦN BẢNG HÔM NAY</label>
 						<div class="high-score-board">
 							<table class="leaderboard-table">
 								<thead>
@@ -124,16 +146,14 @@
 					</section>
 				</div>
 
-				<button id="join-btn" class="cyber-btn" style="margin-top: 15px">VÀO PHÒNG CHỜ</button>
+				<button id="join-btn" class="cyber-btn main-action-btn">
+					<span class="btn-text">🚀 VÀO PHÒNG CHỜ</span>
+				</button>
 
 				<section class="global-chat-box">
 					<div class="chat-header-title">
-						💬 KHUNG SỦA DƠ
-						<button
-							id="btn-clear-chat"
-							class="btn-small btn-surrender-style admin-only hidden"
-							style="float: right"
-						>
+						<span>💬 KHUNG SỦA DƠ TRỰC TUYẾN</span>
+						<button id="btn-clear-chat" class="btn-small btn-surrender-style admin-only hidden">
 							XÓA CHAT
 						</button>
 					</div>
@@ -142,11 +162,11 @@
 						<input
 							type="text"
 							class="global-chat-input"
-							placeholder="Nhập tin nhắn..."
+							placeholder="Nhập tin nhắn tâm huyết..."
 							maxlength="100"
 						/>
-						<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
-						<button class="global-chat-send-btn btn-small">GỬI</button>
+						<button type="button" class="chat-emoji-btn" title="Chọn icon">😀</button>
+						<button class="global-chat-send-btn cyber-btn">GỬI</button>
 					</div>
 				</section>
 			</div>
@@ -154,34 +174,86 @@
 
 		<!-- MODAL CHỌN PHONG CÁCH GIAO DIỆN -->
 		<div id="style-select-popup" class="custom-popup hidden">
-			<div class="popup-content modal-large">
-				<h3 class="style-popup-title">🎨 CHỌN PHONG CÁCH GIAO DIỆN</h3>
+			<div class="popup-content modal-large style-modal-content">
+				<div class="style-modal-header">
+					<div class="style-header-badge">THEME SELECTOR</div>
+					<h3 class="style-popup-title">🎨 CHỌN PHONG CÁCH GIAO DIỆN</h3>
+					<p class="style-popup-subtitle">
+						Tùy biến toàn bộ không gian trải nghiệm và ngôn ngữ đồ họa của bạn
+					</p>
+				</div>
 				<div class="style-cards-grid">
 					<div class="style-card selected" data-style="cyberpunk">
-						<div class="style-card-icon">⚡</div>
+						<div
+							class="style-card-accent-bar"
+							style="background: linear-gradient(90deg, #00f0ff, #ff0055)"
+						></div>
+						<div class="style-card-badge">THEME 1</div>
+						<div class="style-card-icon-wrap">⚡</div>
 						<div class="style-card-name">Cyberpunk</div>
-						<div class="style-card-desc">Tương lai công nghệ cao, đèn neon dạ quang rực rỡ</div>
+						<div class="style-card-desc">
+							Tương lai vi mạch, đèn Neon rực rỡ, đường cắt HUD sắc bén & hiệu ứng Glitch
+						</div>
+						<div class="style-card-tag">Sci-Fi HUD</div>
 					</div>
 					<div class="style-card" data-style="vintage">
-						<div class="style-card-icon">📜</div>
-						<div class="style-card-name">CỔ ĐIỂN - TÔN TRỌNG</div>
+						<div
+							class="style-card-accent-bar"
+							style="background: linear-gradient(90deg, #d4af37, #873600)"
+						></div>
+						<div class="style-card-badge">THEME 2</div>
+						<div class="style-card-icon-wrap">📜</div>
+						<div class="style-card-name">Cổ Điển Hoàng Gia</div>
 						<div class="style-card-desc">
-							Châu Âu cổ điển, da nâu, đồng thau quý phái & viền hoa văn
+							Châu Âu trung cổ, giấy da cổ điển, hoa văn đồng thau & nét chạm khắc quý tộc
 						</div>
+						<div class="style-card-tag">Royal Serif</div>
 					</div>
 					<div class="style-card" data-style="xianxia">
-						<div class="style-card-icon">🪷</div>
-						<div class="style-card-name">TIÊN HIỆP - WỶBU</div>
+						<div
+							class="style-card-accent-bar"
+							style="background: linear-gradient(90deg, #00ffaa, #ff3377)"
+						></div>
+						<div class="style-card-badge">THEME 3</div>
+						<div class="style-card-icon-wrap">🪷</div>
+						<div class="style-card-name">Tiên Hiệp Bồng Lai</div>
 						<div class="style-card-desc">
-							Tiên phong đạo cốt, ngọc bích linh khí & sương khói bồng lai
+							Ngọc bích linh khí, sương khói bồng bềnh mộng ảo & phong thái tiên đạo xuất trần
 						</div>
+						<div class="style-card-tag">Jade Spirit</div>
+					</div>
+					<div class="style-card" data-style="steampunk">
+						<div
+							class="style-card-accent-bar"
+							style="background: linear-gradient(90deg, #f39c12, #c0392b)"
+						></div>
+						<div class="style-card-badge">THEME 4</div>
+						<div class="style-card-icon-wrap">⚙️</div>
+						<div class="style-card-name">Cơ Khí Hơi Nước</div>
+						<div class="style-card-desc">
+							Bánh răng chuyển động, đồng thau tán đinh, buồng áp suất & ngọn lửa công nghiệp
+						</div>
+						<div class="style-card-tag">Steam Gear</div>
+					</div>
+					<div class="style-card" data-style="thuymac">
+						<div
+							class="style-card-accent-bar"
+							style="background: linear-gradient(90deg, #f5f6fa, #eb2f06)"
+						></div>
+						<div class="style-card-badge">THEME 5</div>
+						<div class="style-card-icon-wrap">☯️</div>
+						<div class="style-card-name">Thủy Mặc Âm Dương</div>
+						<div class="style-card-desc">
+							Hội họa thủy mặc thanh tao, nét cọ uyển chuyển phóng khoáng & ấn triện tĩnh tại
+						</div>
+						<div class="style-card-tag">Ink Brush</div>
 					</div>
 				</div>
-				<div style="margin-top: 20px">
+				<div class="style-modal-footer">
 					<button
-						class="cyber-btn"
+						class="cyber-btn btn-secondary-style"
 						data-close="style-select-popup"
-						style="padding: 8px 25px; font-size: 14px; width: auto; margin: 0 auto"
+						style="padding: 10px 36px; width: auto"
 					>
 						ĐÓNG
 					</button>
@@ -191,48 +263,24 @@
 
 		<!-- POPUP ĐĂNG NHẬP ADMIN -->
 		<div id="admin-login-popup" class="custom-popup hidden">
-			<div class="popup-content">
-				<h3 style="color: var(--primary); margin-bottom: 15px">🔑 ĐĂNG NHẬP ADMIN</h3>
+			<div class="popup-content modal-auth">
+				<div class="popup-icon-badge">🔑</div>
+				<h3 class="popup-auth-title">ĐĂNG NHẬP QUẢN TRỊ VIÊN</h3>
+				<p class="popup-auth-desc">
+					Vui lòng nhập khóa bảo mật để mở quyền cấu hình toàn hệ thống.
+				</p>
 				<input
 					type="password"
 					id="admin-password-input"
 					placeholder="Nhập mật khẩu admin..."
-					style="
-						width: 100%;
-						padding: 12px;
-						background: var(--input-bg);
-						border: 1px solid var(--primary);
-						color: var(--text-main);
-						border-radius: 6px;
-						margin-bottom: 10px;
-					"
+					class="cyber-input"
 				/>
-				<div
-					id="admin-login-error"
-					class="hidden"
-					style="color: var(--secondary); font-size: 13px; margin-bottom: 15px; font-weight: bold"
-				>
-					Mật khẩu không chính xác!
+				<div id="admin-login-error" class="hidden auth-error-text">
+					Mật khẩu không chính xác! Vui lòng thử lại.
 				</div>
-				<div style="display: flex; gap: 10px; justify-content: center">
-					<button
-						id="btn-submit-admin-login"
-						class="cyber-btn"
-						style="padding: 8px 20px; font-size: 14px"
-					>
-						XÁC NHẬN
-					</button>
-					<button
-						class="cyber-btn"
-						data-close="admin-login-popup"
-						style="
-							padding: 8px 20px;
-							font-size: 14px;
-							background: linear-gradient(45deg, #444, #222);
-						"
-					>
-						HỦY
-					</button>
+				<div class="popup-actions-row">
+					<button id="btn-submit-admin-login" class="cyber-btn btn-primary-style">XÁC NHẬN</button>
+					<button class="cyber-btn btn-secondary-style" data-close="admin-login-popup">HỦY</button>
 				</div>
 			</div>
 		</div>
@@ -240,10 +288,10 @@
 		<!-- MODAL CÀI ĐẶT THÔNG SỐ TRẬN ĐẤU DÀNH CHO ADMIN -->
 		<div id="admin-settings-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large admin-config-modal-content">
-				<h3 style="color: var(--accent); margin-bottom: 15px">
-					⚙️ BẢNG ĐIỀU KHIỂN CÀI ĐẶT TRẬN ĐẤU
-				</h3>
-				<div class="admin-config-tabs">
+				<div class="admin-config-header">
+					<h3 class="admin-config-header-title">⚙️ BẢNG ĐIỀU KHIỂN CÀI ĐẶT TRẬN ĐẤU</h3>
+				</div>
+				<div class="admin-config-body">
 					<div class="admin-config-grid">
 						<fieldset class="admin-config-fieldset">
 							<legend>Đua Chuẩn & NumPad</legend>
@@ -265,7 +313,7 @@
 							</div>
 						</fieldset>
 
-						<!-- CẤU HÌNH NGẪU HỨNG (2 ĐỘ KHÓ: NORMAL & HUYỀN THOẠI) -->
+						<!-- CẤU HÌNH NGẪU HỨNG -->
 						<fieldset class="admin-config-fieldset full-width">
 							<legend>Chế Độ Ngẫu Hứng (Tùy chỉnh theo từng Độ Khó)</legend>
 							<div class="config-field-row" style="margin-bottom: 12px">
@@ -279,17 +327,7 @@
 							</div>
 
 							<div class="admin-diff-detail-box">
-								<div
-									id="cfg-nh-diff-active-title"
-									style="
-										font-size: 13px;
-										font-weight: 800;
-										color: var(--accent);
-										margin-bottom: 10px;
-										text-align: left;
-										font-family: var(--font-heading);
-									"
-								>
+								<div id="cfg-nh-diff-active-title" class="diff-active-indicator">
 									⚙️ THÔNG SỐ ĐỘ KHÓ: BÌNH THƯỜNG
 								</div>
 
@@ -308,7 +346,7 @@
 									</div>
 								</div>
 
-								<hr style="border: 0.5px solid var(--border-color); margin: 12px 0" />
+								<hr class="config-divider" />
 								<div class="skill-config-header">
 									🎲 TỶ LỆ XUẤT HIỆN LOẠI TỪ & ĐỘ KHÓ TỪ VỰNG (%)
 								</div>
@@ -346,7 +384,7 @@
 							</div>
 						</fieldset>
 
-						<!-- CẤU HÌNH SĂN BOSS (4 ĐỘ KHÓ) -->
+						<!-- CẤU HÌNH SĂN BOSS -->
 						<fieldset class="admin-config-fieldset full-width">
 							<legend>Chế Độ Săn Boss (Tùy chỉnh theo từng Độ Khó)</legend>
 							<div class="config-field-row" style="margin-bottom: 12px">
@@ -362,17 +400,7 @@
 							</div>
 
 							<div class="admin-diff-detail-box">
-								<div
-									id="cfg-diff-active-title"
-									style="
-										font-size: 13px;
-										font-weight: 800;
-										color: var(--accent);
-										margin-bottom: 10px;
-										text-align: left;
-										font-family: var(--font-heading);
-									"
-								>
+								<div id="cfg-diff-active-title" class="diff-active-indicator">
 									⚙️ THÔNG SỐ ĐỘ KHÓ: BÌNH THƯỜNG
 								</div>
 
@@ -399,7 +427,7 @@
 									</div>
 								</div>
 
-								<hr style="border: 0.5px solid var(--border-color); margin: 12px 0" />
+								<hr class="config-divider" />
 								<div class="skill-config-header">
 									🎲 TỶ LỆ XUẤT HIỆN LOẠI TỪ & ĐỘ KHÓ TỪ VỰNG (%)
 								</div>
@@ -435,7 +463,7 @@
 									</div>
 								</div>
 
-								<hr style="border: 0.5px solid var(--border-color); margin: 12px 0" />
+								<hr class="config-divider" />
 								<div class="skill-config-header">
 									🔥 KÍCH HOẠT KỸ NĂNG & THỜI GIAN HIỆU LỰC (THEO ĐỘ KHÓ)
 								</div>
@@ -529,27 +557,18 @@
 					</div>
 				</div>
 
-				<!-- FOOTER CỐ ĐỊNH CHO BẢNG CÀI ĐẶT ADMIN -->
 				<div class="admin-config-footer">
-					<button
-						id="btn-save-admin-config"
-						class="cyber-btn"
-						style="width: auto; padding: 10px 30px"
-					>
+					<button id="btn-save-admin-config" class="cyber-btn btn-primary-style">
 						💾 LƯU CÀI ĐẶT
 					</button>
-					<button
-						class="cyber-btn"
-						data-close="admin-settings-modal"
-						style="width: auto; padding: 10px 30px; background: linear-gradient(45deg, #444, #222)"
-					>
+					<button class="cyber-btn btn-secondary-style" data-close="admin-settings-modal">
 						ĐÓNG
 					</button>
 				</div>
 			</div>
 		</div>
 
-		<!-- POPUP THÔNG BÁO LƯU CẤU HÌNH THÀNH CÔNG (ADMIN) -->
+		<!-- POPUP THÔNG BÁO LƯU CẤU HÌNH THÀNH CÔNG -->
 		<div id="admin-save-result-popup" class="custom-popup hidden">
 			<div class="popup-content admin-save-popup-box">
 				<div id="admin-save-status-icon" class="admin-save-icon">✨</div>
@@ -566,7 +585,7 @@
 		<!-- MODAL NGƯỜI CHƠI ONLINE (ADMIN) -->
 		<div id="online-users-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 style="color: var(--primary); margin-bottom: 15px">👥 NGƯỜI CHƠI TRỰC TUYẾN</h3>
+				<h3 class="popup-section-title">👥 DANH SÁCH NGƯỜI CHƠI TRỰC TUYẾN</h3>
 				<div class="admin-table-wrapper">
 					<table class="admin-table">
 						<thead>
@@ -580,25 +599,22 @@
 						<tbody id="online-users-tbody"></tbody>
 					</table>
 				</div>
-				<button
-					class="cyber-btn"
-					data-close="online-users-modal"
-					style="
-						margin-top: 15px;
-						padding: 8px 20px;
-						font-size: 14px;
-						background: linear-gradient(45deg, #444, #222);
-					"
-				>
-					ĐÓNG
-				</button>
+				<div style="margin-top: 15px; display: flex; justify-content: center">
+					<button
+						class="cyber-btn btn-secondary-style"
+						data-close="online-users-modal"
+						style="padding: 8px 30px; width: auto"
+					>
+						ĐÓNG
+					</button>
+				</div>
 			</div>
 		</div>
 
 		<!-- MODAL NGƯỜI CHƠI BỊ BAN (ADMIN) -->
 		<div id="banned-users-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 style="color: var(--secondary); margin-bottom: 15px">🚫 DANH SÁCH BỊ BAN</h3>
+				<h3 class="popup-section-title" style="color: var(--secondary)">🚫 DANH SÁCH BỊ BAN</h3>
 				<div class="admin-table-wrapper">
 					<table class="admin-table">
 						<thead>
@@ -611,35 +627,30 @@
 						<tbody id="banned-users-tbody"></tbody>
 					</table>
 				</div>
-				<button
-					class="cyber-btn"
-					data-close="banned-users-modal"
-					style="
-						margin-top: 15px;
-						padding: 8px 20px;
-						font-size: 14px;
-						background: linear-gradient(45deg, #444, #222);
-					"
-				>
-					ĐÓNG
-				</button>
+				<div style="margin-top: 15px; display: flex; justify-content: center">
+					<button
+						class="cyber-btn btn-secondary-style"
+						data-close="banned-users-modal"
+						style="padding: 8px 30px; width: auto"
+					>
+						ĐÓNG
+					</button>
+				</div>
 			</div>
 		</div>
 
 		<!-- POPUP THÔNG BÁO BAN -->
 		<div id="ban-notice-popup" class="custom-popup hidden">
-			<div class="popup-content">
-				<h3 style="color: var(--secondary); margin-bottom: 15px">🚫 BẠN ĐÃ BỊ BAN</h3>
-				<p
-					id="ban-notice-msg"
-					style="margin-bottom: 20px; font-size: 14px; color: var(--text-main)"
-				>
-					Bạn tạm thời bị cấm tham gia phòng chờ.
+			<div class="popup-content modal-danger">
+				<div class="popup-icon-badge danger">🚫</div>
+				<h3 class="popup-danger-title">BẠN ĐÃ BỊ BAN</h3>
+				<p id="ban-notice-msg" class="popup-danger-desc">
+					Bạn tạm thời bị cấm tham gia phòng chờ do vi phạm quy tắc.
 				</p>
 				<button
-					class="cyber-btn"
+					class="cyber-btn btn-secondary-style"
 					data-close="ban-notice-popup"
-					style="padding: 8px 20px; font-size: 14px; background: linear-gradient(45deg, #444, #222)"
+					style="padding: 8px 25px; width: auto"
 				>
 					ĐÃ HIỂU
 				</button>
@@ -649,6 +660,7 @@
 		<!-- POPUP THÔNG BÁO BỊ KICK KHỎI PHÒNG -->
 		<div id="kicked-notice-popup" class="custom-popup hidden">
 			<div class="popup-content kicked-popup-content">
+				<div class="popup-icon-badge danger">👢</div>
 				<h3 class="kicked-title">TRỤC XUẤT KHỎI PHÒNG</h3>
 				<p id="kicked-notice-msg" class="kicked-desc">Bạn đã bị Quản trị viên đá khỏi phòng chờ!</p>
 				<button
@@ -663,68 +675,59 @@
 
 		<!-- POPUP ĐỔI TÊN -->
 		<div id="rename-popup" class="custom-popup hidden">
-			<div class="popup-content">
-				<h3 style="color: var(--primary); margin-bottom: 15px">✏️ THAY ĐỔI BIỆT DANH</h3>
+			<div class="popup-content modal-auth">
+				<div class="popup-icon-badge">✏️</div>
+				<h3 class="popup-auth-title">THAY ĐỔI BIỆT DANH</h3>
 				<input
 					type="text"
 					id="popup-name-input"
-					placeholder="Tên mới..."
+					placeholder="Nhập tên mới của bạn..."
 					maxlength="15"
-					style="
-						width: 100%;
-						padding: 12px;
-						background: var(--input-bg);
-						border: 1px solid var(--primary);
-						color: var(--text-main);
-						border-radius: 6px;
-						margin-bottom: 20px;
-					"
+					class="cyber-input"
 				/>
-				<div style="display: flex; gap: 10px; justify-content: center">
-					<button
-						id="btn-save-popup-name"
-						class="cyber-btn"
-						style="padding: 8px 20px; font-size: 14px"
-					>
-						LƯU TÊN
-					</button>
-					<button
-						class="cyber-btn"
-						data-close="rename-popup"
-						style="
-							padding: 8px 20px;
-							font-size: 14px;
-							background: linear-gradient(45deg, #444, #222);
-						"
-					>
-						HỦY
-					</button>
+				<div class="popup-actions-row">
+					<button id="btn-save-popup-name" class="cyber-btn btn-primary-style">LƯU TÊN</button>
+					<button class="cyber-btn btn-secondary-style" data-close="rename-popup">HỦY</button>
 				</div>
 			</div>
 		</div>
 
-		<!-- PHÒNG CHỜ -->
+		<!-- PHÒNG CHỜ (LOBBY - THANH ĐIỀU HƯỚNG FLEXBOX KHÔNG BAO GIỜ BỊ ĐÈ NÚT) -->
 		<div id="lobby-screen" class="screen hidden">
-			<div class="cyber-box lobby-box" style="position: relative">
-				<button id="btn-lobby-home" class="cyber-btn btn-home-corner">↩️ TRỞ VỀ</button>
+			<div class="cyber-box lobby-box">
+				<div class="lobby-nav-bar">
+					<button
+						id="btn-lobby-home"
+						class="cyber-btn lobby-nav-btn btn-secondary-style"
+						title="Trở về Trang chủ"
+					>
+						↩️ TRỞ VỀ
+					</button>
 
-				<!-- NÚT MỞ ĐỘ KHÓ RIÊNG CHO NGẪU HỨNG (NỀN ĐỎ CAM RỰC RỠ) -->
-				<button
-					id="btn-open-nh-difficulty-select"
-					class="cyber-btn btn-diff-corner btn-diff-nh hidden"
-				>
-					🎲 ĐỘ KHÓ
-				</button>
+					<div class="lobby-nav-actions">
+						<button
+							id="btn-open-nh-difficulty-select"
+							class="cyber-btn lobby-nav-btn btn-diff-nh hidden"
+						>
+							🎲 ĐỘ KHÓ
+						</button>
 
-				<!-- NÚT MỞ ĐỘ KHÓ RIÊNG CHO SĂN BOSS -->
-				<button
-					id="btn-open-boss-difficulty-select"
-					class="cyber-btn btn-diff-corner btn-diff-boss hidden"
-				>
-					⚔️ ĐỘ KHÓ
-				</button>
+						<button
+							id="btn-open-boss-difficulty-select"
+							class="cyber-btn lobby-nav-btn btn-diff-boss hidden"
+						>
+							⚔️ ĐỘ KHÓ
+						</button>
 
-				<button id="btn-open-icon-select" class="cyber-btn btn-icon-corner">🕹️ ĐỔI ICON</button>
+						<button
+							id="btn-open-icon-select"
+							class="cyber-btn lobby-nav-btn btn-icon-lobby"
+							title="Thay đổi biểu tượng"
+						>
+							🕹️ ĐỔI ICON
+						</button>
+					</div>
+				</div>
 
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
 				<div class="lobby-header-tags">
@@ -733,7 +736,7 @@
 				</div>
 
 				<div class="lobby-players-title">
-					DANH SÁCH NGƯỜI CHƠI ( <span id="lobby-count">1/10</span> )
+					DANH SÁCH TAY ĐUA SẴN SÀNG ( <span id="lobby-count">1/10</span> )
 				</div>
 				<div id="lobby-players-grid"></div>
 
@@ -742,26 +745,28 @@
 				</button>
 
 				<div class="global-chat-box" style="margin-top: 20px">
-					<div class="chat-header-title">💬 KHUNG SỦA DƠ</div>
+					<div class="chat-header-title">💬 KHUNG SỦA DƠ PHÒNG CHỜ</div>
 					<div class="global-chat-messages"></div>
 					<div class="global-chat-input-wrapper">
 						<input
 							type="text"
 							class="global-chat-input"
-							placeholder="Nhập tin nhắn..."
+							placeholder="Gáy trước trận đấu..."
 							maxlength="100"
 						/>
-						<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
-						<button class="global-chat-send-btn btn-small">GỬI</button>
+						<button type="button" class="chat-emoji-btn" title="Chọn icon">😀</button>
+						<button class="global-chat-send-btn cyber-btn">GỬI</button>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- POPUP 1: CHỌN ĐỘ KHÓ CHO NGẪU HỨNG (2 ĐỘ KHÓ) -->
+		<!-- POPUP 1: CHỌN ĐỘ KHÓ CHO NGẪU HỨNG -->
 		<div id="nh-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 style="color: var(--secondary); margin-bottom: 15px">🎲 CHỌN ĐỘ KHÓ: NGẪU HỨNG</h3>
+				<h3 class="popup-section-title" style="color: var(--secondary)">
+					🎲 CHỌN ĐỘ KHÓ: NGẪU HỨNG
+				</h3>
 				<div class="diff-picker-grid" style="grid-template-columns: repeat(2, 1fr)">
 					<div class="diff-card selected" data-nh-diff="normal">
 						<div class="diff-icon">🟡</div>
@@ -780,9 +785,9 @@
 				</div>
 				<div style="margin-top: 20px">
 					<button
-						class="cyber-btn"
+						class="cyber-btn btn-secondary-style"
 						data-close="nh-difficulty-popup"
-						style="padding: 8px 25px; font-size: 14px; width: auto; margin: 0 auto"
+						style="padding: 8px 25px; width: auto; margin: 0 auto"
 					>
 						ĐÓNG
 					</button>
@@ -790,10 +795,12 @@
 			</div>
 		</div>
 
-		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO SĂN BOSS (4 ĐỘ KHÓ) -->
+		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO SĂN BOSS -->
 		<div id="boss-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 style="color: var(--secondary); margin-bottom: 15px">🐉 CHỌN ĐỘ KHÓ: SĂN BOSS</h3>
+				<h3 class="popup-section-title" style="color: var(--secondary)">
+					🐉 CHỌN ĐỘ KHÓ: SĂN BOSS
+				</h3>
 				<div class="diff-picker-grid">
 					<div class="diff-card" data-boss-diff="easy">
 						<div class="diff-icon">🟢</div>
@@ -820,9 +827,9 @@
 				</div>
 				<div style="margin-top: 20px">
 					<button
-						class="cyber-btn"
+						class="cyber-btn btn-secondary-style"
 						data-close="boss-difficulty-popup"
-						style="padding: 8px 25px; font-size: 14px; width: auto; margin: 0 auto"
+						style="padding: 8px 25px; width: auto; margin: 0 auto"
 					>
 						ĐÓNG
 					</button>
@@ -833,17 +840,13 @@
 		<!-- POPUP CHỌN ICON -->
 		<div id="icon-select-popup" class="custom-popup hidden">
 			<div class="popup-content">
-				<h3 style="color: var(--primary); margin-bottom: 15px">🎨 CHỌN ICON NHÂN VẬT</h3>
+				<h3 class="popup-section-title">🎨 CHỌN ICON NHÂN VẬT</h3>
 				<div id="icon-picker-grid" class="icon-picker-grid"></div>
 				<div style="margin-top: 20px">
 					<button
-						class="cyber-btn"
+						class="cyber-btn btn-secondary-style"
 						data-close="icon-select-popup"
-						style="
-							padding: 8px 20px;
-							font-size: 14px;
-							background: linear-gradient(45deg, #444, #222);
-						"
+						style="padding: 8px 25px; width: auto"
 					>
 						ĐÓNG
 					</button>
@@ -851,17 +854,20 @@
 			</div>
 		</div>
 
-		<!-- MODAL XÁC NHẬN ĐẦU HÀNG -->
+		<!-- MODAL XÁC NHẬN ĐẦU HÀNG (PARALLEL BUTTONS) -->
 		<div id="surrender-modal" class="custom-popup hidden">
 			<div class="popup-content surrender-popup-content">
-				<h3 class="surrender-title">🏳️ XÁC NHẬN ĐẦU HÀNG</h3>
-				<p class="surrender-desc">Bạn có chắc chắn muốn quý không cần bù đối thủ không?</p>
-				<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px">
+				<div class="popup-icon-badge danger">🏳️</div>
+				<h3 class="surrender-title">XÁC NHẬN ĐẦU HÀNG</h3>
+				<p class="surrender-desc">
+					Bạn có chắc chắn muốn bỏ cuộc và nhường phần thắng cho đối thủ?
+				</p>
+				<div class="surrender-actions-parallel">
 					<button id="btn-confirm-surrender" class="cyber-btn surrender-btn-danger">
-						ĐẦU HÀNG
+						🏳️ ĐẦU HÀNG
 					</button>
 					<button class="cyber-btn surrender-btn-cancel" data-close="surrender-modal">
-						TIẾP TỤC CHIẾN
+						⚔️ TIẾP TỤC CHIẾN
 					</button>
 				</div>
 			</div>
@@ -869,12 +875,12 @@
 
 		<!-- BÀN CHƠI CHÍNH -->
 		<div id="game-container" class="screen hidden">
-			<header class="cyber-box">
-				<div class="logo">⚡ FASTTYPING</div>
-				<div id="status-box">ĐANG THI ĐẤU</div>
-				<div style="display: flex; align-items: center; gap: 15px">
+			<header class="cyber-box game-hud-header">
+				<div class="logo-hud">⚡ FASTTYPING</div>
+				<div id="status-box" class="game-status-indicator">ĐANG THI ĐẤU</div>
+				<div class="game-header-actions">
 					<button id="btn-surrender" class="btn-small btn-surrender-style">🏳️ ĐẦU HÀNG</button>
-					<div id="timer-box">⏱️ <span id="timer">--</span>s</div>
+					<div id="timer-box" class="game-timer-badge">⏱️ <span id="timer">--</span>s</div>
 				</div>
 			</header>
 
@@ -933,13 +939,19 @@
 			</div>
 
 			<div id="leaderboard" class="cyber-box">
-				<h2 class="race-title" id="race-tracks-title">TIẾN ĐỘ HOÀN THÀNH</h2>
+				<div class="race-title-wrapper">
+					<h2 class="race-title" id="race-tracks-title">TIẾN ĐỘ HOÀN THÀNH</h2>
+					<span id="ngau-hung-diff-badge" class="ngau-hung-diff-badge hidden">HUYỀN THOẠI</span>
+				</div>
 				<div id="race-tracks-container"></div>
 			</div>
 
-			<div id="typing-area" class="cyber-box" style="position: relative; overflow: hidden">
+			<div id="typing-area" class="cyber-box">
 				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
-				<div id="ngau-hung-status" class="ngau-hung-badge hidden">VÒNG 1/15</div>
+				<!-- KHU VỰC TRẠNG THÁI NGẪU HỨNG -->
+				<div id="ngau-hung-status" class="ngau-hung-badge-wrapper hidden">
+					<span id="ngau-hung-round-text" class="ngau-hung-round-text">VÒNG 1/15</span>
+				</div>
 				<div id="words-display"></div>
 				<input
 					type="text"
@@ -950,21 +962,24 @@
 				/>
 			</div>
 
-			<div id="chat-container" class="cyber-box hidden">
+			<!-- KHUNG CHAT TRONG TRẬN ĐẤU -->
+			<div id="chat-container" class="cyber-box in-game-chat-box hidden">
 				<div class="in-game-chat-wrapper">
 					<input
 						type="text"
 						id="chat-input"
+						class="in-game-chat-input"
 						placeholder="Nhắn tin nhanh trong trận đấu (Enter)..."
 						maxlength="50"
 					/>
-					<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
-					<button id="in-game-chat-send-btn" class="in-game-chat-send-btn btn-small">GỬI</button>
+					<button type="button" class="chat-emoji-btn in-game-emoji-btn" title="Chọn icon">
+						😀
+					</button>
+					<button id="in-game-chat-send-btn" class="cyber-btn in-game-chat-send-btn">GỬI</button>
 				</div>
 			</div>
 		</div>
 
-		<div id="boss-toast-container" class="boss-toast-container"></div>
 		<div id="chat-popups"></div>
 
 		<div id="chat-emoji-picker" class="chat-emoji-picker hidden">
@@ -974,6 +989,7 @@
 		<!-- BẢNG TỔNG KẾT -->
 		<div id="summary-modal" class="modal hidden">
 			<div class="cyber-box modal-content summary-box">
+				<div class="summary-header-glow"></div>
 				<h2 id="summary-modal-title" class="glitch-title summary-modal-title">
 					🏆 BẢNG TỔNG KẾT TRẬN ĐẤU
 				</h2>
@@ -990,27 +1006,16 @@
 					</thead>
 					<tbody id="summary-tbody"></tbody>
 				</table>
-				<div style="display: flex; gap: 10px; margin-top: 20px">
-					<button
-						id="btn-play-again"
-						class="cyber-btn"
-						style="background: linear-gradient(45deg, var(--primary), #0088ff)"
-					>
-						🔄 CHƠI TIẾP
-					</button>
-					<button
-						id="btn-home"
-						class="cyber-btn"
-						style="background: linear-gradient(45deg, #444, #222)"
-					>
-						🏠 TRANG CHỦ
-					</button>
+				<div class="summary-actions-row">
+					<button id="btn-play-again" class="cyber-btn btn-play-again-style">🔄 CHƠI TIẾP</button>
+					<button id="btn-home" class="cyber-btn btn-secondary-style">🏠 TRANG CHỦ</button>
 				</div>
 			</div>
 		</div>
 
-		<footer class="footer-copyright">© 2026 Nguyễn Duy Tiến (niTe)</footer>
-		<canvas id="fireworks-canvas"></canvas>
+		<footer class="footer-copyright">
+			<span class="footer-dot"></span> © 2026 Nguyễn Duy Tiến (niTe)
+		</footer>
 		<script src="app.js"></script>
 	</body>
 </html>

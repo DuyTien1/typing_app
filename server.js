@@ -213,7 +213,9 @@ function removeVietnameseTones(str) {
 
 const BIG_WORD_BANKS = {
 	vi_dau: {
+		// ~650 TỪ TIẾNG VIỆT CƠ BẢN / DỄ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		easy: [
+			// Thiên nhiên, thời tiết & thời gian
 			"ngày",
 			"đêm",
 			"mưa",
@@ -294,6 +296,8 @@ const BIG_WORD_BANKS = {
 			"mương",
 			"đồi",
 			"dốc",
+
+			// Con người, gia đình, đại từ
 			"ông",
 			"bà",
 			"cha",
@@ -351,6 +355,8 @@ const BIG_WORD_BANKS = {
 			"nhà",
 			"dân",
 			"tộc",
+
+			// Cơ thể con người
 			"đầu",
 			"tóc",
 			"tai",
@@ -401,6 +407,8 @@ const BIG_WORD_BANKS = {
 			"vóc",
 			"dáng",
 			"tiếng",
+
+			// Động vật
 			"chó",
 			"mèo",
 			"gà",
@@ -470,6 +478,8 @@ const BIG_WORD_BANKS = {
 			"châu",
 			"nghé",
 			"bê",
+
+			// Cây cối, rau củ, quả, thực phẩm
 			"cây",
 			"hoa",
 			"lá",
@@ -580,6 +590,8 @@ const BIG_WORD_BANKS = {
 			"bia",
 			"mỡ",
 			"dầu",
+
+			// Đồ vật, nhà cửa, dụng cụ
 			"nhà",
 			"cửa",
 			"sân",
@@ -690,6 +702,8 @@ const BIG_WORD_BANKS = {
 			"phà",
 			"ga",
 			"cầu",
+
+			// Hành động, động từ
 			"đi",
 			"đến",
 			"về",
@@ -890,6 +904,8 @@ const BIG_WORD_BANKS = {
 			"đuổi",
 			"theo",
 			"kịp",
+
+			// Tính từ, trạng thái & màu sắc
 			"tốt",
 			"xấu",
 			"đẹp",
@@ -1010,6 +1026,8 @@ const BIG_WORD_BANKS = {
 			"mới",
 			"lạ",
 			"quen",
+
+			// Số từ & liên từ
 			"một",
 			"hai",
 			"ba",
@@ -1051,6 +1069,8 @@ const BIG_WORD_BANKS = {
 			"là",
 			"để",
 		],
+
+		// 150 TỪ TIẾNG VIỆT NÂNG CAO / KHÓ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -1401,31 +1421,35 @@ function generateWords(lang, count, difficulty = "normal") {
 			count ||
 			(lang === "san_boss" ? GAME_CONFIG.sanBoss.wordPoolCount : diffConfig.totalRounds || 15);
 
-		const ratioViDau = diffConfig.ratioViDau ?? 25;
-		const ratioViNoDau = diffConfig.ratioViNoDau ?? 25;
-		const ratioEn = diffConfig.ratioEn ?? 35;
-		const ratioNum = diffConfig.ratioNum ?? 15;
+		const ratioViDau = typeof diffConfig.ratioViDau === "number" ? diffConfig.ratioViDau : 25;
+		const ratioViNoDau = typeof diffConfig.ratioViNoDau === "number" ? diffConfig.ratioViNoDau : 25;
+		const ratioEn = typeof diffConfig.ratioEn === "number" ? diffConfig.ratioEn : 35;
+		const ratioNum = typeof diffConfig.ratioNum === "number" ? diffConfig.ratioNum : 15;
+
 		const sumRatio = Math.max(1, ratioViDau + ratioViNoDau + ratioEn + ratioNum);
 
-		const hardViDauRate = diffConfig.hardViDauRate ?? 35;
-		const hardViNoDauRate = diffConfig.hardViNoDauRate ?? 35;
-		const hardEnRate = diffConfig.hardEnRate ?? 35;
+		const hardViDauRate =
+			typeof diffConfig.hardViDauRate === "number" ? diffConfig.hardViDauRate : 35;
+		const hardViNoDauRate =
+			typeof diffConfig.hardViNoDauRate === "number" ? diffConfig.hardViNoDauRate : 35;
+		const hardEnRate = typeof diffConfig.hardEnRate === "number" ? diffConfig.hardEnRate : 35;
 
 		return Array.from({ length: total }, () => {
 			const rand = Math.random() * sumRatio;
-			if (rand < ratioViDau) {
+
+			if (ratioViDau > 0 && rand < ratioViDau) {
 				return getRandomWordFromBank(
 					BIG_WORD_BANKS.vi_dau.easy,
 					BIG_WORD_BANKS.vi_dau.hard,
 					hardViDauRate,
 				);
-			} else if (rand < ratioViDau + ratioViNoDau) {
+			} else if (ratioViNoDau > 0 && rand < ratioViDau + ratioViNoDau) {
 				return getRandomWordFromBank(
 					BIG_WORD_BANKS.vi_nodau.easy,
 					BIG_WORD_BANKS.vi_nodau.hard,
 					hardViNoDauRate,
 				);
-			} else if (rand < ratioViDau + ratioViNoDau + ratioEn) {
+			} else if (ratioEn > 0 && rand < ratioViDau + ratioViNoDau + ratioEn) {
 				return getRandomWordFromBank(BIG_WORD_BANKS.en.easy, BIG_WORD_BANKS.en.hard, hardEnRate);
 			} else {
 				return Math.floor(10000 + Math.random() * 90000).toString();
@@ -1624,22 +1648,34 @@ function broadcastAdminData() {
 const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [], san_boss: [] };
 let totalOnlineUsers = 0;
 
-function getOrCreateRoom(lang) {
+function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 	let roomList = rooms[lang] || rooms.vi_dau;
-	let room = roomList.find((r) => r.state === "waiting" && r.players.length < 10);
+	const isDiffMode = lang === "ngau_hung" || lang === "san_boss";
+
+	let room = roomList.find((r) => {
+		if (r.state !== "waiting" || r.players.length >= 10) return false;
+		if (isDiffMode) return r.difficulty === preferredDifficulty;
+		return true;
+	});
+
 	if (!room) {
+		const totalRounds =
+			lang === "ngau_hung"
+				? GAME_CONFIG.ngauHung.difficulties[preferredDifficulty]?.totalRounds || 15
+				: 15;
+
 		room = {
 			id: `room_${lang}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
 			lang,
-			difficulty: "normal",
+			difficulty: preferredDifficulty,
 			state: "waiting",
 			players: [],
-			words: generateWords(lang, null, "normal"),
+			words: generateWords(lang, null, preferredDifficulty),
 			matchInterval: null,
 			matchTimeout: null,
 			startTime: null,
 			currentRound: 0,
-			totalRounds: GAME_CONFIG.ngauHung.difficulties.normal.totalRounds,
+			totalRounds: totalRounds,
 			roundWinners: [],
 			roundActive: false,
 			roundTimer: null,
@@ -1749,6 +1785,7 @@ function startNgauHungRound(room) {
 		totalRounds: room.totalRounds,
 		targetWord: room.words[room.currentRound - 1],
 		duration: roundDur,
+		difficulty: room.difficulty,
 	});
 
 	clearTimeout(room.roundTimer);
@@ -2129,7 +2166,9 @@ io.on("connection", (socket) => {
 		}
 		leaveCurrentLobby();
 		const lang = data.language || "vi_dau";
-		currentRoom = getOrCreateRoom(lang);
+		const preferredDiff = data.difficulty || "normal";
+
+		currentRoom = getOrCreateRoom(lang, preferredDiff);
 		player = {
 			id: socket.id,
 			username: data.username || "Vô danh",
@@ -2318,7 +2357,7 @@ io.on("connection", (socket) => {
 					currentRoom.boss.isShieldActive = false;
 					currentRoom.boss.shield = 0;
 					currentRoom.boss.isStunned = true;
-					clearTimeout(currentRoom.boss.shieldTimer);
+					clearTimeout(room.boss.shieldTimer);
 
 					io.to(currentRoom.id).emit("boss_shield_broken", {
 						stunDuration: currentRoom.boss.stunDuration,
