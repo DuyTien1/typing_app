@@ -1,8 +1,8 @@
 /* ========================================================= */
-/* 1. ĐỊNH NGHĨA BIẾN MÀU & PHONG CÁCH (STYLES & THEMES)     */
+/* 1. ĐỊNH NGHĨA BIẾN MÀU & PHONG CÁCH                      */
 /* ========================================================= */
 
-/* --- PHONG CÁCH 1: CYBERPUNK (MẶC ĐỊNH) --- */
+/* CYBERPUNK (MẶC ĐỊNH) */
 :root,
 [data-style="cyberpunk"] {
 	--font-heading: "Orbitron", sans-serif;
@@ -42,7 +42,7 @@
 	--border-color: rgba(0, 136, 255, 0.35);
 }
 
-/* --- PHONG CÁCH 2: CỔ ĐIỂN HOÀNG GIA (VINTAGE / ROYAL RETRO) --- */
+/* VINTAGE */
 [data-style="vintage"] {
 	--font-heading: "Playfair Display", "EB Garamond", serif;
 	--font-ui: "EB Garamond", "Playfair Display", serif;
@@ -81,7 +81,7 @@
 	--border-color: rgba(140, 83, 27, 0.4);
 }
 
-/* --- PHONG CÁCH 3: TIÊN HIỆP THỦY MẶC (XIANXIA / ORIENTAL FANTASY) --- */
+/* XIANXIA */
 [data-style="xianxia"] {
 	--font-heading: "Philosopher", "Noto Serif", serif;
 	--font-ui: "Noto Serif", serif;
@@ -121,7 +121,7 @@
 }
 
 /* ========================================================= */
-/* 2. THIẾT KẾ CƠ BẢN VÀ BỐ CỤC (TỐI ƯU CITRIX VDI)         */
+/* 2. THIẾT KẾ CƠ BẢN VÀ BỐ CỤC                             */
 /* ========================================================= */
 * {
 	box-sizing: border-box;
@@ -167,7 +167,7 @@ body {
 	border: 1.5px solid var(--border-color);
 }
 
-/* THANH GÓC TRÊN TRÁI & PHẢI */
+/* THANH GÓC TRÊN */
 #user-profile-bar.left-bar {
 	position: fixed;
 	top: 12px;
@@ -216,6 +216,18 @@ body {
 .online-badge.clickable:hover {
 	background: rgba(0, 255, 102, 0.15);
 }
+
+.settings-badge {
+	border-color: var(--accent) !important;
+	color: var(--accent) !important;
+	cursor: pointer;
+	background: rgba(255, 230, 0, 0.12);
+}
+.settings-badge:hover {
+	background: var(--accent);
+	color: #000 !important;
+}
+
 .banned-badge {
 	border-color: var(--secondary) !important;
 	color: var(--secondary) !important;
@@ -407,9 +419,7 @@ body {
 	margin-bottom: 15px;
 }
 
-/* ========================================================= */
-/* LỰA CHỌN PHONG CÁCH CARDS                                 */
-/* ========================================================= */
+/* CARDS CHỌN PHONG CÁCH */
 .style-popup-title {
 	color: var(--primary);
 	font-family: var(--font-heading);
@@ -460,29 +470,7 @@ body {
 	font-weight: 500;
 }
 
-[data-theme="light"] .style-card {
-	background: #ffffff !important;
-	border-color: rgba(0, 0, 0, 0.15) !important;
-}
-[data-theme="light"] .style-card:hover {
-	border-color: var(--primary) !important;
-}
-[data-theme="light"] .style-card-name {
-	color: #111827 !important;
-	font-weight: 900;
-}
-[data-theme="light"] .style-card-desc {
-	color: #4b5563 !important;
-}
-[data-theme="light"] .style-card.selected {
-	background: #fffbeb !important;
-	border-color: #d97706 !important;
-}
-[data-theme="light"] .style-card.selected .style-card-name {
-	color: #92400e !important;
-}
-
-/* CHỌN CHẾ ĐỘ THI ĐẤU (MODE CARDS) */
+/* CHỌN CHẾ ĐỘ THI ĐẤU */
 .mode-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
@@ -612,7 +600,6 @@ body {
 	white-space: nowrap;
 }
 
-/* CHAT IN-GAME WRAPPER */
 #chat-container {
 	padding: 12px;
 	width: 100%;
@@ -689,13 +676,40 @@ body {
 	margin-bottom: 8px;
 	font-size: 22px;
 }
+.lobby-header-tags {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-bottom: 14px;
+}
 .lobby-mode-tag {
 	color: var(--accent);
 	font-family: var(--font-heading);
 	font-weight: bold;
 	font-size: 16px;
-	margin-bottom: 12px;
 }
+.lobby-diff-tag {
+	font-family: var(--font-heading);
+	font-weight: 800;
+	font-size: 13px;
+	padding: 3px 10px;
+	border-radius: 4px;
+	background: rgba(255, 230, 0, 0.15);
+	border: 1px solid var(--accent);
+	color: var(--accent);
+}
+.boss-diff-badge {
+	font-family: var(--font-heading);
+	font-weight: 800;
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 4px;
+	background: rgba(255, 0, 85, 0.2);
+	border: 1px solid var(--secondary);
+	color: var(--secondary);
+}
+
 .lobby-players-title {
 	font-size: 13px;
 	color: var(--text-muted);
@@ -745,43 +759,6 @@ body {
 	padding: 0;
 	line-height: 1;
 	z-index: 5;
-	transition:
-		transform 0.15s ease,
-		background-color 0.15s ease;
-}
-
-[data-style="cyberpunk"] .kick-player-btn:hover {
-	background: var(--secondary);
-	color: #ffffff;
-	border-color: var(--secondary);
-	transform: scale(1.15);
-}
-
-[data-style="vintage"] .kick-player-btn {
-	border-radius: 3px;
-	border: 1px solid rgba(194, 89, 63, 0.5);
-	background: rgba(194, 89, 63, 0.15);
-	color: var(--secondary);
-	font-family: var(--font-heading);
-}
-[data-style="vintage"] .kick-player-btn:hover {
-	background: var(--secondary);
-	color: #fcf6ed;
-	border-color: var(--secondary);
-	transform: scale(1.15);
-}
-
-[data-style="xianxia"] .kick-player-btn {
-	border-radius: 50%;
-	border: 1px solid rgba(255, 51, 102, 0.4);
-	background: rgba(255, 51, 102, 0.15);
-	color: var(--secondary);
-}
-[data-style="xianxia"] .kick-player-btn:hover {
-	background: var(--secondary);
-	color: #ffffff;
-	border-color: var(--secondary);
-	transform: scale(1.15) rotate(90deg);
 }
 
 .lobby-start-btn {
@@ -840,9 +817,6 @@ header .logo {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	transition:
-		opacity 0.3s ease,
-		filter 0.3s ease;
 }
 .track-header {
 	display: flex;
@@ -852,7 +826,6 @@ header .logo {
 	font-weight: bold;
 }
 
-/* THANH TIẾN ĐỘ CHẠY & ICON KHÔNG BỊ CẮT TẠI ĐIỂM XUẤT PHÁT */
 .track-line-bg {
 	width: 100%;
 	height: 28px;
@@ -860,7 +833,7 @@ header .logo {
 	border: 1px solid var(--border-color);
 	border-radius: 14px;
 	position: relative;
-	overflow: visible; /* Cho phép Icon nổi trọn vẹn ở mốc 0% và 100% */
+	overflow: visible;
 }
 .track-line-bg::after {
 	content: "🏁";
@@ -884,7 +857,7 @@ header .logo {
 }
 .runner-icon-badge {
 	position: absolute;
-	right: -13px; /* Đặt tâm Icon tại đầu mút thanh tiến trình */
+	right: -13px;
 	top: 50%;
 	transform: translateY(-50%) translateZ(0);
 	width: 28px;
@@ -896,15 +869,10 @@ header .logo {
 	align-items: center;
 	justify-content: center;
 	font-size: 15px;
-	z-index: 10; /* Nổi hoàn toàn bên trên thanh tiến trình và cờ đích */
+	z-index: 10;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-	transition:
-		filter 0.3s ease,
-		border-color 0.3s ease,
-		background 0.3s ease;
 }
 
-/* HIỆU ỨNG XÁM TOÀN BỘ ICON & THANH CHẠY KHI AFK / ĐẦU HÀNG / OUT */
 .track-row.disabled-track {
 	opacity: 0.45 !important;
 	filter: grayscale(1) !important;
@@ -918,15 +886,11 @@ header .logo {
 .track-row.disabled-track .runner-icon-badge {
 	background: #222222 !important;
 	border-color: #666666 !important;
-	filter: grayscale(1) opacity(0.7) !important;
 	box-shadow: none !important;
-}
-.track-row.disabled-track .track-header {
-	color: var(--text-muted) !important;
 }
 
 /* ========================================================= */
-/* 6. TYPING AREA & CHỮ (CÁCH LY RENDER TỐI ĐA)             */
+/* 6. TYPING AREA & CHỮ                                     */
 /* ========================================================= */
 #typing-area {
 	width: 100%;
@@ -982,7 +946,6 @@ header .logo {
 	font-weight: 500;
 	opacity: 0.65;
 	box-sizing: border-box;
-	transform: translateZ(0);
 }
 
 .word.correct {
@@ -1042,7 +1005,7 @@ header .logo {
 }
 
 /* ========================================================= */
-/* 7. BOSS ARENA & COMBO HUD ĐA PHONG CÁCH ĐỘ NÉT CAO        */
+/* 7. BOSS ARENA & COMBO HUD                                 */
 /* ========================================================= */
 .boss-arena-container {
 	width: 100%;
@@ -1059,17 +1022,15 @@ header .logo {
 }
 .boss-avatar-wrapper {
 	font-size: 40px;
-	will-change: transform;
-	transform: translateZ(0);
 	animation: bossPulse 2s infinite ease-in-out;
 }
 @keyframes bossPulse {
 	0%,
 	100% {
-		transform: scale(1) translateZ(0);
+		transform: scale(1);
 	}
 	50% {
-		transform: scale(1.12) translateZ(0);
+		transform: scale(1.12);
 	}
 }
 
@@ -1103,11 +1064,9 @@ header .logo {
 .boss-hp-bar-fill {
 	height: 100%;
 	background: linear-gradient(90deg, #ff0055, #ff7700);
-	will-change: width;
 	transition: width 0.15s linear;
 }
 
-/* THANH GIÁP HỘ THỂ MA PHÁP */
 .boss-shield-wrapper {
 	margin-top: 4px;
 	display: flex;
@@ -1133,11 +1092,9 @@ header .logo {
 .boss-shield-bar-fill {
 	height: 100%;
 	background: linear-gradient(90deg, #ffd700, #b8860b);
-	will-change: width;
 	transition: width 0.15s linear;
 }
 
-/* BOSS TRẠNG THÁI CHOÁNG (STUN) */
 .boss-stunned .boss-avatar-wrapper {
 	animation: none !important;
 	filter: grayscale(0.6) brightness(0.8);
@@ -1147,7 +1104,6 @@ header .logo {
 	color: #ffd700;
 }
 
-/* KHUNG COMBO HUD (THIẾT KẾ ĐỘ TƯƠNG PHẢN CAO CHO TỐI & SÁNG) */
 .boss-combo-hud {
 	margin-top: 10px;
 	display: flex;
@@ -1158,7 +1114,6 @@ header .logo {
 	padding: 8px 16px;
 	background: var(--panel-bg);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-	transition: all 0.2s ease;
 }
 
 .combo-main-badge {
@@ -1201,95 +1156,281 @@ header .logo {
 	font-size: 11px;
 }
 
-[data-style="cyberpunk"] .boss-combo-hud {
-	border-color: var(--primary);
-	box-shadow: 0 0 14px rgba(0, 240, 255, 0.2);
+/* ========================================================= */
+/* 8. THIẾT LẬP ĐỘ KHÓ & ADMIN CONFIG MODAL                 */
+/* ========================================================= */
+.diff-picker-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+	gap: 12px;
+	margin: 15px 0;
 }
-[data-style="cyberpunk"][data-theme="light"] .boss-combo-hud {
-	background: #ffffff !important;
-	border: 2px solid #0088ff !important;
-	box-shadow: 0 4px 15px rgba(0, 136, 255, 0.15) !important;
-}
-[data-style="cyberpunk"][data-theme="light"] .combo-title {
-	color: #0088ff !important;
-}
-[data-style="cyberpunk"][data-theme="light"] .combo-num {
-	color: #d97706 !important;
-}
-[data-style="cyberpunk"][data-theme="light"] .combo-multiplier-tag {
-	background: #ecfdf5 !important;
-	border-color: #10b981 !important;
-	color: #047857 !important;
-}
-[data-style="cyberpunk"][data-theme="light"] .combo-backspace-gauge {
-	color: #4b5563 !important;
-}
-
-[data-style="vintage"] .boss-combo-hud {
+.diff-card {
+	background: var(--input-bg);
 	border: 2px solid var(--border-color);
-	background: #23170f;
-	outline: 1px solid rgba(212, 163, 115, 0.25);
-	outline-offset: -3px;
+	border-radius: var(--border-radius-box);
+	padding: 14px 10px;
+	cursor: pointer;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	transition:
+		border-color 0.15s ease,
+		transform 0.15s ease;
 }
-[data-style="vintage"] .combo-multiplier-tag {
-	border-radius: 2px;
-	background: rgba(116, 168, 96, 0.2);
+.diff-card:hover {
+	border-color: var(--primary);
+	transform: translateY(-2px);
 }
-[data-style="vintage"][data-theme="light"] .boss-combo-hud {
-	background: #fffbf5 !important;
-	border: 2px solid #8c531b !important;
-	outline: 1px solid rgba(140, 83, 27, 0.3) !important;
-	box-shadow: 0 4px 12px rgba(140, 83, 27, 0.15) !important;
+.diff-card.selected {
+	border-color: var(--accent) !important;
+	background: rgba(255, 230, 0, 0.15) !important;
 }
-[data-style="vintage"][data-theme="light"] .combo-title {
-	color: #8c531b !important;
+.diff-icon {
+	font-size: 28px;
 }
-[data-style="vintage"][data-theme="light"] .combo-num {
-	color: #a72d1d !important;
+.diff-name {
+	font-family: var(--font-heading);
+	font-size: 14px;
+	font-weight: 900;
 }
-[data-style="vintage"][data-theme="light"] .combo-multiplier-tag {
-	background: #f0fdf4 !important;
-	border-color: #2e6930 !important;
-	color: #1b431c !important;
-}
-[data-style="vintage"][data-theme="light"] .combo-backspace-gauge {
-	color: #5e5146 !important;
-}
-
-[data-style="xianxia"] .boss-combo-hud {
-	border: 1.5px solid #00e699;
-	border-radius: 12px;
-	background: #0b1a24;
-	box-shadow: 0 0 15px rgba(0, 230, 153, 0.15);
-}
-[data-style="xianxia"] .combo-multiplier-tag {
-	border-radius: 10px;
-	background: rgba(0, 230, 153, 0.2);
-}
-[data-style="xianxia"][data-theme="light"] .boss-combo-hud {
-	background: #ffffff !important;
-	border: 2px solid #008f5d !important;
-	border-radius: 12px !important;
-	box-shadow: 0 4px 15px rgba(0, 143, 93, 0.15) !important;
-}
-[data-style="xianxia"][data-theme="light"] .combo-title {
-	color: #008f5d !important;
-}
-[data-style="xianxia"][data-theme="light"] .combo-num {
-	color: #b45309 !important;
-}
-[data-style="xianxia"][data-theme="light"] .combo-multiplier-tag {
-	background: #ecfdf5 !important;
-	border-color: #047857 !important;
-	color: #065f46 !important;
-}
-[data-style="xianxia"][data-theme="light"] .combo-backspace-gauge {
-	color: #4b6b63 !important;
+.diff-desc {
+	font-size: 11px;
+	color: var(--text-muted);
+	line-height: 1.35;
 }
 
-/* ========================================================= */
-/* 8. THÔNG BÁO NỔI TỰ BẠO OANH TẠC (FLOATING TOAST BANNER) */
-/* ========================================================= */
+.btn-diff-corner {
+	position: absolute;
+	top: 12px;
+	right: 125px;
+	padding: 5px 12px;
+	font-size: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	z-index: 10;
+	width: auto;
+}
+
+.btn-diff-nh {
+	background: linear-gradient(45deg, #00bbff, #ffe600);
+	border: 1px solid var(--accent);
+	color: #000 !important;
+}
+
+.btn-diff-boss {
+	background: linear-gradient(45deg, var(--secondary), #ff7700);
+	border: 1px solid var(--secondary);
+	color: #fff !important;
+}
+
+.btn-icon-corner,
+.btn-home-corner {
+	position: absolute;
+	top: 12px;
+	padding: 5px 12px;
+	font-size: 12px;
+	background: linear-gradient(45deg, var(--primary), var(--accent));
+	border: 1px solid var(--primary);
+	color: #000;
+	font-weight: bold;
+	cursor: pointer;
+	z-index: 10;
+	width: auto;
+}
+.btn-icon-corner {
+	right: 12px;
+}
+.btn-home-corner {
+	left: 12px;
+}
+
+/* ADMIN CONFIG DASHBOARD */
+.admin-config-modal-content {
+	max-height: 88vh;
+	display: flex;
+	flex-direction: column;
+	padding: 20px 20px 0 20px !important;
+	text-align: left;
+	overflow: hidden !important;
+}
+.admin-config-tabs {
+	flex: 1;
+	overflow-y: auto;
+	padding-right: 6px;
+	margin-bottom: 5px;
+}
+.admin-config-footer {
+	position: sticky;
+	bottom: 0;
+	background: var(--panel-bg);
+	padding: 14px 0 16px 0;
+	border-top: 1px solid var(--border-color);
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	z-index: 10;
+	box-shadow: 0 -10px 15px rgba(0, 0, 0, 0.4);
+}
+.admin-config-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+}
+.admin-config-fieldset {
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	padding: 12px 15px;
+	background: var(--track-bg);
+}
+.admin-config-fieldset legend {
+	color: var(--primary);
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: bold;
+	padding: 0 6px;
+}
+.config-field-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 8px;
+}
+.config-field-row label {
+	font-size: 13px;
+	color: var(--text-main);
+	font-weight: 500;
+}
+.config-field-row input {
+	width: 100px;
+	padding: 6px 10px;
+	background: var(--input-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	color: var(--accent);
+	font-weight: bold;
+	font-size: 13px;
+	text-align: center;
+	outline: none;
+}
+.admin-select-input {
+	padding: 6px 10px;
+	background: var(--input-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	color: var(--accent);
+	font-weight: bold;
+	font-size: 13px;
+	outline: none;
+	cursor: pointer;
+}
+.admin-diff-detail-box {
+	padding: 12px 14px;
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px dashed var(--border-color);
+	border-radius: 6px;
+}
+.config-sub-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+}
+
+.skill-config-header {
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: bold;
+	color: var(--primary);
+	margin-bottom: 10px;
+	letter-spacing: 0.5px;
+}
+.skill-config-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.skill-config-card {
+	background: var(--panel-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	padding: 10px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.skill-card-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.skill-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 13px;
+	color: var(--accent);
+}
+.skill-checkbox-label input[type="checkbox"] {
+	width: 17px;
+	height: 17px;
+	cursor: pointer;
+	accent-color: var(--primary);
+}
+.skill-card-body {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-left: 25px;
+}
+
+.admin-save-popup-box {
+	max-width: 360px !important;
+	border: 2px solid var(--correct) !important;
+	box-shadow: 0 8px 32px rgba(0, 255, 102, 0.25) !important;
+	animation: popupBounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popupBounceIn {
+	0% {
+		opacity: 0;
+		transform: scale(0.85);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+.admin-save-icon {
+	font-size: 42px;
+	margin-bottom: 10px;
+}
+.admin-save-title {
+	font-family: var(--font-heading);
+	color: var(--correct);
+	font-size: 18px;
+	margin-bottom: 8px;
+	letter-spacing: 0.5px;
+}
+.admin-save-desc {
+	font-size: 13px;
+	color: var(--text-main);
+	margin-bottom: 18px;
+	line-height: 1.45;
+}
+.admin-save-btn-close {
+	padding: 8px 24px !important;
+	font-size: 13px !important;
+	width: auto !important;
+	background: linear-gradient(45deg, var(--correct), #00aa55) !important;
+	color: #000 !important;
+	margin: 0 auto;
+}
+
+/* TOASTS & CHAT BUBBLES */
 .boss-toast-container {
 	position: fixed;
 	top: 65px;
@@ -1315,52 +1456,33 @@ header .logo {
 	align-items: center;
 	gap: 14px;
 	box-shadow: 0 8px 30px rgba(255, 0, 85, 0.4);
-	will-change: transform, opacity;
 	animation:
 		toastSlideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
 		toastFadeOut 0.4s ease forwards 3.6s;
-	transform: translate3d(0, 0, 0);
-	backdrop-filter: blur(8px);
 }
-
 @keyframes toastSlideDown {
 	0% {
 		opacity: 0;
-		transform: translate3d(0, -30px, 0) scale(0.9);
+		transform: translate3d(0, -30px, 0);
 	}
 	100% {
 		opacity: 1;
-		transform: translate3d(0, 0, 0) scale(1);
+		transform: translate3d(0, 0, 0);
 	}
 }
-
 @keyframes toastFadeOut {
 	0% {
 		opacity: 1;
-		transform: translate3d(0, 0, 0) scale(1);
 	}
 	100% {
 		opacity: 0;
-		transform: translate3d(0, -20px, 0) scale(0.95);
+		transform: translate3d(0, -20px, 0);
 	}
 }
 
 .toast-blast-icon {
 	font-size: 32px;
-	animation: toastIconPop 0.5s ease-out;
 }
-@keyframes toastIconPop {
-	0% {
-		transform: scale(0.4) rotate(-30deg);
-	}
-	60% {
-		transform: scale(1.3) rotate(15deg);
-	}
-	100% {
-		transform: scale(1) rotate(0);
-	}
-}
-
 .toast-content-wrapper {
 	flex: 1;
 	display: flex;
@@ -1368,21 +1490,17 @@ header .logo {
 	gap: 3px;
 	text-align: left;
 }
-
 .toast-title-row {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
-
 .toast-headline {
 	font-family: var(--font-heading);
 	font-size: 13px;
 	font-weight: 900;
 	color: #ffaa00;
-	letter-spacing: 1px;
 }
-
 .toast-dmg-pill {
 	font-family: var(--font-heading);
 	font-size: 12px;
@@ -1391,70 +1509,15 @@ header .logo {
 	background: linear-gradient(45deg, #ff0055, #ff5500);
 	padding: 2px 8px;
 	border-radius: 20px;
-	box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
 }
-
 .toast-desc {
 	font-size: 12px;
 	color: var(--text-main);
-	line-height: 1.4;
-	font-weight: 500;
 }
 .toast-desc strong {
 	color: var(--primary);
 }
 
-[data-style="vintage"] .self-destruct-toast {
-	background: rgba(35, 23, 15, 0.96);
-	border: 2px solid #c2593f;
-	box-shadow:
-		0 8px 30px rgba(0, 0, 0, 0.8),
-		inset 0 0 0 1px rgba(233, 196, 106, 0.3);
-}
-[data-style="vintage"] .toast-headline {
-	color: #e9c46a;
-}
-[data-style="vintage"] .toast-dmg-pill {
-	background: linear-gradient(45deg, #a34828, #602814);
-	border: 1px solid #e9c46a;
-}
-[data-style="vintage"] .toast-desc strong {
-	color: #d4a373;
-}
-
-[data-style="xianxia"] .self-destruct-toast {
-	background: rgba(11, 26, 36, 0.95);
-	border: 2px solid #ff3366;
-	border-radius: 14px;
-	box-shadow: 0 8px 30px rgba(255, 51, 102, 0.35);
-}
-[data-style="xianxia"] .toast-headline {
-	color: #ffd166;
-	letter-spacing: 2px;
-}
-[data-style="xianxia"] .toast-dmg-pill {
-	background: linear-gradient(45deg, #ff3366, #b3003b);
-	border-radius: 8px;
-}
-[data-style="xianxia"] .toast-desc strong {
-	color: #00e699;
-}
-
-[data-theme="light"] .self-destruct-toast {
-	background: #ffffff !important;
-	border-color: #dc2626 !important;
-	box-shadow: 0 8px 25px rgba(220, 38, 38, 0.25) !important;
-}
-[data-theme="light"] .toast-headline {
-	color: #dc2626 !important;
-}
-[data-theme="light"] .toast-desc {
-	color: #1f2937 !important;
-}
-
-/* ========================================================= */
-/* 9. BONG BÓNG TIN NHẮN TRONG TRẬN ĐẤU (RÕ RÀNG & NỔI BẬT)  */
-/* ========================================================= */
 #chat-popups {
 	position: fixed;
 	top: 75px;
@@ -1464,10 +1527,8 @@ header .logo {
 	gap: 10px;
 	z-index: 1500;
 	pointer-events: none;
-	width: auto;
 	max-width: 380px;
 }
-
 .chat-bubble {
 	background: var(--panel-bg);
 	border: 2px solid var(--primary);
@@ -1480,69 +1541,29 @@ header .logo {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	will-change: transform, opacity;
 	animation: bubbleSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-	transform: translateZ(0);
-	backdrop-filter: blur(8px);
 }
-
 @keyframes bubbleSlideIn {
 	0% {
 		opacity: 0;
-		transform: translate3d(30px, 0, 0) scale(0.9);
+		transform: translate3d(30px, 0, 0);
 	}
 	100% {
 		opacity: 1;
-		transform: translate3d(0, 0, 0) scale(1);
+		transform: translate3d(0, 0, 0);
 	}
 }
-
 .chat-bubble .sender {
 	font-size: 12px;
 	color: var(--accent);
 	font-weight: 900;
 	font-family: var(--font-heading);
-	letter-spacing: 0.5px;
-	display: flex;
-	align-items: center;
-	gap: 5px;
 }
-.chat-bubble .sender::before {
-	content: "💬";
-	font-size: 11px;
-}
-
 .chat-bubble .text {
 	font-size: 14px;
 	color: var(--text-main);
 	font-weight: 600;
-	line-height: 1.45;
 	word-break: break-word;
-}
-
-/* CHAT BUBBLE NỀN SÁNG (LIGHT THEME) CHO MỌI STYLE */
-[data-theme="light"] .chat-bubble {
-	background: #ffffff !important;
-	border-color: var(--primary) !important;
-	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-}
-[data-theme="light"] .chat-bubble .text {
-	color: #111827 !important;
-}
-
-/* CHAT BUBBLE VINTAGE */
-[data-style="vintage"] .chat-bubble {
-	border: 2px solid var(--primary);
-	outline: 1px solid rgba(212, 163, 115, 0.3);
-	outline-offset: -3px;
-	border-radius: 4px;
-}
-
-/* CHAT BUBBLE XIANXIA */
-[data-style="xianxia"] .chat-bubble {
-	border: 1.5px solid var(--primary);
-	border-radius: 14px;
-	box-shadow: 0 8px 25px rgba(0, 230, 153, 0.25);
 }
 
 .boss-skill-alert {
@@ -1557,11 +1578,7 @@ header .logo {
 	text-align: center;
 	border-radius: 6px;
 }
-
 .boss-shake-active {
-	will-change: transform;
-	transform: translate3d(0, 0, 0);
-	backface-visibility: hidden;
 	animation: screenTremorCitrix 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
 }
 @keyframes screenTremorCitrix {
@@ -1579,20 +1596,16 @@ header .logo {
 		transform: translate3d(-2px, -2px, 0);
 	}
 }
-
 .boss-reverse-active .word {
-	transform: scaleX(-1) translateZ(0);
+	transform: scaleX(-1);
 	display: inline-block;
 }
-
 .boss-fog-layer {
 	position: absolute;
 	inset: 0;
 	background: radial-gradient(circle, rgba(13, 13, 26, 0.75) 0%, rgba(5, 5, 10, 0.96) 85%);
 	z-index: 50;
 	pointer-events: none;
-	will-change: opacity;
-	transform: translateZ(0);
 	animation: fogDriftCitrix 3.5s infinite ease-in-out alternate;
 }
 @keyframes fogDriftCitrix {
@@ -1604,9 +1617,6 @@ header .logo {
 	}
 }
 
-/* ========================================================= */
-/* 10. ADMIN TABLES & STATUS TAG EFFECTS                     */
-/* ========================================================= */
 .admin-table-wrapper {
 	width: 100%;
 	max-height: 380px;
@@ -1617,13 +1627,10 @@ header .logo {
 	border-radius: var(--border-radius-box);
 	background: var(--track-bg);
 }
-
 .admin-table {
 	width: 100%;
 	border-collapse: collapse;
-	table-layout: auto;
 }
-
 .admin-table th {
 	padding: 10px 14px;
 	color: var(--primary);
@@ -1632,121 +1639,32 @@ header .logo {
 	border-bottom: 2px solid var(--border-color);
 	background: rgba(0, 0, 0, 0.25);
 	text-align: center;
-	white-space: nowrap;
 }
-
 .admin-table td {
 	padding: 10px 14px;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 	font-size: 13px;
 	text-align: center;
-	vertical-align: middle;
-	white-space: nowrap;
 }
-
-[data-theme="light"] .admin-table th {
-	background: rgba(0, 0, 0, 0.05);
-}
-[data-theme="light"] .admin-table td {
-	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
 .status-tag {
 	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 6px;
 	padding: 4px 10px;
 	font-size: 11px;
 	font-weight: bold;
 	border-radius: 4px;
 	font-family: var(--font-heading);
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
 }
-
-[data-style="cyberpunk"] .status-tag.status-online,
-.status-tag.status-online {
+.status-online {
 	background: rgba(0, 255, 102, 0.12);
 	border: 1px solid var(--correct);
 	color: var(--correct);
 }
-
-[data-style="vintage"] .status-tag.status-online {
-	background: rgba(116, 168, 96, 0.18);
-	border: 1px solid #74a860;
-	color: #74a860;
-	border-radius: 3px;
-	letter-spacing: 1px;
-	font-style: italic;
+.status-surrendered {
+	background: rgba(255, 77, 77, 0.15);
+	border: 1px solid var(--incorrect);
+	color: var(--incorrect);
 }
 
-[data-style="xianxia"] .status-tag.status-online {
-	background: radial-gradient(circle, rgba(0, 230, 153, 0.25) 0%, rgba(0, 230, 153, 0.05) 100%);
-	border: 1px solid #00e699;
-	color: #00ffaa;
-	border-radius: 12px;
-}
-
-/* ========================================================= */
-/* 11. POPUP TRỤC XUẤT THEO PHONG CÁCH                       */
-/* ========================================================= */
-.kicked-popup-content {
-	position: relative;
-	overflow: hidden;
-}
-.kicked-title {
-	font-family: var(--font-heading);
-	margin-bottom: 10px;
-	font-size: 18px;
-	letter-spacing: 1px;
-}
-.kicked-desc {
-	margin-bottom: 20px;
-	font-size: 14px;
-	color: var(--text-main);
-	line-height: 1.5;
-}
-
-[data-style="cyberpunk"] .kicked-popup-content {
-	border: 2px solid var(--secondary);
-}
-[data-style="cyberpunk"] .kicked-title {
-	color: var(--secondary);
-}
-[data-style="cyberpunk"] .kicked-btn-confirm {
-	background: linear-gradient(45deg, #ff0055, #990033);
-}
-
-[data-style="vintage"] .kicked-popup-content {
-	border: 3px double var(--secondary);
-}
-[data-style="vintage"] .kicked-title {
-	color: var(--secondary);
-	font-style: italic;
-}
-[data-style="vintage"] .kicked-btn-confirm {
-	background: linear-gradient(45deg, #a34828, #602814);
-	border: 1px solid var(--accent);
-}
-
-[data-style="xianxia"] .kicked-popup-content {
-	border: 2px solid var(--secondary);
-	border-radius: 18px;
-	background: radial-gradient(circle at top, rgba(255, 51, 102, 0.15) 0%, var(--panel-bg) 75%);
-}
-[data-style="xianxia"] .kicked-title {
-	color: var(--secondary);
-	letter-spacing: 2px;
-}
-[data-style="xianxia"] .kicked-btn-confirm {
-	background: linear-gradient(45deg, #ff3366, #b3003b);
-	border-radius: 10px;
-}
-
-/* ========================================================= */
-/* 12. SUMMARY MODAL, POPUPS & TIỆN ÍCH                      */
-/* ========================================================= */
 .summary-box {
 	width: 95% !important;
 	max-width: 750px !important;
@@ -1756,7 +1674,7 @@ header .logo {
 }
 .summary-modal-title {
 	font-size: 20px;
-	text-align: center !important;
+	text-align: center;
 	font-family: var(--font-heading);
 }
 .boss-result-subtitle {
@@ -1773,27 +1691,23 @@ header .logo {
 }
 #summary-table th,
 #summary-table td {
-	padding: 10px 6px !important;
+	padding: 10px 6px;
 	border-bottom: 1px solid var(--border-color);
 	text-align: center;
-	white-space: nowrap !important;
 }
 #summary-table th {
 	color: var(--primary);
 	font-family: var(--font-heading);
 	font-size: 12px;
 }
-
 #summary-table tr.winner-row td {
 	color: var(--accent) !important;
 	font-weight: bold;
-	font-size: 15px;
 	background: rgba(255, 230, 0, 0.1);
 }
 #summary-table tr.last-place-row td {
 	color: var(--incorrect) !important;
 	font-weight: bold;
-	font-size: 15px;
 	background: rgba(255, 77, 77, 0.1);
 }
 
@@ -1815,32 +1729,10 @@ header .logo {
 	width: 100%;
 	max-width: 380px;
 	text-align: center;
-	box-shadow: var(--box-shadow-style);
 }
 .modal-large {
 	max-width: 680px !important;
 	width: 95% !important;
-}
-
-.btn-icon-corner,
-.btn-home-corner {
-	position: absolute;
-	top: 12px;
-	padding: 5px 12px;
-	font-size: 12px;
-	background: linear-gradient(45deg, var(--primary), var(--accent));
-	border: 1px solid var(--primary);
-	color: #000;
-	font-weight: bold;
-	cursor: pointer;
-	z-index: 10;
-	width: auto;
-}
-.btn-icon-corner {
-	right: 12px;
-}
-.btn-home-corner {
-	left: 12px;
 }
 
 .icon-picker-grid {
@@ -1872,17 +1764,14 @@ header .logo {
 	border-radius: 20px;
 	z-index: 1001;
 	pointer-events: none;
-	user-select: none;
 	font-family: var(--font-heading);
 }
-
 #fireworks-canvas {
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
 	z-index: 9999;
 }
-
 .chat-emoji-picker {
 	position: fixed;
 	z-index: 10000;
@@ -1890,7 +1779,6 @@ header .logo {
 	border: 2px solid var(--accent);
 	border-radius: 10px;
 	padding: 8px;
-	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
 	max-width: 340px;
 }
 .chat-emoji-grid {

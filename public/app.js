@@ -7,9 +7,6 @@ const $ = (id) =>
 		: document.querySelector(id);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
 
-const ZIPCODE_TEST_DURATION = 90;
-const NORMAL_RACE_DURATION = 300;
-const BOSS_RAID_DURATION = 150;
 const DEFAULT_ICON = "🤖";
 const AFK_TIMEOUT = 30000;
 
@@ -25,11 +22,12 @@ function eraseCookie(n) {
 	document.cookie = `${n}=; max-age=0; path=/`;
 }
 
-// Khôi phục phong cách đã lưu từ localStorage hoặc Cookie
+// Khôi phục phong cách
 const savedInitialStyle =
 	localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
 
 let currentLanguage = "vi_dau",
+	currentDifficulty = "normal",
 	myUsername = "bot_1000",
 	mySelectedIcon = DEFAULT_ICON,
 	currentStyle = savedInitialStyle;
@@ -37,6 +35,156 @@ let currentLanguage = "vi_dau",
 if (document.documentElement) {
 	document.documentElement.setAttribute("data-style", currentStyle);
 }
+
+// Cấu hình Client nhận từ Server
+let clientGameConfig = {
+	normalRace: { duration: 300, wordCount: 150 },
+	numpad: { duration: 90, wordCount: 500 },
+	ngauHung: {
+		difficulties: {
+			normal: {
+				id: "normal",
+				name: "Bình thường",
+				icon: "🟡",
+				color: "#ffe600",
+				roundDuration: 7,
+				intermissionDuration: 3,
+				totalRounds: 15,
+				ratioVi: 45,
+				ratioEn: 45,
+				ratioNum: 10,
+				hardViRate: 35,
+				hardEnRate: 35,
+			},
+			legendary: {
+				id: "legendary",
+				name: "Huyền Thoại",
+				icon: "👑",
+				color: "#ff0055",
+				roundDuration: 3.5,
+				intermissionDuration: 1.5,
+				totalRounds: 25,
+				ratioVi: 35,
+				ratioEn: 35,
+				ratioNum: 30,
+				hardViRate: 85,
+				hardEnRate: 85,
+			},
+		},
+	},
+	sanBoss: {
+		wordPoolCount: 400,
+		difficulties: {
+			easy: {
+				id: "easy",
+				name: "Dễ",
+				icon: "🟢",
+				color: "#00ff66",
+				duration: 180,
+				baseHp: 450,
+				hpPerPlayer: 400,
+				selfDestructTarget: 450,
+				skillInterval: 16,
+				shieldBasePerPlayer: 30,
+				shieldDuration: 8,
+				stunDuration: 4,
+				shakeDuration: 5,
+				fogDuration: 5,
+				reverseDuration: 5,
+				capslockDuration: 5,
+				enabledSkills: {
+					shield: true,
+					capslock: false,
+					shake: true,
+					fog: false,
+					reverse: false,
+				},
+			},
+			normal: {
+				id: "normal",
+				name: "Bình thường",
+				icon: "🟡",
+				color: "#ffe600",
+				duration: 150,
+				baseHp: 550,
+				hpPerPlayer: 500,
+				selfDestructTarget: 450,
+				skillInterval: 14,
+				shieldBasePerPlayer: 40,
+				shieldDuration: 6,
+				stunDuration: 3,
+				shakeDuration: 5,
+				fogDuration: 5,
+				reverseDuration: 5,
+				capslockDuration: 6,
+				enabledSkills: {
+					shield: true,
+					capslock: true,
+					shake: true,
+					fog: true,
+					reverse: false,
+				},
+			},
+			hard: {
+				id: "hard",
+				name: "Khó",
+				icon: "🔴",
+				color: "#ff7700",
+				duration: 130,
+				baseHp: 650,
+				hpPerPlayer: 600,
+				selfDestructTarget: 500,
+				skillInterval: 12,
+				shieldBasePerPlayer: 50,
+				shieldDuration: 5,
+				stunDuration: 2.5,
+				shakeDuration: 6,
+				fogDuration: 6,
+				reverseDuration: 5,
+				capslockDuration: 7,
+				enabledSkills: {
+					shield: true,
+					capslock: true,
+					shake: true,
+					fog: true,
+					reverse: true,
+				},
+			},
+			hell: {
+				id: "hell",
+				name: "Địa ngục",
+				icon: "💀",
+				color: "#ff0055",
+				duration: 120,
+				baseHp: 750,
+				hpPerPlayer: 700,
+				selfDestructTarget: 550,
+				skillInterval: 10,
+				shieldBasePerPlayer: 60,
+				shieldDuration: 5,
+				stunDuration: 2,
+				shakeDuration: 7,
+				fogDuration: 7,
+				reverseDuration: 6,
+				capslockDuration: 8,
+				enabledSkills: {
+					shield: true,
+					capslock: true,
+					shake: true,
+					fog: true,
+					reverse: true,
+				},
+			},
+		},
+	},
+};
+
+// Cấu hình tạm thời trong Admin Modal
+let tempAdminDifficulties = JSON.parse(JSON.stringify(clientGameConfig.sanBoss.difficulties));
+let selectedConfigDiffKey = "normal";
+
+let tempAdminNhDifficulties = JSON.parse(JSON.stringify(clientGameConfig.ngauHung.difficulties));
+let selectedConfigNhDiffKey = "normal";
 
 let currentWords = [],
 	wordIndex = 0,
@@ -55,9 +203,6 @@ let ngauHungTargetWord = "",
 	ngauHungCurrentRound = 0;
 let currentBossData = null;
 
-// ==========================================
-// HỆ THỐNG COMBO & KỸ NĂNG BOSS
-// ==========================================
 let bossComboCount = 0;
 let bossFractionalDamageBuffer = 0.0;
 let bossBackspaceCount = 0;
@@ -70,6 +215,7 @@ let isAdmin = false,
 	adminBannedUsers = [];
 let bannedModalTimer = null,
 	banNoticeTimer = null,
+	adminSavePopupTimer = null,
 	autoTyperActive = false,
 	botWorker = null,
 	activeChatInput = null;
@@ -142,6 +288,14 @@ const styleNames = {
 	xianxia: "🪷 Tiên Hiệp",
 };
 
+const difficultyMeta = {
+	easy: { name: "DỄ", color: "#00ff66", icon: "🟢" },
+	normal: { name: "BÌNH THƯỜNG", color: "#ffe600", icon: "🟡" },
+	hard: { name: "KHÓ", color: "#ff7700", icon: "🔴" },
+	hell: { name: "ĐỊA NGỤC", color: "#ff0055", icon: "💀" },
+	legendary: { name: "HUYỀN THOẠI", color: "#ff0055", icon: "👑" },
+};
+
 let serverHighScores = {
 	vi_dau: null,
 	vi_nodau: null,
@@ -169,7 +323,6 @@ function initBotWorker() {
 	}
 }
 
-// Cuộn mượt tâm điểm dòng đang gõ
 function scrollActiveWordToCenter() {
 	const container = $("words-display");
 	const activeWord = container?.children[wordIndex];
@@ -187,7 +340,6 @@ function scrollActiveWordToCenter() {
 	}
 }
 
-// Render Phong thần bảng
 function loadHighScores() {
 	const tbody = $("high-score-tbody");
 	if (!tbody) return;
@@ -247,9 +399,6 @@ function applyStyle(style) {
 	});
 }
 
-// ==========================================
-// QUẢN LÝ COMBO HUD
-// ==========================================
 function getComboMultiplier(combo) {
 	if (combo >= 40) return 2.0;
 	if (combo >= 30) return 1.75;
@@ -338,6 +487,46 @@ document.addEventListener("DOMContentLoaded", () => {
 	$("btn-open-icon-select")?.addEventListener("click", () => {
 		renderIconPicker();
 		$("icon-select-popup").classList.remove("hidden");
+	});
+
+	// 1. MỞ POPUP CHỌN ĐỘ KHÓ RIÊNG CHO NGẪU HỨNG
+	$("btn-open-nh-difficulty-select")?.addEventListener("click", () => {
+		$$("#nh-difficulty-popup .diff-card").forEach((c) => {
+			c.classList.toggle("selected", c.dataset.nhDiff === currentDifficulty);
+		});
+		$("nh-difficulty-popup").classList.remove("hidden");
+	});
+
+	// CHỌN ĐỘ KHÓ NGẪU HỨNG
+	$$("#nh-difficulty-popup .diff-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			const diff = card.dataset.nhDiff;
+			currentDifficulty = diff;
+			$$("#nh-difficulty-popup .diff-card").forEach((c) => c.classList.remove("selected"));
+			card.classList.add("selected");
+			socket.emit("select_difficulty", { difficulty: diff });
+			$("nh-difficulty-popup").classList.add("hidden");
+		});
+	});
+
+	// 2. MỞ POPUP CHỌN ĐỘ KHÓ RIÊNG CHO SĂN BOSS
+	$("btn-open-boss-difficulty-select")?.addEventListener("click", () => {
+		$$("#boss-difficulty-popup .diff-card").forEach((c) => {
+			c.classList.toggle("selected", c.dataset.bossDiff === currentDifficulty);
+		});
+		$("boss-difficulty-popup").classList.remove("hidden");
+	});
+
+	// CHỌN ĐỘ KHÓ SĂN BOSS
+	$$("#boss-difficulty-popup .diff-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			const diff = card.dataset.bossDiff;
+			currentDifficulty = diff;
+			$$("#boss-difficulty-popup .diff-card").forEach((c) => c.classList.remove("selected"));
+			card.classList.add("selected");
+			socket.emit("select_difficulty", { difficulty: diff });
+			$("boss-difficulty-popup").classList.add("hidden");
+		});
 	});
 
 	$("start-game-now-btn")?.addEventListener("click", () => socket.emit("force_start_game"));
@@ -443,6 +632,171 @@ socket.on("connect", () => {
 		socket.emit("admin_login", { password: (lastEnteredAdminPassword = savedAdminPwd) });
 });
 
+socket.on("sync_game_config", (cfg) => {
+	clientGameConfig = cfg;
+	fillAdminConfigInputs();
+});
+
+function saveActiveDiffInputsToState() {
+	// 1. Cấu hình Săn Boss
+	if (tempAdminDifficulties[selectedConfigDiffKey]) {
+		const diff = tempAdminDifficulties[selectedConfigDiffKey];
+		if (!diff.enabledSkills) diff.enabledSkills = {};
+
+		if ($("cfg-diff-duration")) diff.duration = parseInt($("cfg-diff-duration").value) || 150;
+		if ($("cfg-diff-base-hp")) diff.baseHp = parseInt($("cfg-diff-base-hp").value) || 550;
+		if ($("cfg-diff-hp-per-player"))
+			diff.hpPerPlayer = parseInt($("cfg-diff-hp-per-player").value) || 500;
+		if ($("cfg-diff-self-destruct"))
+			diff.selfDestructTarget = parseInt($("cfg-diff-self-destruct").value) || 450;
+		if ($("cfg-diff-skill-interval"))
+			diff.skillInterval = parseInt($("cfg-diff-skill-interval").value) || 14;
+
+		if ($("cfg-diff-shield-per-player"))
+			diff.shieldBasePerPlayer = parseInt($("cfg-diff-shield-per-player").value) || 40;
+		if ($("cfg-diff-shield-dur"))
+			diff.shieldDuration = parseInt($("cfg-diff-shield-dur").value) || 6;
+		if ($("cfg-diff-stun-dur")) diff.stunDuration = parseFloat($("cfg-diff-stun-dur").value) || 3;
+
+		if ($("cfg-diff-capslock-dur"))
+			diff.capslockDuration = parseInt($("cfg-diff-capslock-dur").value) || 6;
+		if ($("cfg-diff-shake-dur")) diff.shakeDuration = parseInt($("cfg-diff-shake-dur").value) || 5;
+		if ($("cfg-diff-fog-dur")) diff.fogDuration = parseInt($("cfg-diff-fog-dur").value) || 5;
+		if ($("cfg-diff-reverse-dur"))
+			diff.reverseDuration = parseInt($("cfg-diff-reverse-dur").value) || 5;
+
+		diff.enabledSkills.shield = $("cfg-skill-enable-shield")?.checked ?? true;
+		diff.enabledSkills.capslock = $("cfg-skill-enable-capslock")?.checked ?? true;
+		diff.enabledSkills.shake = $("cfg-skill-enable-shake")?.checked ?? true;
+		diff.enabledSkills.fog = $("cfg-skill-enable-fog")?.checked ?? true;
+		diff.enabledSkills.reverse = $("cfg-skill-enable-reverse")?.checked ?? true;
+	}
+
+	// 2. Cấu hình Ngẫu Hứng
+	if (tempAdminNhDifficulties[selectedConfigNhDiffKey]) {
+		const nh = tempAdminNhDifficulties[selectedConfigNhDiffKey];
+		if ($("cfg-nh-round-dur")) nh.roundDuration = parseFloat($("cfg-nh-round-dur").value) || 7;
+		if ($("cfg-nh-inter-dur"))
+			nh.intermissionDuration = parseFloat($("cfg-nh-inter-dur").value) || 3;
+		if ($("cfg-nh-total-rounds")) nh.totalRounds = parseInt($("cfg-nh-total-rounds").value) || 15;
+
+		if ($("cfg-nh-ratio-vi")) nh.ratioVi = parseInt($("cfg-nh-ratio-vi").value) || 45;
+		if ($("cfg-nh-ratio-en")) nh.ratioEn = parseInt($("cfg-nh-ratio-en").value) || 45;
+		if ($("cfg-nh-ratio-num")) nh.ratioNum = parseInt($("cfg-nh-ratio-num").value) || 10;
+		if ($("cfg-nh-hard-vi")) nh.hardViRate = parseInt($("cfg-nh-hard-vi").value) || 35;
+		if ($("cfg-nh-hard-en")) nh.hardEnRate = parseInt($("cfg-nh-hard-en").value) || 35;
+	}
+}
+
+function updateSelectedDiffInputsFromState() {
+	// Cập nhật Săn Boss
+	const diff = tempAdminDifficulties[selectedConfigDiffKey];
+	if (diff) {
+		const meta = difficultyMeta[selectedConfigDiffKey] || difficultyMeta.normal;
+		if ($("cfg-diff-active-title")) {
+			$("cfg-diff-active-title").innerText = `⚙️ THÔNG SỐ ĐỘ KHÓ: ${meta.name.toUpperCase()}`;
+			$("cfg-diff-active-title").style.color = meta.color;
+		}
+
+		if ($("cfg-diff-duration")) $("cfg-diff-duration").value = diff.duration;
+		if ($("cfg-diff-base-hp")) $("cfg-diff-base-hp").value = diff.baseHp;
+		if ($("cfg-diff-hp-per-player")) $("cfg-diff-hp-per-player").value = diff.hpPerPlayer;
+		if ($("cfg-diff-self-destruct")) $("cfg-diff-self-destruct").value = diff.selfDestructTarget;
+		if ($("cfg-diff-skill-interval")) $("cfg-diff-skill-interval").value = diff.skillInterval;
+
+		if ($("cfg-diff-shield-per-player"))
+			$("cfg-diff-shield-per-player").value = diff.shieldBasePerPlayer;
+		if ($("cfg-diff-shield-dur")) $("cfg-diff-shield-dur").value = diff.shieldDuration;
+		if ($("cfg-diff-stun-dur")) $("cfg-diff-stun-dur").value = diff.stunDuration;
+
+		if ($("cfg-diff-capslock-dur")) $("cfg-diff-capslock-dur").value = diff.capslockDuration || 6;
+		if ($("cfg-diff-shake-dur")) $("cfg-diff-shake-dur").value = diff.shakeDuration || 5;
+		if ($("cfg-diff-fog-dur")) $("cfg-diff-fog-dur").value = diff.fogDuration || 5;
+		if ($("cfg-diff-reverse-dur")) $("cfg-diff-reverse-dur").value = diff.reverseDuration || 5;
+
+		const sk = diff.enabledSkills || {};
+		if ($("cfg-skill-enable-shield")) $("cfg-skill-enable-shield").checked = sk.shield ?? true;
+		if ($("cfg-skill-enable-capslock"))
+			$("cfg-skill-enable-capslock").checked = sk.capslock ?? true;
+		if ($("cfg-skill-enable-shake")) $("cfg-skill-enable-shake").checked = sk.shake ?? true;
+		if ($("cfg-skill-enable-fog")) $("cfg-skill-enable-fog").checked = sk.fog ?? true;
+		if ($("cfg-skill-enable-reverse")) $("cfg-skill-enable-reverse").checked = sk.reverse ?? false;
+	}
+
+	// Cập nhật Ngẫu Hứng
+	const nh = tempAdminNhDifficulties[selectedConfigNhDiffKey];
+	if (nh) {
+		const metaNh = difficultyMeta[selectedConfigNhDiffKey] || difficultyMeta.normal;
+		if ($("cfg-nh-diff-active-title")) {
+			$("cfg-nh-diff-active-title").innerText = `⚙️ THÔNG SỐ ĐỘ KHÓ: ${metaNh.name.toUpperCase()}`;
+			$("cfg-nh-diff-active-title").style.color = metaNh.color;
+		}
+
+		if ($("cfg-nh-round-dur")) $("cfg-nh-round-dur").value = nh.roundDuration;
+		if ($("cfg-nh-inter-dur")) $("cfg-nh-inter-dur").value = nh.intermissionDuration;
+		if ($("cfg-nh-total-rounds")) $("cfg-nh-total-rounds").value = nh.totalRounds;
+
+		if ($("cfg-nh-ratio-vi")) $("cfg-nh-ratio-vi").value = nh.ratioVi ?? 45;
+		if ($("cfg-nh-ratio-en")) $("cfg-nh-ratio-en").value = nh.ratioEn ?? 45;
+		if ($("cfg-nh-ratio-num")) $("cfg-nh-ratio-num").value = nh.ratioNum ?? 10;
+		if ($("cfg-nh-hard-vi")) $("cfg-nh-hard-vi").value = nh.hardViRate ?? 35;
+		if ($("cfg-nh-hard-en")) $("cfg-nh-hard-en").value = nh.hardEnRate ?? 35;
+	}
+}
+
+function fillAdminConfigInputs() {
+	if (!clientGameConfig) return;
+	if ($("cfg-normal-duration"))
+		$("cfg-normal-duration").value = clientGameConfig.normalRace.duration;
+	if ($("cfg-normal-words")) $("cfg-normal-words").value = clientGameConfig.normalRace.wordCount;
+	if ($("cfg-numpad-duration")) $("cfg-numpad-duration").value = clientGameConfig.numpad.duration;
+	if ($("cfg-numpad-words")) $("cfg-numpad-words").value = clientGameConfig.numpad.wordCount;
+
+	if (clientGameConfig.sanBoss && clientGameConfig.sanBoss.difficulties) {
+		tempAdminDifficulties = JSON.parse(JSON.stringify(clientGameConfig.sanBoss.difficulties));
+	}
+
+	if (clientGameConfig.ngauHung && clientGameConfig.ngauHung.difficulties) {
+		tempAdminNhDifficulties = JSON.parse(JSON.stringify(clientGameConfig.ngauHung.difficulties));
+	}
+
+	if ($("cfg-boss-diff-select"))
+		selectedConfigDiffKey = $("cfg-boss-diff-select").value || "normal";
+	if ($("cfg-nh-diff-select")) selectedConfigNhDiffKey = $("cfg-nh-diff-select").value || "normal";
+	updateSelectedDiffInputsFromState();
+}
+
+function showAdminSaveNotice(success, message) {
+	const popup = $("admin-save-result-popup");
+	const iconEl = $("admin-save-status-icon");
+	const titleEl = $("admin-save-status-title");
+	const descEl = $("admin-save-status-desc");
+	if (!popup) return;
+
+	if (success) {
+		if (iconEl) iconEl.innerText = "✅";
+		if (titleEl) {
+			titleEl.innerText = "LƯU CÀI ĐẶT THÀNH CÔNG";
+			titleEl.style.color = "var(--correct)";
+		}
+		if (descEl) descEl.innerText = message || "Tất cả thông số và kỹ năng trận đấu đã được lưu.";
+	} else {
+		if (iconEl) iconEl.innerText = "❌";
+		if (titleEl) {
+			titleEl.innerText = "LỖI LƯU CÀI ĐẶT";
+			titleEl.style.color = "var(--secondary)";
+		}
+		if (descEl) descEl.innerText = message || "Không thể cập nhật cấu hình!";
+	}
+
+	popup.classList.remove("hidden");
+
+	clearTimeout(adminSavePopupTimer);
+	adminSavePopupTimer = setTimeout(() => {
+		popup.classList.add("hidden");
+	}, 2500);
+}
+
 function setupAdminEvents() {
 	$("btn-admin-gear")?.addEventListener("click", () => {
 		if (!isAdmin) {
@@ -463,6 +817,81 @@ function setupAdminEvents() {
 
 	$("admin-password-input")?.addEventListener("keydown", (e) => {
 		if (e.key === "Enter") $("btn-submit-admin-login").click();
+	});
+
+	$("admin-settings-badge")?.addEventListener("click", () => {
+		if (isAdmin) {
+			fillAdminConfigInputs();
+			$("admin-settings-modal").classList.remove("hidden");
+		}
+	});
+
+	$("cfg-boss-diff-select")?.addEventListener("change", (e) => {
+		saveActiveDiffInputsToState();
+		selectedConfigDiffKey = e.target.value;
+		updateSelectedDiffInputsFromState();
+	});
+
+	$("cfg-nh-diff-select")?.addEventListener("change", (e) => {
+		saveActiveDiffInputsToState();
+		selectedConfigNhDiffKey = e.target.value;
+		updateSelectedDiffInputsFromState();
+	});
+
+	const diffInputIds = [
+		"cfg-diff-duration",
+		"cfg-diff-base-hp",
+		"cfg-diff-hp-per-player",
+		"cfg-diff-self-destruct",
+		"cfg-diff-skill-interval",
+		"cfg-diff-shield-per-player",
+		"cfg-diff-shield-dur",
+		"cfg-diff-stun-dur",
+		"cfg-diff-capslock-dur",
+		"cfg-diff-shake-dur",
+		"cfg-diff-fog-dur",
+		"cfg-diff-reverse-dur",
+		"cfg-skill-enable-shield",
+		"cfg-skill-enable-capslock",
+		"cfg-skill-enable-shake",
+		"cfg-skill-enable-fog",
+		"cfg-skill-enable-reverse",
+		"cfg-nh-round-dur",
+		"cfg-nh-inter-dur",
+		"cfg-nh-total-rounds",
+		"cfg-nh-ratio-vi",
+		"cfg-nh-ratio-en",
+		"cfg-nh-ratio-num",
+		"cfg-nh-hard-vi",
+		"cfg-nh-hard-en",
+	];
+	diffInputIds.forEach((id) => {
+		$(id)?.addEventListener("input", saveActiveDiffInputsToState);
+		$(id)?.addEventListener("change", saveActiveDiffInputsToState);
+	});
+
+	$("btn-save-admin-config")?.addEventListener("click", () => {
+		if (!isAdmin) return;
+		saveActiveDiffInputsToState();
+
+		const updatedConfig = {
+			normalRace: {
+				duration: parseInt($("cfg-normal-duration").value) || 300,
+				wordCount: parseInt($("cfg-normal-words").value) || 150,
+			},
+			numpad: {
+				duration: parseInt($("cfg-numpad-duration").value) || 90,
+				wordCount: parseInt($("cfg-numpad-words").value) || 500,
+			},
+			ngauHung: { difficulties: tempAdminNhDifficulties },
+			sanBoss: { difficulties: tempAdminDifficulties },
+		};
+		socket.emit("admin_update_config", updatedConfig);
+	});
+
+	socket.on("admin_config_saved", (res) => {
+		showAdminSaveNotice(res.success, res.message);
+		if (res.success) $("admin-settings-modal").classList.add("hidden");
 	});
 
 	$("online-badge")?.addEventListener("click", () => {
@@ -511,6 +940,7 @@ function updateAdminUI() {
 		gear.title = isAdmin ? "Thoát Admin" : "Quản trị viên";
 	}
 	$("online-badge")?.classList.toggle("clickable", isAdmin);
+	$("admin-settings-badge")?.classList.toggle("hidden", !isAdmin);
 	$("admin-banned-badge")?.classList.toggle("hidden", !isAdmin);
 	$$(".admin-only").forEach((el) => el.classList.toggle("hidden", !isAdmin));
 	loadHighScores();
@@ -673,8 +1103,31 @@ socket.on("update_lobby", (data) => {
 	$("login-modal").classList.add("hidden");
 	$("lobby-screen").classList.remove("hidden");
 	currentLobbyPlayers = data.players || [];
+	currentDifficulty = data.difficulty || "normal";
+	const currentLang = data.language || currentLanguage;
+
+	const isNgauHung = currentLang === "ngau_hung";
+	const isSanBoss = currentLang === "san_boss";
+
 	$("lobby-count").innerText = `${currentLobbyPlayers.length}/10`;
-	$("lobby-mode-display").innerText = `CHẾ ĐỘ: ${modeNames[data.language || currentLanguage]}`;
+	$("lobby-mode-display").innerText = `CHẾ ĐỘ: ${modeNames[currentLang]}`;
+
+	// Hiển thị nút chọn độ khó riêng cho từng chế độ
+	$("btn-open-nh-difficulty-select")?.classList.toggle("hidden", !isNgauHung);
+	$("btn-open-boss-difficulty-select")?.classList.toggle("hidden", !isSanBoss);
+
+	const diffTag = $("lobby-difficulty-tag");
+	if (diffTag) {
+		const isDiffMode = isNgauHung || isSanBoss;
+		diffTag.classList.toggle("hidden", !isDiffMode);
+		if (isDiffMode) {
+			const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
+			diffTag.innerText = `ĐỘ KHÓ: ${meta.name}`;
+			diffTag.style.borderColor = meta.color;
+			diffTag.style.color = meta.color;
+		}
+	}
+
 	renderLobbyPlayers();
 });
 
@@ -683,11 +1136,11 @@ socket.on("game_start", (data) => {
 	["game-container", "chat-container"].forEach((id) => $(id).classList.remove("hidden"));
 
 	currentLanguage = data.language || currentLanguage;
+	currentDifficulty = data.difficulty || currentDifficulty;
 	currentWords = data.words;
 	wordIndex = correctChars = totalErrors = 0;
 	isPlaying = false;
 
-	// Reset Combo state
 	bossComboCount = 0;
 	bossFractionalDamageBuffer = 0.0;
 	bossBackspaceCount = 0;
@@ -715,6 +1168,15 @@ socket.on("game_start", (data) => {
 		$("boss-shield-wrapper")?.classList.add("hidden");
 		$("boss-skill-alert").classList.add("hidden");
 		$("boss-arena-box")?.classList.remove("boss-stunned");
+
+		const bossDiffBadge = $("boss-difficulty-badge");
+		if (bossDiffBadge) {
+			const meta =
+				difficultyMeta[data.boss.difficulty || currentDifficulty] || difficultyMeta.normal;
+			bossDiffBadge.innerText = meta.name;
+			bossDiffBadge.style.color = meta.color;
+			bossDiffBadge.style.borderColor = meta.color;
+		}
 	}
 
 	if (isNgauHung)
@@ -748,10 +1210,10 @@ function startCountdown(seconds) {
 			if (currentLanguage !== "ngau_hung") {
 				const duration =
 					currentLanguage === "numpad"
-						? ZIPCODE_TEST_DURATION
+						? clientGameConfig.numpad.duration
 						: currentLanguage === "san_boss"
-							? currentBossData?.duration || BOSS_RAID_DURATION
-							: NORMAL_RACE_DURATION;
+							? currentBossData?.duration || 150
+							: clientGameConfig.normalRace.duration;
 
 				$("timer").innerText = duration;
 				$("type-input").disabled = false;
@@ -778,9 +1240,6 @@ function startRaceTimer(duration) {
 	}, 1000);
 }
 
-// ==========================================
-// REALTIME BOSS SKILLS, SHIELD & TỰ BẠO NỔI
-// ==========================================
 socket.on("boss_hp_update", (d) => {
 	currentBossData = d;
 	const hpPercent = Math.max(0, Math.round((d.hp / d.maxHp) * 100));
@@ -803,12 +1262,9 @@ socket.on("boss_hp_update", (d) => {
 		}
 	}
 
-	if (d.players) {
-		queueRenderTracks(d.players);
-	}
+	if (d.players) queueRenderTracks(d.players);
 });
 
-// THÔNG BÁO NỔI TỰ BẠO OANH TẠC BẮT MẮT
 socket.on("boss_self_destruct_notice", (d) => {
 	const container = $("boss-toast-container");
 	if (!container) return;
@@ -829,9 +1285,7 @@ socket.on("boss_self_destruct_notice", (d) => {
 	`;
 
 	container.appendChild(toast);
-	setTimeout(() => {
-		toast.remove();
-	}, 4000);
+	setTimeout(() => toast.remove(), 4000);
 });
 
 socket.on("boss_shield_start", (d) => {
@@ -859,7 +1313,7 @@ socket.on("boss_shield_broken", (d) => {
 	if (shieldWrapper) shieldWrapper.classList.add("hidden");
 	if (arena) arena.classList.add("boss-stunned");
 	if (alertBox) {
-		alertBox.innerText = d.message || "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng 3s!";
+		alertBox.innerText = d.message || "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng!";
 		alertBox.classList.remove("hidden");
 	}
 });
@@ -884,7 +1338,7 @@ socket.on("boss_shield_failed", (d) => {
 	resetBossCombo("Sóng xung kích từ Giáp Boss");
 });
 
-socket.on("boss_capslock_start", (d) => {
+socket.on("boss_capslock_start", () => {
 	isBossCapsLockActive = true;
 	const alertBox = $("boss-skill-alert");
 	if (alertBox) {
@@ -931,15 +1385,17 @@ socket.on("boss_skill_cast", (d) => {
 	if (d.skill === "reverse") wordsDisplay.classList.add("boss-reverse-active");
 	if (d.skill === "fog") fogLayer.classList.remove("hidden");
 
-	setTimeout(() => {
-		gameContainer.classList.remove("boss-shake-active");
-		wordsDisplay.classList.remove("boss-reverse-active");
-		fogLayer.classList.add("hidden");
-		if (alertBox) alertBox.classList.add("hidden");
-	}, d.duration * 1000);
+	setTimeout(
+		() => {
+			gameContainer.classList.remove("boss-shake-active");
+			wordsDisplay.classList.remove("boss-reverse-active");
+			fogLayer.classList.add("hidden");
+			if (alertBox) alertBox.classList.add("hidden");
+		},
+		(d.duration || 5) * 1000,
+	);
 });
 
-// Ngẫu Hứng Events
 socket.on("ngau_hung_new_round", (d) => {
 	ngauHungTargetWord = d.targetWord;
 	ngauHungHasSubmittedThisRound = false;
@@ -960,7 +1416,8 @@ socket.on("ngau_hung_new_round", (d) => {
 	$("timer").innerText = timeLeft;
 	clearInterval(ngauHungRoundTimer);
 	ngauHungRoundTimer = setInterval(() => {
-		$("timer").innerText = Math.max(0, --timeLeft);
+		timeLeft = Math.max(0, timeLeft - 1);
+		$("timer").innerText = timeLeft;
 		if (timeLeft <= 0) clearInterval(ngauHungRoundTimer);
 	}, 1000);
 
@@ -1009,7 +1466,6 @@ function getRenderedWord(w, idx) {
 	return displayWord;
 }
 
-// RENDER CHỮ BẢO LƯU CHÍNH XÁC MÀU CHỮ & CUỘN TÂM
 function renderWords() {
 	const wd = $("words-display");
 	wd.classList.toggle("numpad-mode", currentLanguage === "numpad");
@@ -1028,7 +1484,6 @@ function renderWords() {
 	scrollActiveWordToCenter();
 }
 
-// Xử lý logic gõ phím
 function handleTypingInput() {
 	if (!isPlaying) return;
 	const input = $("type-input"),
@@ -1162,15 +1617,12 @@ function queueRenderTracks(players) {
 	if (!isRenderTracksPending) {
 		isRenderTracksPending = true;
 		requestAnimationFrame(() => {
-			if (latestPlayersData) {
-				renderRaceTracks(latestPlayersData);
-			}
+			if (latestPlayersData) renderRaceTracks(latestPlayersData);
 			isRenderTracksPending = false;
 		});
 	}
 }
 
-// RENDER THANH TIẾN ĐỘ THI ĐẤU: XỬ LÝ KHÔNG BỊ CẮT ICON & XÁM TOÀN BỘ KHI AFK/OUT/SURRENDER
 function renderRaceTracks(players) {
 	const container = $("race-tracks-container");
 	if (!container) return;
@@ -1225,15 +1677,16 @@ socket.on("game_over", (d) => {
 
 	if (isBoss) {
 		bossSubtitle.classList.remove("hidden");
+		const meta = difficultyMeta[d.difficulty || currentDifficulty] || difficultyMeta.normal;
 		if (d.isBossVictory) {
 			modalTitle.innerText = "🎉 LỤM! 🎉";
 			modalTitle.style.color = "var(--correct)";
-			bossSubtitle.innerText = "Cả đội đã hợp lực tiêu diệt thành công Hắc Long Ma Vương!";
+			bossSubtitle.innerText = `Cả đội đã hợp lực tiêu diệt thành công Hắc Long Ma Vương [${meta.name}]!`;
 			bossSubtitle.style.color = "var(--correct)";
 		} else {
 			modalTitle.innerText = "💀 NGU DỐT! 💀";
 			modalTitle.style.color = "var(--secondary)";
-			bossSubtitle.innerText = "Hết giờ! Hắc Long Ma Vương đã quét sạch toàn bộ đội hình!";
+			bossSubtitle.innerText = `Hết giờ! Hắc Long Ma Vương [${meta.name}] đã quét sạch toàn bộ đội hình!`;
 			bossSubtitle.style.color = "var(--secondary)";
 		}
 	} else {
@@ -1335,7 +1788,6 @@ socket.on("receive_global_chat", (m) =>
 	$$(".global-chat-messages").forEach((c) => appendChatMsg(c, m)),
 );
 
-// POPUP TIN NHẮN TRONG TRẬN ĐẤU NỔI BẬT & RÕ RÀNG
 socket.on("receive_in_game_chat", (d) => {
 	const popups = $("chat-popups");
 	if (!popups) return;
@@ -1346,12 +1798,9 @@ socket.on("receive_in_game_chat", (d) => {
 		<span class="text">${d.message}</span>
 	`;
 	popups.appendChild(b);
-	setTimeout(() => {
-		b.remove();
-	}, 4500);
+	setTimeout(() => b.remove(), 4500);
 });
 
-// Emoji Picker
 function setupEmojiPicker() {
 	const picker = $("chat-emoji-picker"),
 		grid = $("chat-emoji-grid");

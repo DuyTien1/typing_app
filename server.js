@@ -10,24 +10,161 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-const NGAU_HUNG_ROUND_DURATION = 7;
-const NGAU_HUNG_INTERMISSION_DURATION = 3;
-const NGAU_HUNG_TOTAL_ROUNDS = 15;
-const BOSS_RAID_DURATION = 150;
-const MESSAGE_TTL = 3 * 60 * 1000;
 
 // ==========================================
-// CẤU HÌNH BIẾN MÁU & KỸ NĂNG BOSS
+// CẤU HÌNH TẬP TRUNG CHO TẤT CẢ CHẾ ĐỘ CHƠI
 // ==========================================
-const BOSS_BASE_HP = 550; // Máu mặc định của Boss
-const BOSS_HP_PER_PLAYER = 500; // Máu cộng thêm cho mỗi người chơi tham gia
-const BOSS_SELF_DESTRUCT_TARGET = 450; // Mốc sát thương tự bạo
-
-const BOSS_SHIELD_BASE_PER_PLAYER = 40; // giáp boss
-const BOSS_SHIELD_DURATION = 6; // thời gian giáp tồn tại
-const BOSS_STUN_DURATION = 3; // 3 giây choáng khi vỡ giáp (x1.5 dmg)
-const BOSS_CAPSLOCK_DURATION = 6; // 6 giây phù phép in hoa
-const BOSS_SKILL_INTERVAL = 14000; // 14 giây boss tung 1 skill
+const GAME_CONFIG = {
+	general: {
+		messageTTL: 3 * 60 * 1000,
+		afkTimeout: 30000,
+	},
+	normalRace: {
+		duration: 300,
+		wordCount: 150,
+	},
+	numpad: {
+		duration: 90,
+		wordCount: 500,
+	},
+	ngauHung: {
+		difficulties: {
+			normal: {
+				id: "normal",
+				name: "Bình thường",
+				icon: "🟡",
+				color: "#ffe600",
+				roundDuration: 7,
+				intermissionDuration: 3,
+				totalRounds: 15,
+				ratioVi: 45,
+				ratioEn: 45,
+				ratioNum: 10,
+				hardViRate: 35,
+				hardEnRate: 35,
+			},
+			legendary: {
+				id: "legendary",
+				name: "Huyền Thoại",
+				icon: "👑",
+				color: "#ff0055",
+				roundDuration: 3.5,
+				intermissionDuration: 1.5,
+				totalRounds: 25,
+				ratioVi: 35,
+				ratioEn: 35,
+				ratioNum: 30,
+				hardViRate: 85,
+				hardEnRate: 85,
+			},
+		},
+	},
+	sanBoss: {
+		wordPoolCount: 400,
+		difficulties: {
+			easy: {
+				id: "easy",
+				name: "Dễ",
+				icon: "🟢",
+				color: "#00ff66",
+				duration: 180,
+				baseHp: 450,
+				hpPerPlayer: 400,
+				selfDestructTarget: 450,
+				skillInterval: 16,
+				shieldBasePerPlayer: 30,
+				shieldDuration: 8,
+				stunDuration: 4,
+				shakeDuration: 5,
+				fogDuration: 5,
+				reverseDuration: 5,
+				capslockDuration: 5,
+				enabledSkills: {
+					shield: true,
+					capslock: false,
+					shake: true,
+					fog: false,
+					reverse: false,
+				},
+			},
+			normal: {
+				id: "normal",
+				name: "Bình thường",
+				icon: "🟡",
+				color: "#ffe600",
+				duration: 150,
+				baseHp: 550,
+				hpPerPlayer: 500,
+				selfDestructTarget: 450,
+				skillInterval: 14,
+				shieldBasePerPlayer: 40,
+				shieldDuration: 6,
+				stunDuration: 3,
+				shakeDuration: 5,
+				fogDuration: 5,
+				reverseDuration: 5,
+				capslockDuration: 6,
+				enabledSkills: {
+					shield: true,
+					capslock: true,
+					shake: true,
+					fog: true,
+					reverse: false,
+				},
+			},
+			hard: {
+				id: "hard",
+				name: "Khó",
+				icon: "🔴",
+				color: "#ff7700",
+				duration: 130,
+				baseHp: 650,
+				hpPerPlayer: 600,
+				selfDestructTarget: 500,
+				skillInterval: 12,
+				shieldBasePerPlayer: 50,
+				shieldDuration: 5,
+				stunDuration: 2.5,
+				shakeDuration: 6,
+				fogDuration: 6,
+				reverseDuration: 5,
+				capslockDuration: 7,
+				enabledSkills: {
+					shield: true,
+					capslock: true,
+					shake: true,
+					fog: true,
+					reverse: true,
+				},
+			},
+			hell: {
+				id: "hell",
+				name: "Địa ngục",
+				icon: "💀",
+				color: "#ff0055",
+				duration: 120,
+				baseHp: 750,
+				hpPerPlayer: 700,
+				selfDestructTarget: 550,
+				skillInterval: 10,
+				shieldBasePerPlayer: 60,
+				shieldDuration: 5,
+				stunDuration: 2,
+				shakeDuration: 7,
+				fogDuration: 7,
+				reverseDuration: 6,
+				capslockDuration: 8,
+				enabledSkills: {
+					shield: true,
+					capslock: true,
+					shake: true,
+					fog: true,
+					reverse: true,
+				},
+			},
+		},
+	},
+};
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -1235,34 +1372,12 @@ BIG_WORD_BANKS.vi_nodau = {
 	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
 };
 
-const runnerIcons = [
-	"🤖",
-	"🐶",
-	"🐭",
-	"🐷",
-	"🐱",
-	"🐨",
-	"🐯",
-	"🐺",
-	"🐰",
-	"🦝",
-	"🐵",
-	"🦁",
-	"🐸",
-	"🐧",
-	"🐻",
-	"🐼",
-	"🐲",
-	"🐢",
-	"🦑",
-	"🦭",
-];
-
-function generateWords(lang, count = 150) {
+function generateWords(lang, count, difficulty = "normal") {
 	if (lang === "san_boss") {
+		const total = count || GAME_CONFIG.sanBoss.wordPoolCount;
 		const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
 		const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
-		return Array.from({ length: 400 }, () => {
+		return Array.from({ length: total }, () => {
 			const rand = Math.random();
 			if (rand < 0.2) return enPool[Math.floor(Math.random() * enPool.length)];
 			if (rand < 0.6) return viPool[Math.floor(Math.random() * viPool.length)];
@@ -1270,22 +1385,42 @@ function generateWords(lang, count = 150) {
 		});
 	}
 	if (lang === "ngau_hung") {
-		const viPool = [...BIG_WORD_BANKS.vi_nodau.easy, ...BIG_WORD_BANKS.vi_nodau.hard];
-		const enPool = [...BIG_WORD_BANKS.en.easy, ...BIG_WORD_BANKS.en.hard];
-		return Array.from({ length: NGAU_HUNG_TOTAL_ROUNDS }, () => {
-			const type = Math.floor(Math.random() * 3);
-			return type === 0
-				? viPool[Math.floor(Math.random() * viPool.length)]
-				: type === 1
-					? enPool[Math.floor(Math.random() * enPool.length)]
-					: Math.floor(10000 + Math.random() * 90000).toString();
+		const nhDiff =
+			GAME_CONFIG.ngauHung.difficulties[difficulty] || GAME_CONFIG.ngauHung.difficulties.normal;
+		const totalRounds = count || nhDiff.totalRounds || 15;
+
+		const ratioVi = nhDiff.ratioVi ?? 45;
+		const ratioEn = nhDiff.ratioEn ?? 45;
+		const ratioNum = nhDiff.ratioNum ?? 10;
+		const sumRatio = Math.max(1, ratioVi + ratioEn + ratioNum);
+
+		const hardViRate = (nhDiff.hardViRate ?? 35) / 100;
+		const hardEnRate = (nhDiff.hardEnRate ?? 35) / 100;
+
+		return Array.from({ length: totalRounds }, () => {
+			const rand = Math.random() * sumRatio;
+			if (rand < ratioVi) {
+				const isHard = Math.random() < hardViRate;
+				const pool = isHard ? BIG_WORD_BANKS.vi_nodau.hard : BIG_WORD_BANKS.vi_nodau.easy;
+				return pool[Math.floor(Math.random() * pool.length)];
+			} else if (rand < ratioVi + ratioEn) {
+				const isHard = Math.random() < hardEnRate;
+				const pool = isHard ? BIG_WORD_BANKS.en.hard : BIG_WORD_BANKS.en.easy;
+				return pool[Math.floor(Math.random() * pool.length)];
+			} else {
+				return Math.floor(10000 + Math.random() * 90000).toString();
+			}
 		});
 	}
 	if (lang === "numpad") {
-		return Array.from({ length: 500 }, () => Math.floor(10000 + Math.random() * 90000).toString());
+		const total = count || GAME_CONFIG.numpad.wordCount;
+		return Array.from({ length: total }, () =>
+			Math.floor(10000 + Math.random() * 90000).toString(),
+		);
 	}
 	const bank = BIG_WORD_BANKS[lang] || BIG_WORD_BANKS.vi_dau;
-	return Array.from({ length: count }, () => {
+	const total = count || GAME_CONFIG.normalRace.wordCount;
+	return Array.from({ length: total }, () => {
 		const pool = Math.random() < 0.35 ? bank.hard : bank.easy;
 		return pool[Math.floor(Math.random() * pool.length)];
 	});
@@ -1379,7 +1514,7 @@ function loadMessages() {
 function cleanOldMessages() {
 	const now = Date.now();
 	const initLen = chatMessages.length;
-	chatMessages = chatMessages.filter((msg) => now - msg.timestamp < MESSAGE_TTL);
+	chatMessages = chatMessages.filter((msg) => now - msg.timestamp < GAME_CONFIG.general.messageTTL);
 	if (chatMessages.length !== initLen) {
 		fs.writeFileSync(MESSAGES_FILE, JSON.stringify(chatMessages, null, 2), "utf8");
 		io.emit("load_initial_messages", chatMessages);
@@ -1390,8 +1525,8 @@ setInterval(cleanOldMessages, 10000);
 loadMessages();
 
 function checkSpamLimit(socketId) {
-	const now = Date.now(),
-		unmuteTime = mutedUsers.get(socketId);
+	const now = Date.now();
+	const unmuteTime = mutedUsers.get(socketId);
 	if (unmuteTime) {
 		if (now < unmuteTime)
 			return { allowed: false, remainingSec: Math.ceil((unmuteTime - now) / 1000) };
@@ -1456,12 +1591,13 @@ function broadcastAdminData() {
 		if (s.isAdmin) {
 			s.emit("admin_online_users", onlineList);
 			s.emit("admin_banned_users", bannedList);
+			s.emit("admin_game_config", GAME_CONFIG);
 		}
 	});
 }
 
 // ==========================================
-// 5. QUẢN LÝ PHÒNG ĐẤU & BOSS RAID ENGINE
+// 5. PHÒNG ĐẤU & BOSS ENGINE
 // ==========================================
 const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [], san_boss: [] };
 let totalOnlineUsers = 0;
@@ -1473,14 +1609,15 @@ function getOrCreateRoom(lang) {
 		room = {
 			id: `room_${lang}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
 			lang,
+			difficulty: "normal",
 			state: "waiting",
 			players: [],
-			words: generateWords(lang),
+			words: generateWords(lang, null, "normal"),
 			matchInterval: null,
 			matchTimeout: null,
 			startTime: null,
 			currentRound: 0,
-			totalRounds: NGAU_HUNG_TOTAL_ROUNDS,
+			totalRounds: GAME_CONFIG.ngauHung.difficulties.normal.totalRounds,
 			roundWinners: [],
 			roundActive: false,
 			roundTimer: null,
@@ -1512,16 +1649,20 @@ function checkMatchCompletion(room) {
 	if (finished.length >= room.players.length) finishMatch(room);
 }
 
-// XỬ LÝ TỰ BẠO LAO VÀO BOSS KHI CÓ NGƯỜI OUT / AFK / ĐẦU HÀNG
 function handlePlayerSelfDestruct(room, targetPlayer, reasonText = "đầu hàng") {
 	if (!room || room.lang !== "san_boss" || room.state !== "playing" || !room.boss || !targetPlayer)
 		return;
 	if (targetPlayer.hasSelfDestructed) return;
 	targetPlayer.hasSelfDestructed = true;
 
+	const otherActivePlayers = room.players.filter(
+		(p) => p.id !== targetPlayer.id && !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+	);
+	if (otherActivePlayers.length === 0) return;
+
+	const selfDestructTarget = room.boss.selfDestructTarget || 450;
 	const priorDmg = targetPlayer.score || targetPlayer.correctChars || 0;
-	const selfDestructDmg =
-		priorDmg < BOSS_SELF_DESTRUCT_TARGET ? BOSS_SELF_DESTRUCT_TARGET - priorDmg : 0;
+	const selfDestructDmg = priorDmg < selfDestructTarget ? selfDestructTarget - priorDmg : 0;
 
 	if (selfDestructDmg > 0) {
 		let remainingDmg = selfDestructDmg;
@@ -1537,8 +1678,8 @@ function handlePlayerSelfDestruct(room, targetPlayer, reasonText = "đầu hàng
 				clearTimeout(room.boss.shieldTimer);
 
 				io.to(room.id).emit("boss_shield_broken", {
-					stunDuration: BOSS_STUN_DURATION,
-					message: "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng 3s (Nhận x1.5 Sát thương)!",
+					stunDuration: room.boss.stunDuration,
+					message: `⚡ GIÁP ĐÃ VỠ! Boss bị Choáng ${room.boss.stunDuration}s (Nhận x1.5 Sát thương)!`,
 				});
 			}
 		}
@@ -1575,17 +1716,21 @@ function startNgauHungRound(room) {
 	if (room.state !== "playing") return;
 	if (++room.currentRound > room.totalRounds) return finishMatch(room);
 
+	const nhDiff =
+		GAME_CONFIG.ngauHung.difficulties[room.difficulty] || GAME_CONFIG.ngauHung.difficulties.normal;
+	const roundDur = nhDiff.roundDuration || 7;
+
 	room.roundWinners = [];
 	room.roundActive = true;
 	io.to(room.id).emit("ngau_hung_new_round", {
 		round: room.currentRound,
 		totalRounds: room.totalRounds,
 		targetWord: room.words[room.currentRound - 1],
-		duration: NGAU_HUNG_ROUND_DURATION,
+		duration: roundDur,
 	});
 
 	clearTimeout(room.roundTimer);
-	room.roundTimer = setTimeout(() => endNgauHungRound(room), NGAU_HUNG_ROUND_DURATION * 1000);
+	room.roundTimer = setTimeout(() => endNgauHungRound(room), roundDur * 1000);
 }
 
 function endNgauHungRound(room) {
@@ -1593,11 +1738,13 @@ function endNgauHungRound(room) {
 	room.roundActive = false;
 	clearTimeout(room.roundTimer);
 
+	const nhDiff =
+		GAME_CONFIG.ngauHung.difficulties[room.difficulty] || GAME_CONFIG.ngauHung.difficulties.normal;
+	const interDur = nhDiff.intermissionDuration || 3;
+
 	const roundProgress = Math.round((room.currentRound / room.totalRounds) * 100);
 	room.players.forEach((p) => {
-		if (!p.isSurrendered && !p.isDisconnected && !p.isAFK) {
-			p.progress = roundProgress;
-		}
+		if (!p.isSurrendered && !p.isDisconnected && !p.isAFK) p.progress = roundProgress;
 	});
 
 	io.to(room.id).emit("race_update", room.players);
@@ -1610,18 +1757,15 @@ function endNgauHungRound(room) {
 	if (room.currentRound >= room.totalRounds) {
 		setTimeout(() => finishMatch(room), 1500);
 	} else {
-		io.to(room.id).emit("ngau_hung_intermission", { duration: NGAU_HUNG_INTERMISSION_DURATION });
+		io.to(room.id).emit("ngau_hung_intermission", { duration: interDur });
 		clearTimeout(room.roundIntermissionTimer);
-		room.roundIntermissionTimer = setTimeout(
-			() => startNgauHungRound(room),
-			NGAU_HUNG_INTERMISSION_DURATION * 1000,
-		);
+		room.roundIntermissionTimer = setTimeout(() => startNgauHungRound(room), interDur * 1000);
 	}
 }
 
 function startBossSkillLoop(room) {
 	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
-	const skills = ["shield", "capslock", "shake", "fog", "reverse"];
+	const intervalMs = (room.boss.skillInterval || 14) * 1000;
 
 	room.bossSkillTimer = setInterval(() => {
 		if (room.state !== "playing" || !room.boss || room.boss.hp <= 0) {
@@ -1629,7 +1773,11 @@ function startBossSkillLoop(room) {
 		}
 		if (room.boss.isStunned || room.boss.isShieldActive) return;
 
-		const skill = skills[Math.floor(Math.random() * skills.length)];
+		const enabledSkillsMap = room.boss.enabledSkills || {};
+		const activeSkills = Object.keys(enabledSkillsMap).filter((k) => enabledSkillsMap[k]);
+		if (activeSkills.length === 0) return;
+
+		const skill = activeSkills[Math.floor(Math.random() * activeSkills.length)];
 		io.to(room.id).emit("boss_skill_warning", { skill, countdown: 2 });
 
 		setTimeout(() => {
@@ -1637,7 +1785,7 @@ function startBossSkillLoop(room) {
 				executeBossSkill(room, skill);
 			}
 		}, 2000);
-	}, BOSS_SKILL_INTERVAL);
+	}, intervalMs);
 }
 
 function executeBossSkill(room, skill) {
@@ -1649,7 +1797,7 @@ function executeBossSkill(room, skill) {
 			1,
 			room.players.filter((p) => !p.isSurrendered && !p.isDisconnected).length,
 		);
-		const shieldVal = activeCount * BOSS_SHIELD_BASE_PER_PLAYER;
+		const shieldVal = activeCount * (boss.shieldBasePerPlayer || 40);
 		boss.shield = shieldVal;
 		boss.maxShield = shieldVal;
 		boss.isShieldActive = true;
@@ -1657,42 +1805,50 @@ function executeBossSkill(room, skill) {
 		io.to(room.id).emit("boss_shield_start", {
 			shield: boss.shield,
 			maxShield: boss.maxShield,
-			duration: BOSS_SHIELD_DURATION,
+			duration: boss.shieldDuration || 6,
 		});
 
 		clearTimeout(boss.shieldTimer);
-		boss.shieldTimer = setTimeout(() => {
-			if (room.state === "playing" && boss && boss.isShieldActive && boss.shield > 0) {
-				const healAmount = boss.shield;
-				boss.hp = Math.min(boss.maxHp, boss.hp + healAmount);
-				boss.isShieldActive = false;
-				boss.shield = 0;
+		boss.shieldTimer = setTimeout(
+			() => {
+				if (room.state === "playing" && boss && boss.isShieldActive && boss.shield > 0) {
+					const healAmount = boss.shield;
+					boss.hp = Math.min(boss.maxHp, boss.hp + healAmount);
+					boss.isShieldActive = false;
+					boss.shield = 0;
 
-				io.to(room.id).emit("boss_shield_failed", {
-					healAmount,
-					hp: boss.hp,
-					maxHp: boss.maxHp,
-					message: `⚠️ KHÔNG PHÁ ĐƯỢC GIÁP! Boss hấp thụ ${healAmount} HP & Sóng xung kích làm hỏng Combo!`,
-				});
-				io.to(room.id).emit("boss_hp_update", {
-					hp: boss.hp,
-					maxHp: boss.maxHp,
-					shield: 0,
-					maxShield: boss.maxShield,
-				});
-			}
-		}, BOSS_SHIELD_DURATION * 1000);
+					io.to(room.id).emit("boss_shield_failed", {
+						healAmount,
+						hp: boss.hp,
+						maxHp: boss.maxHp,
+						message: `⚠️ KHÔNG PHÁ ĐƯỢC GIÁP! Boss hấp thụ ${healAmount} HP & Sóng xung kích làm hỏng Combo!`,
+					});
+					io.to(room.id).emit("boss_hp_update", {
+						hp: boss.hp,
+						maxHp: boss.maxHp,
+						shield: 0,
+						maxShield: boss.maxShield,
+					});
+				}
+			},
+			(boss.shieldDuration || 6) * 1000,
+		);
 	} else if (skill === "capslock") {
+		const dur = boss.capslockDuration || 6;
 		boss.isCapsLockActive = true;
-		io.to(room.id).emit("boss_capslock_start", { duration: BOSS_CAPSLOCK_DURATION });
+		io.to(room.id).emit("boss_capslock_start", { duration: dur });
 
 		clearTimeout(boss.capsLockTimer);
 		boss.capsLockTimer = setTimeout(() => {
 			if (boss) boss.isCapsLockActive = false;
 			io.to(room.id).emit("boss_capslock_end");
-		}, BOSS_CAPSLOCK_DURATION * 1000);
-	} else {
-		io.to(room.id).emit("boss_skill_cast", { skill, duration: 5 });
+		}, dur * 1000);
+	} else if (skill === "shake") {
+		io.to(room.id).emit("boss_skill_cast", { skill, duration: boss.shakeDuration || 5 });
+	} else if (skill === "fog") {
+		io.to(room.id).emit("boss_skill_cast", { skill, duration: boss.fogDuration || 5 });
+	} else if (skill === "reverse") {
+		io.to(room.id).emit("boss_skill_cast", { skill, duration: boss.reverseDuration || 5 });
 	}
 }
 
@@ -1723,6 +1879,7 @@ function finishMatch(room) {
 	io.to(room.id).emit("game_over", {
 		leaderboard,
 		language: room.lang,
+		difficulty: room.difficulty,
 		isBossVictory: isVictory,
 		boss: room.boss,
 	});
@@ -1753,6 +1910,7 @@ io.on("connection", (socket) => {
 	io.emit("update_online_count", totalOnlineUsers);
 	socket.emit("init_high_scores", highScores);
 	socket.emit("load_initial_messages", chatMessages);
+	socket.emit("sync_game_config", GAME_CONFIG);
 	broadcastAdminData();
 
 	let currentRoom = null,
@@ -1764,7 +1922,6 @@ io.on("connection", (socket) => {
 
 		if (currentRoom.state === "playing") {
 			player.isDisconnected = true;
-			// Kích hoạt tự bạo nếu đang chơi Săn Boss
 			if (currentRoom.lang === "san_boss") {
 				handlePlayerSelfDestruct(currentRoom, player, "rời phòng");
 			}
@@ -1790,13 +1947,13 @@ io.on("connection", (socket) => {
 				io.to(currentRoom.id).emit("update_lobby", {
 					players: currentRoom.players,
 					language: currentRoom.lang,
+					difficulty: currentRoom.difficulty || "normal",
 				});
 			}
 		}
 		currentRoom = player = null;
 	}
 
-	// Admin Events
 	socket.on("admin_login", ({ password }) => {
 		const success = password === ADMIN_PASSWORD;
 		socket.isAdmin = success;
@@ -1815,6 +1972,36 @@ io.on("connection", (socket) => {
 		if (u) u.isAdmin = false;
 		socket.emit("admin_logout_response");
 		broadcastAdminData();
+	});
+
+	socket.on("admin_update_config", (newConfig) => {
+		if (!socket.isAdmin) return;
+		try {
+			if (newConfig.normalRace) Object.assign(GAME_CONFIG.normalRace, newConfig.normalRace);
+			if (newConfig.numpad) Object.assign(GAME_CONFIG.numpad, newConfig.numpad);
+			if (newConfig.ngauHung && newConfig.ngauHung.difficulties) {
+				Object.keys(newConfig.ngauHung.difficulties).forEach((k) => {
+					if (GAME_CONFIG.ngauHung.difficulties[k]) {
+						Object.assign(GAME_CONFIG.ngauHung.difficulties[k], newConfig.ngauHung.difficulties[k]);
+					}
+				});
+			}
+			if (newConfig.sanBoss && newConfig.sanBoss.difficulties) {
+				Object.keys(newConfig.sanBoss.difficulties).forEach((k) => {
+					if (GAME_CONFIG.sanBoss.difficulties[k]) {
+						Object.assign(GAME_CONFIG.sanBoss.difficulties[k], newConfig.sanBoss.difficulties[k]);
+					}
+				});
+			}
+			io.emit("sync_game_config", GAME_CONFIG);
+			broadcastAdminData();
+			socket.emit("admin_config_saved", {
+				success: true,
+				message: "Cập nhật cài đặt thành công!",
+			});
+		} catch (e) {
+			socket.emit("admin_config_saved", { success: false, message: "Lỗi cập nhật cấu hình!" });
+		}
 	});
 
 	socket.on("admin_ban_user", ({ targetSocketId }) => {
@@ -1861,7 +2048,6 @@ io.on("connection", (socket) => {
 			});
 	});
 
-	// Chat & Game Events
 	socket.on("update_username", (data) => {
 		const newName = (data.username || "").trim() || "Vô danh";
 		const u = connectedUsers.get(socket.id);
@@ -1869,16 +2055,14 @@ io.on("connection", (socket) => {
 			u.username = newName;
 			broadcastAdminData();
 		}
-
-		if (player) {
-			player.username = newName;
-		}
+		if (player) player.username = newName;
 
 		if (currentRoom) {
 			if (currentRoom.state === "waiting") {
 				io.to(currentRoom.id).emit("update_lobby", {
 					players: currentRoom.players,
 					language: currentRoom.lang,
+					difficulty: currentRoom.difficulty || "normal",
 				});
 			} else if (currentRoom.state === "playing") {
 				io.to(currentRoom.id).emit("race_update", currentRoom.players);
@@ -1927,7 +2111,7 @@ io.on("connection", (socket) => {
 		player = {
 			id: socket.id,
 			username: data.username || "Vô danh",
-			icon: data.selectedIcon || runnerIcons[0],
+			icon: data.selectedIcon || "🤖",
 			progress: 0,
 			wpm: 0,
 			score: 0,
@@ -1944,6 +2128,7 @@ io.on("connection", (socket) => {
 		io.to(currentRoom.id).emit("update_lobby", {
 			players: currentRoom.players,
 			language: currentRoom.lang,
+			difficulty: currentRoom.difficulty || "normal",
 		});
 	});
 
@@ -1953,7 +2138,38 @@ io.on("connection", (socket) => {
 			io.to(currentRoom.id).emit("update_lobby", {
 				players: currentRoom.players,
 				language: currentRoom.lang,
+				difficulty: currentRoom.difficulty || "normal",
 			});
+		}
+	});
+
+	// CHỌN ĐỘ KHÓ: TÁCH BIỆT XỬ LÝ CHO NGẪU HỨNG & SĂN BOSS
+	socket.on("select_difficulty", (data) => {
+		if (!currentRoom || currentRoom.state !== "waiting") return;
+		const diff = data.difficulty || "normal";
+
+		if (currentRoom.lang === "ngau_hung") {
+			if (GAME_CONFIG.ngauHung.difficulties[diff]) {
+				currentRoom.difficulty = diff;
+				const nhDiff = GAME_CONFIG.ngauHung.difficulties[diff];
+				currentRoom.totalRounds = nhDiff.totalRounds || 15;
+				currentRoom.words = generateWords("ngau_hung", currentRoom.totalRounds, diff);
+
+				io.to(currentRoom.id).emit("update_lobby", {
+					players: currentRoom.players,
+					language: currentRoom.lang,
+					difficulty: currentRoom.difficulty,
+				});
+			}
+		} else if (currentRoom.lang === "san_boss") {
+			if (GAME_CONFIG.sanBoss.difficulties[diff]) {
+				currentRoom.difficulty = diff;
+				io.to(currentRoom.id).emit("update_lobby", {
+					players: currentRoom.players,
+					language: currentRoom.lang,
+					difficulty: currentRoom.difficulty,
+				});
+			}
 		}
 	});
 
@@ -1964,29 +2180,58 @@ io.on("connection", (socket) => {
 
 			if (currentRoom.lang === "san_boss") {
 				const pCount = Math.max(1, currentRoom.players.length);
-				// CÔNG THỨC MÁU BOSS: MÁU CỐ ĐỊNH 500 + MỖI NGƯỜI CHƠI TĂNG THÊM 500
-				const maxHp = BOSS_BASE_HP + (pCount - 1) * BOSS_HP_PER_PLAYER;
+				const diffConfig =
+					GAME_CONFIG.sanBoss.difficulties[currentRoom.difficulty] ||
+					GAME_CONFIG.sanBoss.difficulties.normal;
+
+				const maxHp = diffConfig.baseHp + (pCount - 1) * diffConfig.hpPerPlayer;
+
 				currentRoom.boss = {
 					name: "HẮC LONG MA VƯƠNG",
 					icon: "🐉",
 					hp: maxHp,
 					maxHp: maxHp,
+					difficulty: currentRoom.difficulty,
 					shield: 0,
 					maxShield: 0,
 					isShieldActive: false,
 					isStunned: false,
 					isCapsLockActive: false,
-					duration: BOSS_RAID_DURATION,
+					duration: diffConfig.duration,
+					shieldBasePerPlayer: diffConfig.shieldBasePerPlayer,
+					shieldDuration: diffConfig.shieldDuration,
+					stunDuration: diffConfig.stunDuration,
+					shakeDuration: diffConfig.shakeDuration,
+					fogDuration: diffConfig.fogDuration,
+					reverseDuration: diffConfig.reverseDuration,
+					capslockDuration: diffConfig.capslockDuration,
+					skillInterval: diffConfig.skillInterval,
+					enabledSkills: diffConfig.enabledSkills || {
+						shield: true,
+						capslock: true,
+						shake: true,
+						fog: true,
+						reverse: false,
+					},
+					selfDestructTarget: diffConfig.selfDestructTarget,
 				};
 
 				clearTimeout(currentRoom.matchTimeout);
 				currentRoom.matchTimeout = setTimeout(
 					() => {
-						if (currentRoom && currentRoom.state === "playing") {
-							finishMatch(currentRoom);
-						}
+						if (currentRoom && currentRoom.state === "playing") finishMatch(currentRoom);
 					},
-					(BOSS_RAID_DURATION + 3) * 1000,
+					(diffConfig.duration + 3) * 1000,
+				);
+			} else if (currentRoom.lang === "ngau_hung") {
+				const nhDiff =
+					GAME_CONFIG.ngauHung.difficulties[currentRoom.difficulty] ||
+					GAME_CONFIG.ngauHung.difficulties.normal;
+				currentRoom.totalRounds = nhDiff.totalRounds || 15;
+				currentRoom.words = generateWords(
+					"ngau_hung",
+					currentRoom.totalRounds,
+					currentRoom.difficulty,
 				);
 			}
 
@@ -1995,6 +2240,7 @@ io.on("connection", (socket) => {
 				players: currentRoom.players,
 				countdown: 3,
 				language: currentRoom.lang,
+				difficulty: currentRoom.difficulty || "normal",
 				boss: currentRoom.boss,
 			});
 
@@ -2024,16 +2270,13 @@ io.on("connection", (socket) => {
 
 		let dmg = Math.max(0, data.damage || 0);
 
-		// Nếu Boss đang bị Choáng (Stun): x1.5 sát thương bạo kích
 		if (currentRoom.boss.isStunned && dmg > 0) {
 			dmg = Math.round(dmg * 1.5);
 		}
 
 		player.score = (player.score || 0) + dmg;
 		player.correctChars = (player.correctChars || 0) + dmg;
-		if (typeof data.errors === "number") {
-			player.errors = data.errors;
-		}
+		if (typeof data.errors === "number") player.errors = data.errors;
 
 		if (dmg > 0) {
 			if (currentRoom.boss.isShieldActive && currentRoom.boss.shield > 0) {
@@ -2052,8 +2295,8 @@ io.on("connection", (socket) => {
 					clearTimeout(currentRoom.boss.shieldTimer);
 
 					io.to(currentRoom.id).emit("boss_shield_broken", {
-						stunDuration: BOSS_STUN_DURATION,
-						message: "⚡ GIÁP ĐÃ VỠ! Boss bị Choáng 3s (Nhận x1.5 Sát thương)!",
+						stunDuration: currentRoom.boss.stunDuration,
+						message: `⚡ GIÁP ĐÃ VỠ! Boss bị Choáng ${currentRoom.boss.stunDuration}s (Nhận x1.5 Sát thương)!`,
 					});
 
 					clearTimeout(currentRoom.boss.stunTimer);
@@ -2062,7 +2305,7 @@ io.on("connection", (socket) => {
 							currentRoom.boss.isStunned = false;
 							io.to(currentRoom.id).emit("boss_stun_end");
 						}
-					}, BOSS_STUN_DURATION * 1000);
+					}, currentRoom.boss.stunDuration * 1000);
 				}
 			}
 
@@ -2161,7 +2404,6 @@ io.on("connection", (socket) => {
 			player.isSurrendered = true;
 			if (data?.isAFK) player.isAFK = true;
 
-			// Kích hoạt tự bạo khi Đầu Hàng hoặc AFK
 			if (currentRoom.lang === "san_boss") {
 				handlePlayerSelfDestruct(currentRoom, player, data?.isAFK ? "AFK" : "đầu hàng");
 			}

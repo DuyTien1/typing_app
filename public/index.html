@@ -5,7 +5,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>FASTTYPING CHALLENGE - Luyện Đánh Máy & NumPad Online</title>
 
-		<!-- SEO META TAGS -->
 		<meta
 			name="description"
 			content="Thử thách luyện gõ 10 ngón và phím số Numpad trực tuyến cực nhanh cùng bạn bè. Nhiều chế độ thi đấu tiếng Việt, English, Numpad, Ngẫu Hứng và Săn Boss hấp dẫn."
@@ -18,7 +17,6 @@
 		<meta name="robots" content="index, follow" />
 		<meta name="theme-color" content="#00f0ff" />
 
-		<!-- OPEN GRAPH / FACEBOOK / DISCORD -->
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content="FASTTYPING CHALLENGE - Đua Gõ Phím & Săn Boss Trực Tuyến" />
 		<meta
@@ -30,7 +28,6 @@
 		<link rel="stylesheet" href="style.css" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<!-- HỆ THỐNG FONT ĐA PHONG CÁCH HỖ TRỢ 100% TIẾNG VIỆT -->
 		<link
 			href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&family=Noto+Serif:ital,wght@0,600;0,700;1,400&family=Philosopher:wght@700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Orbitron:wght@700;900&display=swap"
 			rel="stylesheet"
@@ -44,12 +41,19 @@
 			<span class="admin-badge admin-only hidden">ADMIN</span>
 			<button id="btn-change-name" class="btn-small">ĐỔI TÊN</button>
 			<button id="theme-toggle-btn" class="btn-small theme-btn">🌙 Tối</button>
-			<!-- NÚT CHỌN PHONG CÁCH -->
 			<button id="style-toggle-btn" class="btn-small style-btn">⚡ Cyberpunk</button>
 		</div>
 
 		<!-- THANH GÓC TRÊN PHẢI -->
 		<div class="top-right-bar">
+			<!-- NÚT CÀI ĐẶT DÀNH RIÊNG CHO ADMIN -->
+			<div
+				id="admin-settings-badge"
+				class="online-badge settings-badge admin-only hidden"
+				title="Bảng cấu hình thông số trận đấu"
+			>
+				⚙️ Cài đặt
+			</div>
 			<div id="online-badge" class="online-badge" title="Người chơi trực tuyến">
 				<div class="online-dot"></div>
 				<span id="online-count">0</span> Trực tuyến
@@ -233,6 +237,288 @@
 			</div>
 		</div>
 
+		<!-- MODAL CÀI ĐẶT THÔNG SỐ TRẬN ĐẤU DÀNH CHO ADMIN -->
+		<div id="admin-settings-modal" class="custom-popup hidden">
+			<div class="popup-content modal-large admin-config-modal-content">
+				<h3 style="color: var(--accent); margin-bottom: 15px">
+					⚙️ BẢNG ĐIỀU KHIỂN CÀI ĐẶT TRẬN ĐẤU
+				</h3>
+				<div class="admin-config-tabs">
+					<div class="admin-config-grid">
+						<fieldset class="admin-config-fieldset">
+							<legend>Đua Chuẩn & NumPad</legend>
+							<div class="config-field-row">
+								<label>Thời gian Đua chuẩn (giây):</label>
+								<input type="number" id="cfg-normal-duration" min="30" max="600" />
+							</div>
+							<div class="config-field-row">
+								<label>Số từ Đua chuẩn:</label>
+								<input type="number" id="cfg-normal-words" min="30" max="500" />
+							</div>
+							<div class="config-field-row">
+								<label>Thời gian NumPad (giây):</label>
+								<input type="number" id="cfg-numpad-duration" min="30" max="300" />
+							</div>
+							<div class="config-field-row">
+								<label>Số mã NumPad:</label>
+								<input type="number" id="cfg-numpad-words" min="50" max="1000" />
+							</div>
+						</fieldset>
+
+						<!-- CẤU HÌNH NGẪU HỨNG (2 ĐỘ KHÓ: NORMAL & HUYỀN THOẠI) -->
+						<fieldset class="admin-config-fieldset full-width">
+							<legend>Chế Độ Ngẫu Hứng (Tùy chỉnh theo từng Độ Khó)</legend>
+							<div class="config-field-row" style="margin-bottom: 12px">
+								<label style="color: var(--accent); font-weight: bold"
+									>🎯 CHỌN ĐỘ KHÓ NGẪU HỨNG:</label
+								>
+								<select id="cfg-nh-diff-select" class="admin-select-input">
+									<option value="normal" selected>🟡 Bình thường</option>
+									<option value="legendary">👑 Huyền Thoại</option>
+								</select>
+							</div>
+
+							<div class="admin-diff-detail-box">
+								<div
+									id="cfg-nh-diff-active-title"
+									style="
+										font-size: 13px;
+										font-weight: 800;
+										color: var(--accent);
+										margin-bottom: 10px;
+										text-align: left;
+										font-family: var(--font-heading);
+									"
+								>
+									⚙️ THÔNG SỐ ĐỘ KHÓ: BÌNH THƯỜNG
+								</div>
+
+								<div class="config-sub-grid">
+									<div class="config-field-row">
+										<label>Thời gian mỗi vòng (giây):</label>
+										<input type="number" id="cfg-nh-round-dur" min="1" max="30" step="0.5" />
+									</div>
+									<div class="config-field-row">
+										<label>Thời gian nghỉ giữa vòng (giây):</label>
+										<input type="number" id="cfg-nh-inter-dur" min="1" max="10" step="0.5" />
+									</div>
+									<div class="config-field-row">
+										<label>Tổng số vòng thi đấu:</label>
+										<input type="number" id="cfg-nh-total-rounds" min="5" max="50" />
+									</div>
+								</div>
+
+								<hr style="border: 0.5px solid var(--border-color); margin: 12px 0" />
+								<div class="skill-config-header">
+									🎲 TỶ LỆ XUẤT HIỆN LOẠI TỪ & ĐỘ KHÓ TỪ VỰNG (%)
+								</div>
+
+								<div class="config-sub-grid">
+									<div class="config-field-row">
+										<label>Tỷ lệ Tiếng Việt (%):</label>
+										<input type="number" id="cfg-nh-ratio-vi" min="0" max="100" />
+									</div>
+									<div class="config-field-row">
+										<label>Tỷ lệ English (%):</label>
+										<input type="number" id="cfg-nh-ratio-en" min="0" max="100" />
+									</div>
+									<div class="config-field-row">
+										<label>Tỷ lệ Số / Zipcode (%):</label>
+										<input type="number" id="cfg-nh-ratio-num" min="0" max="100" />
+									</div>
+									<div class="config-field-row">
+										<label>Tỷ lệ từ KHÓ Tiếng Việt (%):</label>
+										<input type="number" id="cfg-nh-hard-vi" min="0" max="100" />
+									</div>
+									<div class="config-field-row">
+										<label>Tỷ lệ từ KHÓ English (%):</label>
+										<input type="number" id="cfg-nh-hard-en" min="0" max="100" />
+									</div>
+								</div>
+							</div>
+						</fieldset>
+
+						<!-- CẤU HÌNH SĂN BOSS (4 ĐỘ KHÓ) -->
+						<fieldset class="admin-config-fieldset full-width">
+							<legend>Chế Độ Săn Boss (Tùy chỉnh theo từng Độ Khó)</legend>
+							<div class="config-field-row" style="margin-bottom: 12px">
+								<label style="color: var(--accent); font-weight: bold"
+									>🎯 CHỌN ĐỘ KHÓ SĂN BOSS:</label
+								>
+								<select id="cfg-boss-diff-select" class="admin-select-input">
+									<option value="easy">🟢 Dễ</option>
+									<option value="normal" selected>🟡 Bình thường</option>
+									<option value="hard">🔴 Khó</option>
+									<option value="hell">💀 Địa ngục</option>
+								</select>
+							</div>
+
+							<div class="admin-diff-detail-box">
+								<div
+									id="cfg-diff-active-title"
+									style="
+										font-size: 13px;
+										font-weight: 800;
+										color: var(--accent);
+										margin-bottom: 10px;
+										text-align: left;
+										font-family: var(--font-heading);
+									"
+								>
+									⚙️ THÔNG SỐ ĐỘ KHÓ: BÌNH THƯỜNG
+								</div>
+
+								<div class="config-sub-grid">
+									<div class="config-field-row">
+										<label>Thời gian trận đấu (giây):</label>
+										<input type="number" id="cfg-diff-duration" min="30" max="300" />
+									</div>
+									<div class="config-field-row">
+										<label>Máu Boss cơ bản (HP):</label>
+										<input type="number" id="cfg-diff-base-hp" min="50" max="5000" />
+									</div>
+									<div class="config-field-row">
+										<label>Máu cộng thêm mỗi người (HP):</label>
+										<input type="number" id="cfg-diff-hp-per-player" min="10" max="2000" />
+									</div>
+									<div class="config-field-row">
+										<label>Mốc Sát Thương Tự Bạo (DMG):</label>
+										<input type="number" id="cfg-diff-self-destruct" min="50" max="2000" />
+									</div>
+									<div class="config-field-row">
+										<label>Giãn cách dùng Kỹ năng (giây):</label>
+										<input type="number" id="cfg-diff-skill-interval" min="4" max="60" />
+									</div>
+								</div>
+
+								<hr style="border: 0.5px solid var(--border-color); margin: 12px 0" />
+								<div class="skill-config-header">
+									🔥 KÍCH HOẠT KỸ NĂNG & THỜI GIAN HIỆU LỰC (THEO ĐỘ KHÓ)
+								</div>
+
+								<div class="skill-config-list">
+									<div class="skill-config-card">
+										<div class="skill-card-top">
+											<label class="skill-checkbox-label">
+												<input type="checkbox" id="cfg-skill-enable-shield" />
+												<span>🛡️ Giáp Hộ Thể (DPS Check)</span>
+											</label>
+										</div>
+										<div class="skill-card-body">
+											<div class="config-field-row">
+												<label>Lượng Giáp mỗi người chơi:</label>
+												<input type="number" id="cfg-diff-shield-per-player" min="5" max="500" />
+											</div>
+											<div class="config-field-row">
+												<label>Thời gian phá Giáp (giây):</label>
+												<input type="number" id="cfg-diff-shield-dur" min="2" max="20" />
+											</div>
+											<div class="config-field-row">
+												<label>Thời gian Choáng khi vỡ giáp (giây):</label>
+												<input type="number" id="cfg-diff-stun-dur" min="1" max="10" step="0.5" />
+											</div>
+										</div>
+									</div>
+
+									<div class="skill-config-card">
+										<div class="skill-card-top">
+											<label class="skill-checkbox-label">
+												<input type="checkbox" id="cfg-skill-enable-capslock" />
+												<span>🔠 Chữ Khuyết Tật (Hoa/Thường)</span>
+											</label>
+										</div>
+										<div class="skill-card-body">
+											<div class="config-field-row">
+												<label>Thời gian tồn tại (giây):</label>
+												<input type="number" id="cfg-diff-capslock-dur" min="2" max="30" />
+											</div>
+										</div>
+									</div>
+
+									<div class="skill-config-card">
+										<div class="skill-card-top">
+											<label class="skill-checkbox-label">
+												<input type="checkbox" id="cfg-skill-enable-shake" />
+												<span>🌋 Rung Chấn Màn Hình (Tremor)</span>
+											</label>
+										</div>
+										<div class="skill-card-body">
+											<div class="config-field-row">
+												<label>Thời gian tồn tại (giây):</label>
+												<input type="number" id="cfg-diff-shake-dur" min="2" max="30" />
+											</div>
+										</div>
+									</div>
+
+									<div class="skill-config-card">
+										<div class="skill-card-top">
+											<label class="skill-checkbox-label">
+												<input type="checkbox" id="cfg-skill-enable-fog" />
+												<span>🌫️ Màn Sương Mù Đen (Dark Fog)</span>
+											</label>
+										</div>
+										<div class="skill-card-body">
+											<div class="config-field-row">
+												<label>Thời gian tồn tại (giây):</label>
+												<input type="number" id="cfg-diff-fog-dur" min="2" max="30" />
+											</div>
+										</div>
+									</div>
+
+									<div class="skill-config-card">
+										<div class="skill-card-top">
+											<label class="skill-checkbox-label">
+												<input type="checkbox" id="cfg-skill-enable-reverse" />
+												<span>🌀 Đảo Ngược Chữ Gương (Mirror)</span>
+											</label>
+										</div>
+										<div class="skill-card-body">
+											<div class="config-field-row">
+												<label>Thời gian tồn tại (giây):</label>
+												<input type="number" id="cfg-diff-reverse-dur" min="2" max="30" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</fieldset>
+					</div>
+				</div>
+
+				<!-- FOOTER CỐ ĐỊNH CHO BẢNG CÀI ĐẶT ADMIN -->
+				<div class="admin-config-footer">
+					<button
+						id="btn-save-admin-config"
+						class="cyber-btn"
+						style="width: auto; padding: 10px 30px"
+					>
+						💾 LƯU CÀI ĐẶT
+					</button>
+					<button
+						class="cyber-btn"
+						data-close="admin-settings-modal"
+						style="width: auto; padding: 10px 30px; background: linear-gradient(45deg, #444, #222)"
+					>
+						ĐÓNG
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP THÔNG BÁO LƯU CẤU HÌNH THÀNH CÔNG (ADMIN) -->
+		<div id="admin-save-result-popup" class="custom-popup hidden">
+			<div class="popup-content admin-save-popup-box">
+				<div id="admin-save-status-icon" class="admin-save-icon">✨</div>
+				<h3 id="admin-save-status-title" class="admin-save-title">CẬP NHẬT THÀNH CÔNG</h3>
+				<p id="admin-save-status-desc" class="admin-save-desc">
+					Tất cả cài đặt và thông số trận đấu đã được lưu lên hệ thống.
+				</p>
+				<button class="cyber-btn admin-save-btn-close" data-close="admin-save-result-popup">
+					ĐÃ HIỂU
+				</button>
+			</div>
+		</div>
+
 		<!-- MODAL NGƯỜI CHƠI ONLINE (ADMIN) -->
 		<div id="online-users-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large">
@@ -316,7 +602,7 @@
 			</div>
 		</div>
 
-		<!-- POPUP THÔNG BÁO BỊ KICK KHỎI PHÒNG (THEMED) -->
+		<!-- POPUP THÔNG BÁO BỊ KICK KHỎI PHÒNG -->
 		<div id="kicked-notice-popup" class="custom-popup hidden">
 			<div class="popup-content kicked-popup-content">
 				<h3 class="kicked-title">TRỤC XUẤT KHỎI PHÒNG</h3>
@@ -377,10 +663,31 @@
 		<div id="lobby-screen" class="screen hidden">
 			<div class="cyber-box lobby-box" style="position: relative">
 				<button id="btn-lobby-home" class="cyber-btn btn-home-corner">↩️ TRỞ VỀ</button>
+
+				<!-- NÚT MỞ ĐỘ KHÓ RIÊNG CHO NGẪU HỨNG -->
+				<button
+					id="btn-open-nh-difficulty-select"
+					class="cyber-btn btn-diff-corner btn-diff-nh hidden"
+				>
+					🎲 ĐỘ KHÓ
+				</button>
+
+				<!-- NÚT MỞ ĐỘ KHÓ RIÊNG CHO SĂN BOSS -->
+				<button
+					id="btn-open-boss-difficulty-select"
+					class="cyber-btn btn-diff-corner btn-diff-boss hidden"
+				>
+					⚔️ ĐỘ KHÓ
+				</button>
+
 				<button id="btn-open-icon-select" class="cyber-btn btn-icon-corner">🕹️ ĐỔI ICON</button>
 
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
-				<div id="lobby-mode-display" class="lobby-mode-tag">CHẾ ĐỘ: ---</div>
+				<div class="lobby-header-tags">
+					<div id="lobby-mode-display" class="lobby-mode-tag">CHẾ ĐỘ: ---</div>
+					<div id="lobby-difficulty-tag" class="lobby-diff-tag hidden">ĐỘ KHÓ: BÌNH THƯỜNG</div>
+				</div>
+
 				<div class="lobby-players-title">
 					DANH SÁCH NGƯỜI CHƠI ( <span id="lobby-count">1/10</span> )
 				</div>
@@ -403,6 +710,78 @@
 						<button type="button" class="chat-emoji-btn btn-small" title="Chọn icon">😀</button>
 						<button class="global-chat-send-btn btn-small">GỬI</button>
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP 1: CHỌN ĐỘ KHÓ CHO NGẪU HỨNG (2 ĐỘ KHÓ) -->
+		<div id="nh-difficulty-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3 style="color: var(--accent); margin-bottom: 15px">🎲 CHỌN ĐỘ KHÓ: NGẪU HỨNG</h3>
+				<div class="diff-picker-grid" style="grid-template-columns: repeat(2, 1fr)">
+					<div class="diff-card selected" data-nh-diff="normal">
+						<div class="diff-icon">🟡</div>
+						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
+						<div class="diff-desc">
+							15 Vòng thi đấu. Thời gian 7s/vòng, từ ngữ vừa tầm, cân bằng tốc độ.
+						</div>
+					</div>
+					<div class="diff-card" data-nh-diff="legendary">
+						<div class="diff-icon">👑</div>
+						<div class="diff-name" style="color: #ff0055">HUYỀN THOẠI</div>
+						<div class="diff-desc">
+							25 Vòng thi đấu. Chớp nhoáng 3.5s/vòng, 85% từ cực khó & Zipcode dồn dập!
+						</div>
+					</div>
+				</div>
+				<div style="margin-top: 20px">
+					<button
+						class="cyber-btn"
+						data-close="nh-difficulty-popup"
+						style="padding: 8px 25px; font-size: 14px; width: auto; margin: 0 auto"
+					>
+						ĐÓNG
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO SĂN BOSS (4 ĐỘ KHÓ) -->
+		<div id="boss-difficulty-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3 style="color: var(--secondary); margin-bottom: 15px">🐉 CHỌN ĐỘ KHÓ: SĂN BOSS</h3>
+				<div class="diff-picker-grid">
+					<div class="diff-card" data-boss-diff="easy">
+						<div class="diff-icon">🟢</div>
+						<div class="diff-name" style="color: #00ff66">DỄ</div>
+						<div class="diff-desc">Thời gian thoải mái, HP cơ bản, kỹ năng hạn chế.</div>
+					</div>
+					<div class="diff-card selected" data-boss-diff="normal">
+						<div class="diff-icon">🟡</div>
+						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
+						<div class="diff-desc">Cân bằng trải nghiệm và nhịp độ xả sát thương.</div>
+					</div>
+					<div class="diff-card" data-boss-diff="hard">
+						<div class="diff-icon">🔴</div>
+						<div class="diff-name" style="color: #ff7700">KHÓ</div>
+						<div class="diff-desc">Mở khóa toàn bộ kỹ năng gồm đảo ngược chữ và giáp dày!</div>
+					</div>
+					<div class="diff-card" data-boss-diff="hell">
+						<div class="diff-icon">💀</div>
+						<div class="diff-name" style="color: #ff0055">ĐỊA NGỤC</div>
+						<div class="diff-desc">
+							Boss HP khủng bố, thời gian cực ngắn, kỹ năng spam liên tục!
+						</div>
+					</div>
+				</div>
+				<div style="margin-top: 20px">
+					<button
+						class="cyber-btn"
+						data-close="boss-difficulty-popup"
+						style="padding: 8px 25px; font-size: 14px; width: auto; margin: 0 auto"
+					>
+						ĐÓNG
+					</button>
 				</div>
 			</div>
 		</div>
@@ -455,7 +834,7 @@
 				</div>
 			</header>
 
-			<!-- ARENA BOSS (HIỂN THỊ TRONG CHẾ ĐỘ SĂN BOSS) -->
+			<!-- ARENA BOSS -->
 			<div id="boss-arena-box" class="cyber-box boss-arena-container hidden">
 				<div class="boss-profile">
 					<div class="boss-avatar-wrapper">
@@ -463,14 +842,17 @@
 					</div>
 					<div class="boss-info">
 						<div class="boss-header-row">
-							<span id="boss-name" class="boss-name">HẮC LONG MA VƯƠNG</span>
+							<div style="display: flex; align-items: center; gap: 8px">
+								<span id="boss-name" class="boss-name">HẮC LONG MA VƯƠNG</span>
+								<span id="boss-difficulty-badge" class="boss-diff-badge">BÌNH THƯỜNG</span>
+							</div>
 							<span id="boss-hp-text" class="boss-hp-text">1000/1000 HP</span>
 						</div>
 						<!-- THANH MÁU BOSS -->
 						<div class="boss-hp-bar-bg">
 							<div id="boss-hp-fill" class="boss-hp-bar-fill" style="width: 100%"></div>
 						</div>
-						<!-- THANH GIÁP HỘ THỂ (HIỆN KHI BOSS BẬT SKILL GIÁP) -->
+						<!-- THANH GIÁP HỘ THỂ -->
 						<div id="boss-shield-wrapper" class="boss-shield-wrapper hidden">
 							<div class="boss-shield-header-row">
 								<span class="boss-shield-title">🛡️ GIÁP HỘ THỂ MA PHÁP (DPS CHECK!)</span>
@@ -514,7 +896,6 @@
 			<div id="typing-area" class="cyber-box" style="position: relative; overflow: hidden">
 				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
 				<div id="ngau-hung-status" class="ngau-hung-badge hidden">VÒNG 1/15</div>
-				<!-- VÙNG GÕ PHÍM KHÔNG ĐỔI FONT ĐỂ ĐẢM BẢO ĐỘ ĐỌC TỐI ĐA -->
 				<div id="words-display"></div>
 				<input
 					type="text"
@@ -539,13 +920,9 @@
 			</div>
 		</div>
 
-		<!-- CONTAINER CHỨA THÔNG BÁO NỔI TỰ BẠO BẮT MẮT -->
 		<div id="boss-toast-container" class="boss-toast-container"></div>
-
-		<!-- POPUP TIN NHẮN TRONG TRẬN ĐẤU NỔI BẬT -->
 		<div id="chat-popups"></div>
 
-		<!-- POPUP BẢNG ICON NHẮN TIN -->
 		<div id="chat-emoji-picker" class="chat-emoji-picker hidden">
 			<div id="chat-emoji-grid" class="chat-emoji-grid"></div>
 		</div>
