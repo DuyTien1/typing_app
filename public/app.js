@@ -110,6 +110,13 @@ let clientGameConfig = {
 					fog: false,
 					reverse: false,
 				},
+				skillWeights: {
+					shield: 60,
+					capslock: 0,
+					shake: 40,
+					fog: 0,
+					reverse: 0,
+				},
 			},
 			normal: {
 				id: "normal",
@@ -141,6 +148,13 @@ let clientGameConfig = {
 					shake: true,
 					fog: true,
 					reverse: false,
+				},
+				skillWeights: {
+					shield: 35,
+					capslock: 25,
+					shake: 20,
+					fog: 20,
+					reverse: 0,
 				},
 			},
 			hard: {
@@ -174,6 +188,13 @@ let clientGameConfig = {
 					fog: true,
 					reverse: true,
 				},
+				skillWeights: {
+					shield: 25,
+					capslock: 20,
+					shake: 20,
+					fog: 20,
+					reverse: 15,
+				},
 			},
 			hell: {
 				id: "hell",
@@ -205,6 +226,13 @@ let clientGameConfig = {
 					shake: true,
 					fog: true,
 					reverse: true,
+				},
+				skillWeights: {
+					shield: 20,
+					capslock: 20,
+					shake: 20,
+					fog: 20,
+					reverse: 20,
 				},
 			},
 		},
@@ -465,6 +493,14 @@ function resetBossCombo(reason = "") {
 	updateBossComboUI();
 }
 
+function clearAllBossSkillEffects() {
+	$("game-container")?.classList.remove("boss-shake-active");
+	$("words-display")?.classList.remove("boss-reverse-active");
+	$("boss-fog-layer")?.classList.add("hidden");
+	$("boss-skill-alert")?.classList.add("hidden");
+	$("boss-arena-box")?.classList.remove("boss-stunned");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	const savedTheme = localStorage.getItem("racer_theme") || getCookie("racer_theme") || "dark";
 	applyTheme(savedTheme);
@@ -575,7 +611,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const returnHome = () => {
 		socket.emit("leave_lobby");
+		currentDifficulty = "normal";
 		mySelectedIcon = DEFAULT_ICON;
+		clearAllBossSkillEffects();
 		if ($("user-icon-status")) $("user-icon-status").innerText = mySelectedIcon;
 		["lobby-screen", "game-container", "summary-modal"].forEach((id) =>
 			$(id).classList.add("hidden"),
@@ -590,6 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	$("btn-confirm-kicked")?.addEventListener("click", returnHome);
 
 	$("btn-play-again")?.addEventListener("click", () => {
+		clearAllBossSkillEffects();
 		["summary-modal", "game-container"].forEach((id) => $(id).classList.add("hidden"));
 		$("lobby-screen").classList.remove("hidden");
 		socket.emit("join_lobby", {
@@ -678,6 +717,7 @@ function saveActiveDiffInputsToState() {
 	if (tempAdminDifficulties[selectedConfigDiffKey]) {
 		const diff = tempAdminDifficulties[selectedConfigDiffKey];
 		if (!diff.enabledSkills) diff.enabledSkills = {};
+		if (!diff.skillWeights) diff.skillWeights = {};
 
 		if ($("cfg-diff-duration")) diff.duration = parseInt($("cfg-diff-duration").value) || 150;
 		if ($("cfg-diff-base-hp")) diff.baseHp = parseInt($("cfg-diff-base-hp").value) || 550;
@@ -731,11 +771,31 @@ function saveActiveDiffInputsToState() {
 		if ($("cfg-diff-reverse-dur"))
 			diff.reverseDuration = parseInt($("cfg-diff-reverse-dur").value) || 5;
 
-		diff.enabledSkills.shield = $("cfg-skill-enable-shield")?.checked ?? true;
-		diff.enabledSkills.capslock = $("cfg-skill-enable-capslock")?.checked ?? true;
-		diff.enabledSkills.shake = $("cfg-skill-enable-shake")?.checked ?? true;
-		diff.enabledSkills.fog = $("cfg-skill-enable-fog")?.checked ?? true;
-		diff.enabledSkills.reverse = $("cfg-skill-enable-reverse")?.checked ?? true;
+		diff.enabledSkills.shield = $("cfg-skill-enable-shield")
+			? $("cfg-skill-enable-shield").checked
+			: true;
+		diff.enabledSkills.capslock = $("cfg-skill-enable-capslock")
+			? $("cfg-skill-enable-capslock").checked
+			: false;
+		diff.enabledSkills.shake = $("cfg-skill-enable-shake")
+			? $("cfg-skill-enable-shake").checked
+			: true;
+		diff.enabledSkills.fog = $("cfg-skill-enable-fog") ? $("cfg-skill-enable-fog").checked : false;
+		diff.enabledSkills.reverse = $("cfg-skill-enable-reverse")
+			? $("cfg-skill-enable-reverse").checked
+			: false;
+
+		// Tỷ lệ xuất hiện từng kỹ năng
+		if ($("cfg-skill-weight-shield"))
+			diff.skillWeights.shield = parseInt($("cfg-skill-weight-shield").value) || 0;
+		if ($("cfg-skill-weight-capslock"))
+			diff.skillWeights.capslock = parseInt($("cfg-skill-weight-capslock").value) || 0;
+		if ($("cfg-skill-weight-shake"))
+			diff.skillWeights.shake = parseInt($("cfg-skill-weight-shake").value) || 0;
+		if ($("cfg-skill-weight-fog"))
+			diff.skillWeights.fog = parseInt($("cfg-skill-weight-fog").value) || 0;
+		if ($("cfg-skill-weight-reverse"))
+			diff.skillWeights.reverse = parseInt($("cfg-skill-weight-reverse").value) || 0;
 	}
 
 	if (tempAdminNhDifficulties[selectedConfigNhDiffKey]) {
@@ -814,10 +874,17 @@ function updateSelectedDiffInputsFromState() {
 		const sk = diff.enabledSkills || {};
 		if ($("cfg-skill-enable-shield")) $("cfg-skill-enable-shield").checked = sk.shield ?? true;
 		if ($("cfg-skill-enable-capslock"))
-			$("cfg-skill-enable-capslock").checked = sk.capslock ?? true;
+			$("cfg-skill-enable-capslock").checked = sk.capslock ?? false;
 		if ($("cfg-skill-enable-shake")) $("cfg-skill-enable-shake").checked = sk.shake ?? true;
-		if ($("cfg-skill-enable-fog")) $("cfg-skill-enable-fog").checked = sk.fog ?? true;
+		if ($("cfg-skill-enable-fog")) $("cfg-skill-enable-fog").checked = sk.fog ?? false;
 		if ($("cfg-skill-enable-reverse")) $("cfg-skill-enable-reverse").checked = sk.reverse ?? false;
+
+		const sw = diff.skillWeights || {};
+		if ($("cfg-skill-weight-shield")) $("cfg-skill-weight-shield").value = sw.shield ?? 35;
+		if ($("cfg-skill-weight-capslock")) $("cfg-skill-weight-capslock").value = sw.capslock ?? 25;
+		if ($("cfg-skill-weight-shake")) $("cfg-skill-weight-shake").value = sw.shake ?? 20;
+		if ($("cfg-skill-weight-fog")) $("cfg-skill-weight-fog").value = sw.fog ?? 20;
+		if ($("cfg-skill-weight-reverse")) $("cfg-skill-weight-reverse").value = sw.reverse ?? 0;
 	}
 
 	const nh = tempAdminNhDifficulties[selectedConfigNhDiffKey];
@@ -963,6 +1030,11 @@ function setupAdminEvents() {
 		"cfg-skill-enable-shake",
 		"cfg-skill-enable-fog",
 		"cfg-skill-enable-reverse",
+		"cfg-skill-weight-shield",
+		"cfg-skill-weight-capslock",
+		"cfg-skill-weight-shake",
+		"cfg-skill-weight-fog",
+		"cfg-skill-weight-reverse",
 		"cfg-nh-round-dur",
 		"cfg-nh-inter-dur",
 		"cfg-nh-total-rounds",
@@ -1212,7 +1284,10 @@ socket.on("update_lobby", (data) => {
 	$("login-modal").classList.add("hidden");
 	$("lobby-screen").classList.remove("hidden");
 	currentLobbyPlayers = data.players || [];
-	currentDifficulty = data.difficulty || currentDifficulty;
+
+	if (data.difficulty) {
+		currentDifficulty = data.difficulty;
+	}
 	const currentLang = data.language || currentLanguage;
 
 	const isNgauHung = currentLang === "ngau_hung";
@@ -1236,12 +1311,21 @@ socket.on("update_lobby", (data) => {
 		}
 	}
 
+	$$("#nh-difficulty-popup .diff-card").forEach((c) => {
+		c.classList.toggle("selected", c.dataset.nhDiff === currentDifficulty);
+	});
+	$$("#boss-difficulty-popup .diff-card").forEach((c) => {
+		c.classList.toggle("selected", c.dataset.bossDiff === currentDifficulty);
+	});
+
 	renderLobbyPlayers();
 });
 
 socket.on("game_start", (data) => {
 	["lobby-screen", "summary-modal"].forEach((id) => $(id).classList.add("hidden"));
 	["game-container", "chat-container"].forEach((id) => $(id).classList.remove("hidden"));
+
+	clearAllBossSkillEffects();
 
 	currentLanguage = data.language || currentLanguage;
 	currentDifficulty = data.difficulty || currentDifficulty;
@@ -1477,13 +1561,13 @@ socket.on("boss_skill_warning", (d) => {
 	const alertBox = $("boss-skill-alert");
 	const skillDesc =
 		d.skill === "shake"
-			? "🌋 BOSS CHUẨN BỊ XÀI MÁY RUNG!"
+			? "🌋 BOSS CHUẨN BỊ XÀI MÁY RUNG (TREMOR)!"
 			: d.skill === "fog"
-				? "🌫️ BOSS CHUẨN BỊ HÀ HƠI THỔI NGẠT!"
+				? "🌫️ BOSS CHUẨN BỊ HÀ HƠI SƯƠNG TỐI (DARK FOG)!"
 				: d.skill === "reverse"
-					? "🌀 BOSS CHUẨN BỊ ĐƯA BẠN VÀO CƠN MÊ!"
+					? "🌀 BOSS CHUẨN BỊ ĐẢO CHỮ GƯƠNG (MIRROR)!"
 					: d.skill === "shield"
-						? "🛡️ BOSS CHUẨN BỊ BUFF GIÁP!"
+						? "🛡️ BOSS CHUẨN BỊ BUFF GIÁP HỘ THỂ!"
 						: "🔠 BOSS CHUẨN BỊ PHÙ PHÉP CHỮ KHUYẾT TẬT!";
 	if (alertBox) {
 		alertBox.innerText = `⚠️ CẢNH BÁO: [${skillDesc}]!`;
@@ -1497,17 +1581,27 @@ socket.on("boss_skill_cast", (d) => {
 	const fogLayer = $("boss-fog-layer");
 	const alertBox = $("boss-skill-alert");
 
-	if (alertBox) alertBox.innerText = `🔥 BOSS ĐANG KÍCH HOẠT KỸ NĂNG!`;
+	if (alertBox) {
+		alertBox.innerText = `🔥 BOSS ĐANG KÍCH HOẠT KỸ NĂNG: ${d.skill.toUpperCase()}!`;
+		alertBox.classList.remove("hidden");
+	}
 
-	if (d.skill === "shake") gameContainer.classList.add("boss-shake-active");
-	if (d.skill === "reverse") wordsDisplay.classList.add("boss-reverse-active");
-	if (d.skill === "fog") fogLayer.classList.remove("hidden");
+	if (d.skill === "shake" && gameContainer) {
+		gameContainer.classList.add("boss-shake-active");
+	}
+	if (d.skill === "reverse" && wordsDisplay) {
+		wordsDisplay.classList.add("boss-reverse-active");
+	}
+	if (d.skill === "fog" && fogLayer) {
+		fogLayer.classList.remove("hidden");
+	}
 
 	setTimeout(
 		() => {
-			gameContainer.classList.remove("boss-shake-active");
-			wordsDisplay.classList.remove("boss-reverse-active");
-			fogLayer.classList.add("hidden");
+			if (d.skill === "shake" && gameContainer) gameContainer.classList.remove("boss-shake-active");
+			if (d.skill === "reverse" && wordsDisplay)
+				wordsDisplay.classList.remove("boss-reverse-active");
+			if (d.skill === "fog" && fogLayer) fogLayer.classList.add("hidden");
 			if (alertBox) alertBox.classList.add("hidden");
 		},
 		(d.duration || 5) * 1000,
@@ -1711,6 +1805,7 @@ function finishGame() {
 	isPlaying = false;
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
+	clearAllBossSkillEffects();
 
 	const elapsed = Math.max(1, (Date.now() - startTime) / 1000);
 	$("type-input").disabled = true;
@@ -1728,6 +1823,7 @@ function surrenderGame(isAFK = false) {
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearInterval(ngauHungRoundTimer);
+	clearAllBossSkillEffects();
 	$("type-input").disabled = true;
 	$("status-box").innerText = isAFK ? "AFK" : "ĐÃ ĐẦU HÀNG";
 	socket.emit("surrender", { isAFK });
@@ -1793,6 +1889,7 @@ socket.on("game_over", (d) => {
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearInterval(ngauHungRoundTimer);
+	clearAllBossSkillEffects();
 
 	$("game-container").classList.add("hidden");
 	$("chat-container").classList.add("hidden");
@@ -1829,7 +1926,8 @@ socket.on("game_over", (d) => {
 			<th>HẠNG</th>
 			<th>TÊN</th>
 			<th>${isNH ? "KÝ TỰ" : isBoss ? "TỔNG SÁT THƯƠNG" : "KÝ TỰ ĐÚNG"}</th>
-			<th>${isNH ? "TỔNG ĐIỂM" : isBoss ? "TỐC ĐỘ" : "TỐC ĐỘ"}<th>LỖI</th>
+			<th>${isNH ? "TỔNG ĐIỂM" : isBoss ? "TỐC ĐỘ" : "TỐC ĐỘ"}</th>
+			<th>LỖI</th>
 		</tr>
 	`;
 

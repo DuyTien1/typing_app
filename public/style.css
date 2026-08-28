@@ -1815,6 +1815,7 @@ body {
 	align-content: flex-start;
 	gap: 6px 10px;
 	scroll-behavior: smooth;
+	transition: transform 0.3s ease;
 }
 
 .ngau-hung-mode-display {
@@ -1885,7 +1886,7 @@ body {
 }
 
 /* ========================================================= */
-/* 11. BOSS ARENA & COMBO HUD                                */
+/* 11. BOSS ARENA & COMBO HUD & KỸ NĂNG HIỆU ỨNG             */
 /* ========================================================= */
 .boss-arena-container {
 	width: 100%;
@@ -1896,6 +1897,16 @@ body {
 		rgba(var(--secondary-rgb), 0.12) 0%,
 		var(--panel-bg) 80%
 	);
+	transition: all 0.3s ease;
+}
+
+/* HIỆU ỨNG BOSS BỊ CHOÁNG */
+.boss-arena-container.boss-stunned {
+	border-color: #ffd700 !important;
+	box-shadow:
+		0 0 25px rgba(255, 215, 0, 0.6),
+		inset 0 0 20px rgba(255, 215, 0, 0.2) !important;
+	filter: brightness(1.2);
 }
 
 .boss-profile {
@@ -2038,7 +2049,71 @@ body {
 }
 
 /* ========================================================= */
-/* 11.1 TOAST TỰ BẠO DIỆT BOSS (FIXED VỊ TRÍ TOP-CENTER)     */
+/* 11.1 HIỆU ỨNG KỸ NĂNG BOSS: SHAKE, FOG, MIRROR           */
+/* ========================================================= */
+
+/* 1. RUNG CHẤN TREMOR */
+.boss-shake-active {
+	animation: bossTremorAnim 0.12s infinite ease-in-out !important;
+}
+
+@keyframes bossTremorAnim {
+	0% {
+		transform: translate(0, 0) rotate(0deg);
+	}
+	20% {
+		transform: translate(-4px, 3px) rotate(-0.5deg);
+	}
+	40% {
+		transform: translate(4px, -3px) rotate(0.5deg);
+	}
+	60% {
+		transform: translate(-3px, -2px) rotate(0.3deg);
+	}
+	80% {
+		transform: translate(3px, 4px) rotate(-0.3deg);
+	}
+	100% {
+		transform: translate(0, 0) rotate(0deg);
+	}
+}
+
+/* 2. SƯƠNG MÙ DARK FOG */
+.boss-fog-layer {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		circle at 50% 50%,
+		rgba(0, 0, 0, 0.2) 0%,
+		rgba(5, 5, 15, 0.94) 65%,
+		#020205 100%
+	);
+	pointer-events: none;
+	z-index: 50;
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	animation: fogBreatheAnim 2.5s infinite ease-in-out;
+}
+
+@keyframes fogBreatheAnim {
+	0%,
+	100% {
+		opacity: 0.88;
+		backdrop-filter: blur(3.5px);
+	}
+	50% {
+		opacity: 0.98;
+		backdrop-filter: blur(6px);
+	}
+}
+
+/* 3. ĐẢO NGƯỢC CHỮ GƯƠNG MIRROR */
+.boss-reverse-active {
+	transform: scaleX(-1) !important;
+}
+
+/* ========================================================= */
+/* 11.2 TOAST TỰ BẠO DIỆT BOSS                              */
 /* ========================================================= */
 .boss-toast-container {
 	position: fixed;

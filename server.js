@@ -97,6 +97,13 @@ const GAME_CONFIG = {
 					fog: false,
 					reverse: false,
 				},
+				skillWeights: {
+					shield: 60,
+					capslock: 0,
+					shake: 40,
+					fog: 0,
+					reverse: 0,
+				},
 			},
 			normal: {
 				id: "normal",
@@ -128,6 +135,13 @@ const GAME_CONFIG = {
 					shake: true,
 					fog: true,
 					reverse: false,
+				},
+				skillWeights: {
+					shield: 35,
+					capslock: 25,
+					shake: 20,
+					fog: 20,
+					reverse: 0,
 				},
 			},
 			hard: {
@@ -161,6 +175,13 @@ const GAME_CONFIG = {
 					fog: true,
 					reverse: true,
 				},
+				skillWeights: {
+					shield: 25,
+					capslock: 20,
+					shake: 20,
+					fog: 20,
+					reverse: 15,
+				},
 			},
 			hell: {
 				id: "hell",
@@ -193,6 +214,13 @@ const GAME_CONFIG = {
 					fog: true,
 					reverse: true,
 				},
+				skillWeights: {
+					shield: 20,
+					capslock: 20,
+					shake: 20,
+					fog: 20,
+					reverse: 20,
+				},
 			},
 		},
 	},
@@ -213,9 +241,7 @@ function removeVietnameseTones(str) {
 
 const BIG_WORD_BANKS = {
 	vi_dau: {
-		// ~650 TỪ TIẾNG VIỆT CƠ BẢN / DỄ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		easy: [
-			// Thiên nhiên, thời tiết & thời gian
 			"ngày",
 			"đêm",
 			"mưa",
@@ -296,8 +322,6 @@ const BIG_WORD_BANKS = {
 			"mương",
 			"đồi",
 			"dốc",
-
-			// Con người, gia đình, đại từ
 			"ông",
 			"bà",
 			"cha",
@@ -355,8 +379,6 @@ const BIG_WORD_BANKS = {
 			"nhà",
 			"dân",
 			"tộc",
-
-			// Cơ thể con người
 			"đầu",
 			"tóc",
 			"tai",
@@ -407,8 +429,6 @@ const BIG_WORD_BANKS = {
 			"vóc",
 			"dáng",
 			"tiếng",
-
-			// Động vật
 			"chó",
 			"mèo",
 			"gà",
@@ -478,8 +498,6 @@ const BIG_WORD_BANKS = {
 			"châu",
 			"nghé",
 			"bê",
-
-			// Cây cối, rau củ, quả, thực phẩm
 			"cây",
 			"hoa",
 			"lá",
@@ -590,8 +608,6 @@ const BIG_WORD_BANKS = {
 			"bia",
 			"mỡ",
 			"dầu",
-
-			// Đồ vật, nhà cửa, dụng cụ
 			"nhà",
 			"cửa",
 			"sân",
@@ -702,8 +718,6 @@ const BIG_WORD_BANKS = {
 			"phà",
 			"ga",
 			"cầu",
-
-			// Hành động, động từ
 			"đi",
 			"đến",
 			"về",
@@ -904,8 +918,6 @@ const BIG_WORD_BANKS = {
 			"đuổi",
 			"theo",
 			"kịp",
-
-			// Tính từ, trạng thái & màu sắc
 			"tốt",
 			"xấu",
 			"đẹp",
@@ -1026,8 +1038,6 @@ const BIG_WORD_BANKS = {
 			"mới",
 			"lạ",
 			"quen",
-
-			// Số từ & liên từ
 			"một",
 			"hai",
 			"ba",
@@ -1069,8 +1079,6 @@ const BIG_WORD_BANKS = {
 			"là",
 			"để",
 		],
-
-		// 150 TỪ TIẾNG VIỆT NÂNG CAO / KHÓ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -1650,13 +1658,9 @@ let totalOnlineUsers = 0;
 
 function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 	let roomList = rooms[lang] || rooms.vi_dau;
-	const isDiffMode = lang === "ngau_hung" || lang === "san_boss";
 
-	let room = roomList.find((r) => {
-		if (r.state !== "waiting" || r.players.length >= 10) return false;
-		if (isDiffMode) return r.difficulty === preferredDifficulty;
-		return true;
-	});
+	// Duy nhất 1 phòng chờ cho mỗi chế độ
+	let room = roomList.find((r) => r.state === "waiting" && r.players.length < 10);
 
 	if (!room) {
 		const totalRounds =
@@ -1833,15 +1837,34 @@ function startBossSkillLoop(room) {
 		if (room.boss.isStunned || room.boss.isShieldActive) return;
 
 		const enabledSkillsMap = room.boss.enabledSkills || {};
-		const activeSkills = Object.keys(enabledSkillsMap).filter((k) => enabledSkillsMap[k]);
-		if (activeSkills.length === 0) return;
+		const weightsMap = room.boss.skillWeights || {};
 
-		const skill = activeSkills[Math.floor(Math.random() * activeSkills.length)];
-		io.to(room.id).emit("boss_skill_warning", { skill, countdown: 2 });
+		// Lọc các kỹ năng được kích hoạt và có tỷ lệ > 0
+		const eligibleSkills = Object.keys(enabledSkillsMap).filter(
+			(k) => enabledSkillsMap[k] === true && (Number(weightsMap[k]) || 0) > 0,
+		);
+		if (eligibleSkills.length === 0) return;
+
+		// Chọn ngẫu nhiên kỹ năng theo trọng số tỷ lệ %
+		let totalWeight = eligibleSkills.reduce((sum, k) => sum + (Number(weightsMap[k]) || 0), 0);
+		if (totalWeight <= 0) return;
+
+		let rand = Math.random() * totalWeight;
+		let selectedSkill = eligibleSkills[0];
+		for (const sk of eligibleSkills) {
+			const w = Number(weightsMap[sk]) || 0;
+			if (rand < w) {
+				selectedSkill = sk;
+				break;
+			}
+			rand -= w;
+		}
+
+		io.to(room.id).emit("boss_skill_warning", { skill: selectedSkill, countdown: 2 });
 
 		setTimeout(() => {
 			if (room.state === "playing" && room.boss && room.boss.hp > 0) {
-				executeBossSkill(room, skill);
+				executeBossSkill(room, selectedSkill);
 			}
 		}, 2000);
 	}, intervalMs);
@@ -1903,11 +1926,14 @@ function executeBossSkill(room, skill) {
 			io.to(room.id).emit("boss_capslock_end");
 		}, dur * 1000);
 	} else if (skill === "shake") {
-		io.to(room.id).emit("boss_skill_cast", { skill, duration: boss.shakeDuration || 5 });
+		io.to(room.id).emit("boss_skill_cast", { skill: "shake", duration: boss.shakeDuration || 5 });
 	} else if (skill === "fog") {
-		io.to(room.id).emit("boss_skill_cast", { skill, duration: boss.fogDuration || 5 });
+		io.to(room.id).emit("boss_skill_cast", { skill: "fog", duration: boss.fogDuration || 5 });
 	} else if (skill === "reverse") {
-		io.to(room.id).emit("boss_skill_cast", { skill, duration: boss.reverseDuration || 5 });
+		io.to(room.id).emit("boss_skill_cast", {
+			skill: "reverse",
+			duration: boss.reverseDuration || 5,
+		});
 	}
 }
 
@@ -2049,6 +2075,16 @@ io.on("connection", (socket) => {
 				Object.keys(newConfig.sanBoss.difficulties).forEach((k) => {
 					if (GAME_CONFIG.sanBoss.difficulties[k]) {
 						Object.assign(GAME_CONFIG.sanBoss.difficulties[k], newConfig.sanBoss.difficulties[k]);
+						if (newConfig.sanBoss.difficulties[k].enabledSkills) {
+							GAME_CONFIG.sanBoss.difficulties[k].enabledSkills = {
+								...newConfig.sanBoss.difficulties[k].enabledSkills,
+							};
+						}
+						if (newConfig.sanBoss.difficulties[k].skillWeights) {
+							GAME_CONFIG.sanBoss.difficulties[k].skillWeights = {
+								...newConfig.sanBoss.difficulties[k].skillWeights,
+							};
+						}
 					}
 				});
 			}
@@ -2271,13 +2307,24 @@ io.on("connection", (socket) => {
 					reverseDuration: diffConfig.reverseDuration,
 					capslockDuration: diffConfig.capslockDuration,
 					skillInterval: diffConfig.skillInterval,
-					enabledSkills: diffConfig.enabledSkills || {
-						shield: true,
-						capslock: true,
-						shake: true,
-						fog: true,
-						reverse: false,
-					},
+					enabledSkills: diffConfig.enabledSkills
+						? { ...diffConfig.enabledSkills }
+						: {
+								shield: true,
+								capslock: true,
+								shake: true,
+								fog: true,
+								reverse: false,
+							},
+					skillWeights: diffConfig.skillWeights
+						? { ...diffConfig.skillWeights }
+						: {
+								shield: 35,
+								capslock: 25,
+								shake: 20,
+								fog: 20,
+								reverse: 0,
+							},
 					selfDestructTarget: diffConfig.selfDestructTarget,
 				};
 
@@ -2357,7 +2404,7 @@ io.on("connection", (socket) => {
 					currentRoom.boss.isShieldActive = false;
 					currentRoom.boss.shield = 0;
 					currentRoom.boss.isStunned = true;
-					clearTimeout(room.boss.shieldTimer);
+					clearTimeout(currentRoom.boss.shieldTimer);
 
 					io.to(currentRoom.id).emit("boss_shield_broken", {
 						stunDuration: currentRoom.boss.stunDuration,
