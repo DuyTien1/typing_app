@@ -1666,7 +1666,7 @@ body {
 	padding: 24px 22px;
 	text-align: center;
 	width: 100%;
-	max-width: 820px;
+	/* max-width: 820px; */
 	margin: auto;
 }
 
