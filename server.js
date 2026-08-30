@@ -11,9 +11,7 @@ const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } 
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
-// ==========================================
 // CẤU HÌNH TẬP TRUNG CHO TẤT CẢ CHẾ ĐỘ CHƠI
-// ==========================================
 const GAME_CONFIG = {
 	general: {
 		messageTTL: 3 * 60 * 1000,
@@ -50,14 +48,14 @@ const GAME_CONFIG = {
 				name: "Huyền Thoại",
 				icon: "👑",
 				color: "#ff0055",
-				roundDuration: 3.5,
-				intermissionDuration: 1.5,
-				totalRounds: 25,
-				ratioViDau: 25,
-				ratioViNoDau: 25,
-				ratioEn: 25,
-				ratioNum: 25,
-				hardViDauRate: 85,
+				roundDuration: 5,
+				intermissionDuration: 2,
+				totalRounds: 20,
+				ratioViDau: 0,
+				ratioViNoDau: 40,
+				ratioEn: 40,
+				ratioNum: 20,
+				hardViDauRate: 0,
 				hardViNoDauRate: 85,
 				hardEnRate: 85,
 			},
@@ -66,11 +64,11 @@ const GAME_CONFIG = {
 	sanBoss: {
 		wordPoolCount: 400,
 		difficulties: {
-			easy: {
-				id: "easy",
-				name: "Dễ",
-				icon: "🟢",
-				color: "#00ff66",
+			custom: {
+				id: "custom",
+				name: "Tùy Chỉnh",
+				icon: "🛠️",
+				color: "#00f0ff",
 				duration: 180,
 				baseHp: 450,
 				hpPerPlayer: 400,
@@ -98,10 +96,10 @@ const GAME_CONFIG = {
 					reverse: false,
 				},
 				skillWeights: {
-					shield: 60,
+					shield: 40,
 					capslock: 0,
-					shake: 40,
-					fog: 0,
+					shake: 30,
+					fog: 30,
 					reverse: 0,
 				},
 			},
@@ -122,25 +120,25 @@ const GAME_CONFIG = {
 				fogDuration: 5,
 				reverseDuration: 5,
 				capslockDuration: 6,
-				ratioViDau: 25,
+				ratioViDau: 0,
 				ratioViNoDau: 35,
 				ratioEn: 30,
-				ratioNum: 10,
-				hardViDauRate: 35,
+				ratioNum: 35,
+				hardViDauRate: 0,
 				hardViNoDauRate: 35,
 				hardEnRate: 35,
 				enabledSkills: {
 					shield: true,
-					capslock: true,
+					capslock: false,
 					shake: true,
 					fog: true,
 					reverse: false,
 				},
 				skillWeights: {
-					shield: 35,
-					capslock: 25,
-					shake: 20,
-					fog: 20,
+					shield: 40,
+					capslock: 0,
+					shake: 30,
+					fog: 30,
 					reverse: 0,
 				},
 			},
@@ -161,26 +159,26 @@ const GAME_CONFIG = {
 				fogDuration: 6,
 				reverseDuration: 5,
 				capslockDuration: 7,
-				ratioViDau: 30,
-				ratioViNoDau: 30,
-				ratioEn: 25,
-				ratioNum: 15,
-				hardViDauRate: 50,
-				hardViNoDauRate: 50,
-				hardEnRate: 50,
+				ratioViDau: 0,
+				ratioViNoDau: 40,
+				ratioEn: 40,
+				ratioNum: 20,
+				hardViDauRate: 0,
+				hardViNoDauRate: 65,
+				hardEnRate: 65,
 				enabledSkills: {
 					shield: true,
-					capslock: true,
+					capslock: false,
 					shake: true,
 					fog: true,
 					reverse: true,
 				},
 				skillWeights: {
-					shield: 25,
-					capslock: 20,
+					shield: 30,
+					capslock: 0,
 					shake: 20,
 					fog: 20,
-					reverse: 15,
+					reverse: 20,
 				},
 			},
 			hell: {
@@ -199,14 +197,14 @@ const GAME_CONFIG = {
 				shakeDuration: 7,
 				fogDuration: 7,
 				reverseDuration: 6,
-				capslockDuration: 8,
-				ratioViDau: 30,
-				ratioViNoDau: 25,
-				ratioEn: 25,
+				capslockDuration: 5,
+				ratioViDau: 0,
+				ratioViNoDau: 40,
+				ratioEn: 40,
 				ratioNum: 20,
-				hardViDauRate: 80,
-				hardViNoDauRate: 80,
-				hardEnRate: 80,
+				hardViDauRate: 0,
+				hardViNoDauRate: 85,
+				hardEnRate: 85,
 				enabledSkills: {
 					shield: true,
 					capslock: true,
@@ -228,9 +226,7 @@ const GAME_CONFIG = {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// ==========================================
 // 1. TỪ VỰNG & TỰ ĐỘNG SINH "VI_NODAU"
-// ==========================================
 function removeVietnameseTones(str) {
 	return str
 		.normalize("NFD")
@@ -242,6 +238,7 @@ function removeVietnameseTones(str) {
 const BIG_WORD_BANKS = {
 	vi_dau: {
 		easy: [
+			// Thiên nhiên, thời tiết & thời gian
 			"ngày",
 			"đêm",
 			"mưa",
@@ -322,6 +319,8 @@ const BIG_WORD_BANKS = {
 			"mương",
 			"đồi",
 			"dốc",
+
+			// Con người, gia đình, đại từ
 			"ông",
 			"bà",
 			"cha",
@@ -379,6 +378,8 @@ const BIG_WORD_BANKS = {
 			"nhà",
 			"dân",
 			"tộc",
+
+			// Cơ thể con người
 			"đầu",
 			"tóc",
 			"tai",
@@ -429,6 +430,8 @@ const BIG_WORD_BANKS = {
 			"vóc",
 			"dáng",
 			"tiếng",
+
+			// Động vật
 			"chó",
 			"mèo",
 			"gà",
@@ -498,6 +501,8 @@ const BIG_WORD_BANKS = {
 			"châu",
 			"nghé",
 			"bê",
+
+			// Cây cối, rau củ, quả, thực phẩm
 			"cây",
 			"hoa",
 			"lá",
@@ -608,6 +613,8 @@ const BIG_WORD_BANKS = {
 			"bia",
 			"mỡ",
 			"dầu",
+
+			// Đồ vật, nhà cửa, dụng cụ
 			"nhà",
 			"cửa",
 			"sân",
@@ -718,6 +725,8 @@ const BIG_WORD_BANKS = {
 			"phà",
 			"ga",
 			"cầu",
+
+			// Hành động, động từ
 			"đi",
 			"đến",
 			"về",
@@ -918,6 +927,8 @@ const BIG_WORD_BANKS = {
 			"đuổi",
 			"theo",
 			"kịp",
+
+			// Tính từ, trạng thái & màu sắc
 			"tốt",
 			"xấu",
 			"đẹp",
@@ -1038,6 +1049,8 @@ const BIG_WORD_BANKS = {
 			"mới",
 			"lạ",
 			"quen",
+
+			// Số từ & liên từ
 			"một",
 			"hai",
 			"ba",
@@ -1079,6 +1092,8 @@ const BIG_WORD_BANKS = {
 			"là",
 			"để",
 		],
+
+		// 150 TỪ TIẾNG VIỆT NÂNG CAO / KHÓ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		hard: [
 			"khoảnh",
 			"nghiêng",
@@ -1406,7 +1421,6 @@ const BIG_WORD_BANKS = {
 		],
 	},
 };
-
 BIG_WORD_BANKS.vi_nodau = {
 	easy: BIG_WORD_BANKS.vi_dau.easy.map(removeVietnameseTones),
 	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
@@ -1480,9 +1494,7 @@ function generateWords(lang, count, difficulty = "normal") {
 	});
 }
 
-// ==========================================
 // 2. HIGH SCORES & TỰ ĐỘNG RESET
-// ==========================================
 const HIGHSCORES_FILE = path.join(__dirname, "highscores.json");
 const defaultHighScores = {
 	vi_dau: null,
@@ -1547,9 +1559,7 @@ function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount, 
 	}
 }
 
-// ==========================================
 // 3. TIN NHẮN CHAT
-// ==========================================
 const MESSAGES_FILE = path.join(__dirname, "messages.json");
 let chatMessages = [];
 const userChatHistory = new Map();
@@ -1598,9 +1608,7 @@ function checkSpamLimit(socketId) {
 	return { allowed: true };
 }
 
-// ==========================================
 // 4. ADMIN & BAN USER
-// ==========================================
 const connectedUsers = new Map();
 const bannedUsers = new Map();
 
@@ -1650,16 +1658,13 @@ function broadcastAdminData() {
 	});
 }
 
-// ==========================================
 // 5. PHÒNG ĐẤU & BOSS ENGINE
-// ==========================================
 const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [], san_boss: [] };
 let totalOnlineUsers = 0;
 
 function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 	let roomList = rooms[lang] || rooms.vi_dau;
 
-	// Duy nhất 1 phòng chờ cho mỗi chế độ
 	let room = roomList.find((r) => r.state === "waiting" && r.players.length < 10);
 
 	if (!room) {
@@ -1839,13 +1844,11 @@ function startBossSkillLoop(room) {
 		const enabledSkillsMap = room.boss.enabledSkills || {};
 		const weightsMap = room.boss.skillWeights || {};
 
-		// Lọc các kỹ năng được kích hoạt và có tỷ lệ > 0
 		const eligibleSkills = Object.keys(enabledSkillsMap).filter(
 			(k) => enabledSkillsMap[k] === true && (Number(weightsMap[k]) || 0) > 0,
 		);
 		if (eligibleSkills.length === 0) return;
 
-		// Chọn ngẫu nhiên kỹ năng theo trọng số tỷ lệ %
 		let totalWeight = eligibleSkills.reduce((sum, k) => sum + (Number(weightsMap[k]) || 0), 0);
 		if (totalWeight <= 0) return;
 
@@ -1985,9 +1988,7 @@ function finishMatch(room) {
 	if (rooms[room.lang]) rooms[room.lang] = rooms[room.lang].filter((r) => r.id !== room.id);
 }
 
-// ==========================================
 // 6. SOCKET.IO EVENTS
-// ==========================================
 io.on("connection", (socket) => {
 	totalOnlineUsers++;
 	connectedUsers.set(socket.id, { id: socket.id, username: "Vô danh", isAdmin: false });
@@ -2406,7 +2407,7 @@ io.on("connection", (socket) => {
 					currentRoom.boss.isStunned = true;
 					clearTimeout(currentRoom.boss.shieldTimer);
 
-					io.to(currentRoom.id).emit("boss_shield_broken", {
+					io.to(room.id).emit("boss_shield_broken", {
 						stunDuration: currentRoom.boss.stunDuration,
 						message: `⚡ GIÁP ĐÃ VỠ! Boss bị Choáng ${currentRoom.boss.stunDuration}s (Nhận x1.5 Sát thương)!`,
 					});

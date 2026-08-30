@@ -29,7 +29,7 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Cinzel:wght@600;700;800;900&family=EB+Garamond:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif:ital,wght@0,600;0,700;1,400;1,600&family=Orbitron:wght@600;700;800;900&family=Philosopher:ital,wght@0,700;1,700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Cinzel:wght@600;700;800;900&family=EB+Garamond:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif:ital,wght@0,600;0,700;1,400;1,600&family=Orbitron:wght@600;700;800;900&family=Philosopher:ital,wght@0,700;1,700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Silkscreen:wght@400;700&family=VT323&display=swap"
 			rel="stylesheet"
 		/>
 		<script src="/socket.io/socket.io.js"></script>
@@ -248,6 +248,20 @@
 						</div>
 						<div class="style-card-tag">Ink Brush</div>
 					</div>
+					<div class="style-card" data-style="pixel">
+						<div
+							class="style-card-accent-bar"
+							style="background: linear-gradient(90deg, #bd00ff, #00f0aa)"
+						></div>
+						<div class="style-card-badge">THEME 6</div>
+						<div class="style-card-icon-wrap">👾</div>
+						<div class="style-card-name">Arcade 8-Bit Pixel</div>
+						<div class="style-card-desc">
+							Điện tử băng hoài niệm, máy game thùng 4 nút, viền pixel khối vuông & quét bóng hình
+							CRT
+						</div>
+						<div class="style-card-tag">Retro 8-Bit</div>
+					</div>
 				</div>
 				<div class="style-modal-footer">
 					<button
@@ -264,17 +278,21 @@
 		<!-- POPUP ĐĂNG NHẬP ADMIN -->
 		<div id="admin-login-popup" class="custom-popup hidden">
 			<div class="popup-content modal-auth">
-				<div class="popup-icon-badge">🔑</div>
-				<h3 class="popup-auth-title">ĐĂNG NHẬP QUẢN TRỊ VIÊN</h3>
+				<div class="auth-header-strip">
+					<span class="auth-icon-tag">🔑</span>
+					<h3 class="popup-auth-title">QUẢN TRỊ VIÊN</h3>
+				</div>
 				<p class="popup-auth-desc">
-					Vui lòng nhập khóa bảo mật để mở quyền cấu hình toàn hệ thống.
+					Nhập mật mã quản trị để mở khóa quyền cấu hình và điều hành hệ thống.
 				</p>
-				<input
-					type="password"
-					id="admin-password-input"
-					placeholder="Nhập mật khẩu admin..."
-					class="cyber-input"
-				/>
+				<div class="auth-input-group">
+					<input
+						type="password"
+						id="admin-password-input"
+						placeholder="Nhập mật mã quản trị..."
+						class="cyber-input"
+					/>
+				</div>
 				<div id="admin-login-error" class="hidden auth-error-text">
 					Mật khẩu không chính xác! Vui lòng thử lại.
 				</div>
@@ -392,7 +410,7 @@
 									>🎯 CHỌN ĐỘ KHÓ SĂN BOSS:</label
 								>
 								<select id="cfg-boss-diff-select" class="admin-select-input">
-									<option value="easy">🟢 Dễ</option>
+									<option value="custom">🛠️ Tùy Chỉnh</option>
 									<option value="normal" selected>🟡 Bình thường</option>
 									<option value="hard">🔴 Khó</option>
 									<option value="hell">💀 Địa ngục</option>
@@ -696,15 +714,20 @@
 		<!-- POPUP ĐỔI TÊN -->
 		<div id="rename-popup" class="custom-popup hidden">
 			<div class="popup-content modal-auth">
-				<div class="popup-icon-badge">✏️</div>
-				<h3 class="popup-auth-title">THAY ĐỔI BIỆT DANH</h3>
-				<input
-					type="text"
-					id="popup-name-input"
-					placeholder="Nhập tên mới của bạn..."
-					maxlength="15"
-					class="cyber-input"
-				/>
+				<div class="auth-header-strip">
+					<span class="auth-icon-tag">✏️</span>
+					<h3 class="popup-auth-title">ĐỔI BIỆT DANH</h3>
+				</div>
+				<p class="popup-auth-desc">Tên hiển thị độc nhất của bạn trên đường đua và bảng vàng.</p>
+				<div class="auth-input-group">
+					<input
+						type="text"
+						id="popup-name-input"
+						placeholder="Nhập tên mới của bạn..."
+						maxlength="15"
+						class="cyber-input"
+					/>
+				</div>
 				<div class="popup-actions-row">
 					<button id="btn-save-popup-name" class="cyber-btn btn-primary-style">LƯU TÊN</button>
 					<button class="cyber-btn btn-secondary-style" data-close="rename-popup">HỦY</button>
@@ -712,7 +735,7 @@
 			</div>
 		</div>
 
-		<!-- PHÒNG CHỜ (LOBBY - THANH ĐIỀU HƯỚNG FLEXBOX KHÔNG BAO GIỜ BỊ ĐÈ NÚT) -->
+		<!-- PHÒNG CHỜ (LOBBY - THANH ĐIỀU HƯỚNG FLEXBOX) -->
 		<div id="lobby-screen" class="screen hidden">
 			<div class="cyber-box lobby-box">
 				<div class="lobby-nav-bar">
@@ -752,7 +775,9 @@
 				<h2 class="lobby-title">PHÒNG CHỜ THI ĐẤU</h2>
 				<div class="lobby-header-tags">
 					<div id="lobby-mode-display" class="lobby-mode-tag">CHẾ ĐỘ: ---</div>
-					<div id="lobby-difficulty-tag" class="lobby-diff-tag hidden">ĐỘ KHÓ: BÌNH THƯỜNG</div>
+					<div id="lobby-difficulty-tag" class="lobby-diff-tag hidden" data-diff="normal">
+						ĐỘ KHÓ: BÌNH THƯỜNG
+					</div>
 				</div>
 
 				<div class="lobby-players-title">
@@ -792,14 +817,15 @@
 						<div class="diff-icon">🟡</div>
 						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
 						<div class="diff-desc">
-							15 Vòng thi đấu. Thời gian 7s/vòng, từ ngữ vừa tầm, cân bằng tốc độ.
+							Thích hợp cho mọi người chơi làm quen phản xạ, từ ngữ quen thuộc và nhịp độ cân bằng.
 						</div>
 					</div>
 					<div class="diff-card" data-nh-diff="legendary">
 						<div class="diff-icon">👑</div>
 						<div class="diff-name" style="color: #ff0055">HUYỀN THOẠI</div>
 						<div class="diff-desc">
-							25 Vòng thi đấu. Chớp nhoáng 3.5s/vòng, 85% từ cực khó & Zipcode dồn dập!
+							Đấu trường đỉnh cao cho cao thủ phản xạ chớp nhoáng, đòi hỏi tốc độ siêu tốc và xử lý
+							từ khó dưới áp lực lớn.
 						</div>
 					</div>
 				</div>
@@ -822,26 +848,35 @@
 					🐉 CHỌN ĐỘ KHÓ: SĂN BOSS
 				</h3>
 				<div class="diff-picker-grid">
-					<div class="diff-card" data-boss-diff="easy">
-						<div class="diff-icon">🟢</div>
-						<div class="diff-name" style="color: #00ff66">DỄ</div>
-						<div class="diff-desc">Thời gian thoải mái, HP cơ bản, kỹ năng hạn chế.</div>
+					<div class="diff-card" data-boss-diff="custom">
+						<div class="diff-icon">🛠️</div>
+						<div class="diff-name" style="color: #00f0ff">TÙY CHỈNH</div>
+						<div class="diff-desc">
+							Độ khó linh hoạt do Quản trị viên tùy biến và thiết lập riêng cho phòng đấu.
+						</div>
 					</div>
 					<div class="diff-card selected" data-boss-diff="normal">
 						<div class="diff-icon">🟡</div>
 						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
-						<div class="diff-desc">Cân bằng trải nghiệm và nhịp độ xả sát thương.</div>
+						<div class="diff-desc">
+							Thích hợp cho người chơi phổ thông, đòi hỏi sự phối hợp nhịp nhàng và duy trì sát
+							thương ổn định.
+						</div>
 					</div>
 					<div class="diff-card" data-boss-diff="hard">
 						<div class="diff-icon">🔴</div>
 						<div class="diff-name" style="color: #ff7700">KHÓ</div>
-						<div class="diff-desc">Mở khóa toàn bộ kỹ năng gồm đảo ngược chữ và giáp dày!</div>
+						<div class="diff-desc">
+							Thử thách cho các tay đua kinh nghiệm, cần tốc độ gõ cao và xử lý chuẩn xác trước các
+							chiêu thức của Boss.
+						</div>
 					</div>
 					<div class="diff-card" data-boss-diff="hell">
 						<div class="diff-icon">💀</div>
 						<div class="diff-name" style="color: #ff0055">ĐỊA NGỤC</div>
 						<div class="diff-desc">
-							Boss HP khủng bố, thời gian cực ngắn, kỹ năng spam liên tục!
+							Đấu trường sinh tử cho cao thủ đỉnh phong, yêu cầu DPS cực đại và không được phép phạm
+							sai lầm.
 						</div>
 					</div>
 				</div>
@@ -874,7 +909,7 @@
 			</div>
 		</div>
 
-		<!-- MODAL XÁC NHẬN ĐẦU HÀNG (PARALLEL BUTTONS) -->
+		<!-- MODAL XÁC NHẬN ĐẦU HÀNG -->
 		<div id="surrender-modal" class="custom-popup hidden">
 			<div class="popup-content surrender-popup-content">
 				<div class="popup-icon-badge danger">🏳️</div>

@@ -1,11 +1,5 @@
-/* ========================================================= */
 /* FASTTYPING CHALLENGE - MULTI-THEME ULTRA ENGINE CSS      */
-/* ========================================================= */
-
-/* ========================================================= */
 /* 1. ĐỊNH NGHĨA BIẾN THEME & TÍNH CÁCH ĐỒ HOẠ               */
-/* ========================================================= */
-
 /* 1.1 CYBERPUNK (MẶC ĐỊNH - NEON SCI-FI HUD) */
 :root,
 [data-style="cyberpunk"] {
@@ -64,7 +58,7 @@
 	--box-shadow-style: 0 10px 30px rgba(0, 119, 255, 0.15);
 }
 
-/* 1.2 VINTAGE CỔ ĐIỂN HOÀNG GIA (FONT LORA & PLAYFAIR DISPLAY CHUẨN TIẾNG VIỆT 100%) */
+/* 1.2 VINTAGE CỔ ĐIỂN HOÀNG GIA */
 [data-style="vintage"] {
 	--font-heading: "Playfair Display", "Cinzel", serif;
 	--font-ui: "Lora", "Noto Serif", serif;
@@ -113,7 +107,7 @@
 	--box-shadow-style: 0 8px 25px rgba(135, 90, 29, 0.15), inset 0 0 0 1px rgba(135, 90, 29, 0.2);
 }
 
-/* 1.3 XIANXIA (TIÊN HIỆP BỒNG LAI - NGỌC BÍCH & LINH KHÍ) */
+/* 1.3 XIANXIA (TIÊN HIỆP BỒNG LAI) */
 [data-style="xianxia"] {
 	--font-heading: "Philosopher", "Noto Serif", serif;
 	--font-ui: "Noto Serif", serif;
@@ -162,7 +156,7 @@
 	--box-shadow-style: 0 10px 30px rgba(0, 153, 102, 0.12);
 }
 
-/* 1.4 STEAMPUNK (CƠ KHÍ HƠI NƯỚC - BÁNH RĂNG & TÁN ĐINH) */
+/* 1.4 STEAMPUNK (CƠ KHÍ HƠI NƯỚC) */
 [data-style="steampunk"] {
 	--font-heading: "Chakra Petch", sans-serif;
 	--font-ui: "Chakra Petch", "Inter", sans-serif;
@@ -218,7 +212,7 @@
 	--border-color: rgba(185, 93, 11, 0.4);
 }
 
-/* 1.5 THUỶ MẶC ÂM DƯƠNG (INK WASH - CHUẨN TIẾNG VIỆT 100%) */
+/* 1.5 THUỶ MẶC ÂM DƯƠNG */
 [data-style="thuymac"] {
 	--font-heading: "Playfair Display", "Noto Serif", serif;
 	--font-ui: "Noto Serif", serif;
@@ -266,9 +260,57 @@
 	--border-color: rgba(47, 53, 66, 0.35);
 }
 
-/* ========================================================= */
+/* 1.6 ARCADE 8-BIT PIXEL (ĐIỆN TỬ BĂNG HOÀI NIỆM) */
+[data-style="pixel"] {
+	--font-heading: "VT323", "Silkscreen", monospace;
+	--font-ui: "VT323", "Lexend", monospace;
+	--font-typing: "VT323", monospace;
+	--bg-color: #120824;
+	--panel-bg: rgba(26, 12, 46, 0.95);
+	--modal-bg: rgba(18, 8, 36, 0.98);
+	--input-bg: #0d041a;
+	--primary: #00f0aa;
+	--primary-rgb: 0, 240, 170;
+	--secondary: #bd00ff;
+	--secondary-rgb: 189, 0, 255;
+	--accent: #ffe600;
+	--accent-rgb: 255, 230, 0;
+	--text-main: #f0e6ff;
+	--text-muted: #9e8cb8;
+	--correct: #00ffaa;
+	--incorrect: #ff0055;
+	--track-bg: rgba(0, 240, 170, 0.08);
+	--border-color: #00f0aa;
+	--border-radius-box: 0px;
+	--border-radius-btn: 0px;
+	--box-shadow-style: 4px 4px 0px #000, -2px -2px 0px rgba(189, 0, 255, 0.4);
+	--btn-gradient: linear-gradient(180deg, #bd00ff 0%, #7500a3 100%);
+	--btn-border: 2px solid #ffe600;
+	--glow: 0 0 10px rgba(0, 240, 170, 0.5);
+	--clip-path-chamfer: none;
+}
+
+[data-style="pixel"][data-theme="light"] {
+	--bg-color: #e5def0;
+	--panel-bg: rgba(246, 240, 255, 0.96);
+	--modal-bg: rgba(235, 226, 250, 0.98);
+	--input-bg: #ffffff;
+	--primary: #00966b;
+	--primary-rgb: 0, 150, 107;
+	--secondary: #8c00bd;
+	--secondary-rgb: 140, 0, 189;
+	--accent: #b8860b;
+	--accent-rgb: 184, 134, 11;
+	--text-main: #18082e;
+	--text-muted: #5e4c78;
+	--correct: #00875a;
+	--incorrect: #c40040;
+	--track-bg: rgba(0, 150, 107, 0.08);
+	--border-color: #00966b;
+	--box-shadow-style: 4px 4px 0px #2a1b42;
+}
+
 /* 2. CƠ SỞ & BỐ CỤC TỔNG THỂ                                */
-/* ========================================================= */
 * {
 	box-sizing: border-box;
 	margin: 0;
@@ -292,6 +334,22 @@ body {
 	transition:
 		background-color 0.3s ease,
 		color 0.3s ease;
+}
+
+/* QUÉT MÀN HÌNH CRT DÀNH CHO ARCADE PIXEL THEME */
+[data-style="pixel"] body::before {
+	content: " ";
+	display: block;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+	background-size: 100% 4px;
+	z-index: 999;
+	pointer-events: none;
+	opacity: 0.6;
 }
 
 .ambient-background-glow {
@@ -345,10 +403,14 @@ body {
 	border: 1.5px solid var(--border-color);
 	border-radius: 16px;
 }
+[data-style="pixel"] .cyber-box {
+	border: 3px solid var(--border-color);
+	box-shadow: 5px 5px 0px #000;
+	border-radius: 0px !important;
+	image-rendering: pixelated;
+}
 
-/* ========================================================= */
 /* 3. THANH ĐIỀU HƯỚNG GÓC TRÊN                              */
-/* ========================================================= */
 #user-profile-bar.left-bar {
 	position: fixed;
 	top: 14px;
@@ -535,9 +597,7 @@ body {
 	box-shadow: 0 0 10px var(--secondary) !important;
 }
 
-/* ========================================================= */
 /* 4. NÚT CHÍNH (CYBER-BTN) THEO TỪNG THEME                  */
-/* ========================================================= */
 .cyber-btn {
 	position: relative;
 	width: 100%;
@@ -600,6 +660,17 @@ body {
 	border: 1px solid rgba(255, 255, 255, 0.4);
 	letter-spacing: 2px;
 }
+[data-style="pixel"] .cyber-btn {
+	border-radius: 0px !important;
+	border: 2px solid #000;
+	box-shadow: 4px 4px 0px #000;
+	text-shadow: 2px 2px 0px #000;
+	letter-spacing: 2px;
+}
+[data-style="pixel"] .cyber-btn:hover {
+	transform: translate(2px, 2px);
+	box-shadow: 2px 2px 0px #000;
+}
 
 .btn-secondary-style {
 	background: linear-gradient(135deg, #3a3f4d 0%, #1e2129 100%) !important;
@@ -621,9 +692,7 @@ body {
 	color: #000 !important;
 }
 
-/* ========================================================= */
 /* 5. MODAL TRANG CHỦ & PHONG THẦN BẢNG                      */
-/* ========================================================= */
 .modal {
 	position: fixed;
 	inset: 0;
@@ -668,6 +737,12 @@ body {
 	text-shadow: var(--glow);
 }
 
+[data-style="pixel"] .glitch-title {
+	font-size: 38px;
+	letter-spacing: 3px;
+	text-shadow: 3px 3px 0px #bd00ff;
+}
+
 .subtitle {
 	font-family: var(--font-heading);
 	font-size: 13px;
@@ -675,6 +750,11 @@ body {
 	letter-spacing: 3px;
 	font-weight: bold;
 	margin-bottom: 20px;
+}
+
+[data-style="pixel"] .subtitle {
+	font-size: 16px;
+	color: var(--accent);
 }
 
 .home-flex-row {
@@ -698,6 +778,11 @@ body {
 	margin-bottom: 10px;
 	display: block;
 	letter-spacing: 1px;
+}
+
+[data-style="pixel"] .section-label {
+	font-size: 15px;
+	letter-spacing: 2px;
 }
 
 .mode-grid {
@@ -731,6 +816,20 @@ body {
 	background: rgba(var(--secondary-rgb), 0.15);
 	box-shadow: 0 0 15px rgba(var(--secondary-rgb), 0.35);
 }
+
+[data-style="pixel"] .mode-card {
+	border: 2px solid var(--border-color);
+	border-radius: 0px !important;
+	box-shadow: 3px 3px 0px #000;
+}
+[data-style="pixel"] .mode-card.selected {
+	border-color: var(--accent);
+	background: rgba(var(--secondary-rgb), 0.35);
+	box-shadow:
+		3px 3px 0px #000,
+		inset 0 0 10px rgba(var(--accent-rgb), 0.4);
+}
+
 .mode-card .icon {
 	font-size: 24px;
 	margin-bottom: 4px;
@@ -747,6 +846,10 @@ body {
 	letter-spacing: 0.5px;
 }
 
+[data-style="pixel"] .mode-card .title {
+	font-size: 14px;
+}
+
 .high-score-board {
 	background: var(--track-bg);
 	border: 1px solid var(--border-color);
@@ -756,6 +859,12 @@ body {
 	display: flex;
 	align-items: center;
 	overflow-x: auto;
+}
+
+[data-style="pixel"] .high-score-board {
+	border: 2px solid var(--border-color);
+	border-radius: 0px !important;
+	box-shadow: 3px 3px 0px #000;
 }
 
 .leaderboard-table {
@@ -771,6 +880,11 @@ body {
 	padding-bottom: 8px;
 	text-align: center;
 }
+
+[data-style="pixel"] .leaderboard-table th {
+	font-size: 14px;
+}
+
 .leaderboard-table td {
 	padding: 8px 4px;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -791,9 +905,11 @@ body {
 	font-size: 16px;
 }
 
-/* ========================================================= */
+[data-style="pixel"] .main-action-btn {
+	font-size: 20px;
+}
+
 /* 6. POPUP, DIALOG & ADMIN CONFIG MODAL                     */
-/* ========================================================= */
 .custom-popup {
 	position: fixed;
 	inset: 0;
@@ -837,9 +953,132 @@ body {
 	width: 95% !important;
 }
 
-/* ========================================================= */
-/* 6.1 THEME SELECTOR & CONTRAST FIX CHO CẢ DARK / LIGHT     */
-/* ========================================================= */
+/* 6.1 THIẾT KẾ MỚI CHO CÁC POPUP ĐƠN GIẢN (AUTH & BOT)      */
+.modal-auth {
+	max-width: 380px !important;
+	padding: 24px 20px !important;
+	text-align: left;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.auth-header-strip {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-bottom: 1px solid var(--border-color);
+	padding-bottom: 10px;
+}
+
+.auth-icon-tag {
+	font-size: 24px;
+	line-height: 1;
+}
+
+.popup-auth-title {
+	font-family: var(--font-heading);
+	font-size: 16px;
+	font-weight: 900;
+	color: var(--primary);
+	letter-spacing: 0.5px;
+	margin: 0;
+}
+
+[data-style="pixel"] .popup-auth-title {
+	font-size: 20px;
+}
+
+.popup-auth-desc {
+	font-size: 12.5px;
+	color: var(--text-muted);
+	line-height: 1.45;
+	margin: 0;
+}
+
+.auth-input-group {
+	margin-top: 4px;
+}
+
+.cyber-input {
+	width: 100%;
+	padding: 10px 14px;
+	font-size: 14px;
+	background: var(--input-bg);
+	border: 1.5px solid var(--border-color);
+	color: var(--text-main);
+	border-radius: var(--border-radius-btn);
+	outline: none;
+	font-family: var(--font-ui);
+	transition: all 0.2s ease;
+}
+
+.cyber-input:focus {
+	border-color: var(--primary);
+	box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.3);
+}
+
+.auth-error-text {
+	color: var(--incorrect);
+	font-size: 12px;
+	font-weight: 700;
+	text-align: center;
+}
+
+.popup-actions-row {
+	display: flex;
+	gap: 10px;
+	margin-top: 8px;
+}
+
+.popup-actions-row .cyber-btn {
+	flex: 1;
+	padding: 10px 12px;
+	font-size: 13px;
+}
+
+/* ĐẶC TRƯNG THEME CHO POPUP */
+[data-style="cyberpunk"] .modal-auth {
+	clip-path: var(--clip-path-chamfer);
+	border: 1.5px solid var(--primary);
+}
+
+[data-style="vintage"] .modal-auth {
+	border: 2px solid var(--primary);
+	outline: 1px solid rgba(212, 175, 55, 0.3);
+	outline-offset: -4px;
+}
+
+[data-style="xianxia"] .modal-auth {
+	border-radius: 20px;
+	border: 1.5px solid var(--primary);
+}
+[data-style="xianxia"] .cyber-input {
+	border-radius: 12px;
+}
+
+[data-style="steampunk"] .modal-auth {
+	clip-path: var(--clip-path-chamfer);
+	border: 2px solid var(--primary);
+}
+
+[data-style="thuymac"] .modal-auth {
+	border: 1.5px solid var(--border-color);
+	border-radius: 10px;
+}
+
+[data-style="pixel"] .modal-auth {
+	border: 3px solid var(--border-color);
+	border-radius: 0px !important;
+	box-shadow: 4px 4px 0px #000;
+}
+[data-style="pixel"] .cyber-input {
+	border-radius: 0px !important;
+	border: 2px solid var(--border-color);
+	font-size: 18px;
+}
+
+/* 6.2 THEME SELECTOR                                        */
 .style-modal-content {
 	max-height: 90vh;
 	overflow-y: auto;
@@ -933,7 +1172,6 @@ body {
 		var(--glow);
 }
 
-/* FIX ĐỘ TƯƠNG PHẢN CHỮ THEME SELECTOR KHI ĐƯỢC CHỌN */
 .style-card.selected {
 	border-color: var(--accent) !important;
 	background: rgba(var(--accent-rgb), 0.16) !important;
@@ -990,25 +1228,41 @@ body {
 	font-weight: 900;
 }
 
-/* HIỂN THỊ RÕ TÊN TRONG LIGHT THEME */
-[data-theme="light"] .style-card-name {
-	color: #0c1322 !important;
-}
-[data-theme="light"] .style-card.selected .style-card-name {
-	color: var(--accent) !important;
-}
-
 .style-card-desc {
 	font-size: 11.5px;
 	color: var(--text-muted);
 	line-height: 1.45;
 	flex: 1;
 	margin-bottom: 12px;
+	font-weight: 500;
 }
 
 .style-card.selected .style-card-desc {
 	color: var(--text-main) !important;
 	opacity: 0.95;
+}
+
+[data-theme="light"] .style-card-name {
+	color: #0f172a !important;
+}
+[data-theme="light"] .style-card.selected .style-card-name {
+	color: var(--accent) !important;
+}
+[data-theme="light"] .style-card-desc {
+	color: #334155 !important;
+	font-weight: 600;
+}
+[data-theme="light"] .style-card.selected .style-card-desc {
+	color: #0f172a !important;
+}
+[data-theme="light"] .style-card-badge {
+	background: rgba(0, 0, 0, 0.06);
+	color: #475569;
+	border-color: rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] .style-card {
+	background: #ffffff;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .style-card-tag {
@@ -1035,9 +1289,7 @@ body {
 	justify-content: center;
 }
 
-/* ========================================================= */
-/* 6.2 BẢNG CÀI ĐẶT THÔNG SỐ ADMIN & FIELDSET/LEGEND         */
-/* ========================================================= */
+/* 6.3 BẢNG CÀI ĐẶT THÔNG SỐ ADMIN                           */
 .admin-config-modal-content {
 	display: flex;
 	flex-direction: column;
@@ -1225,9 +1477,7 @@ body {
 	gap: 6px;
 }
 
-/* ========================================================= */
-/* 6.3 MODAL XÁC NHẬN ĐẦU HÀNG (PARALLEL BUTTONS)           */
-/* ========================================================= */
+/* 6.4 MODAL XÁC NHẬN ĐẦU HÀNG                               */
 .surrender-popup-content {
 	max-width: 420px !important;
 	padding: 26px 22px !important;
@@ -1287,9 +1537,7 @@ body {
 	background: linear-gradient(135deg, #4f586b 0%, #2b3240 100%) !important;
 }
 
-/* ========================================================= */
-/* 7. ADMIN TABLE (ONLINE & BANNED MODAL)                   */
-/* ========================================================= */
+/* 7. ADMIN TABLE                                            */
 .admin-table-wrapper {
 	width: 100%;
 	max-height: 55vh;
@@ -1401,9 +1649,7 @@ body {
 	box-shadow: 0 4px 12px rgba(0, 255, 102, 0.7);
 }
 
-/* ========================================================= */
-/* 8. PHÒNG CHỜ (LOBBY - FLEXBOX NAV BAR KHÔNG BỊ ĐÈ NÚT)   */
-/* ========================================================= */
+/* 8. PHÒNG CHỜ (LOBBY) & THIẾT KẾ ĐỘ KHÓ                    */
 .screen {
 	width: 100%;
 	max-width: 900px;
@@ -1424,7 +1670,6 @@ body {
 	margin: auto;
 }
 
-/* KHUNG ĐIỀU HƯỚNG LINH HOẠT CHO PHÒNG CHỜ */
 .lobby-nav-bar {
 	display: flex;
 	justify-content: space-between;
@@ -1491,15 +1736,65 @@ body {
 	font-weight: 800;
 	font-size: 15px;
 }
+
+/* THIẾT KẾ LOBBY DIFFICULTY TAG TƯƠNG PHẢN CAO CHO CẢ DARK & LIGHT */
 .lobby-diff-tag {
 	font-family: var(--font-heading);
-	font-weight: 800;
+	font-weight: 900;
 	font-size: 12px;
-	padding: 3px 10px;
-	border-radius: 4px;
-	background: rgba(var(--accent-rgb), 0.15);
-	border: 1px solid var(--accent);
-	color: var(--accent);
+	padding: 4px 14px;
+	border-radius: 6px;
+	letter-spacing: 0.5px;
+	display: inline-flex;
+	align-items: center;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+	transition: all 0.2s ease;
+}
+
+/* DARK THEME */
+.lobby-diff-tag[data-diff="custom"] {
+	background: rgba(0, 240, 255, 0.15);
+	border: 1.5px solid #00f0ff;
+	color: #00f0ff;
+}
+.lobby-diff-tag[data-diff="normal"] {
+	background: rgba(255, 230, 0, 0.16);
+	border: 1.5px solid #ffe600;
+	color: #ffe600;
+}
+.lobby-diff-tag[data-diff="hard"] {
+	background: rgba(255, 119, 0, 0.18);
+	border: 1.5px solid #ff7700;
+	color: #ff7700;
+}
+.lobby-diff-tag[data-diff="hell"],
+.lobby-diff-tag[data-diff="legendary"] {
+	background: rgba(255, 0, 85, 0.18);
+	border: 1.5px solid #ff0055;
+	color: #ff0055;
+}
+
+/* LIGHT THEME */
+[data-theme="light"] .lobby-diff-tag[data-diff="custom"] {
+	background: #e0f2fe;
+	border: 1.5px solid #0284c7;
+	color: #0369a1;
+}
+[data-theme="light"] .lobby-diff-tag[data-diff="normal"] {
+	background: #fef3c7;
+	border: 1.5px solid #d97706;
+	color: #92400e;
+}
+[data-theme="light"] .lobby-diff-tag[data-diff="hard"] {
+	background: #ffedd5;
+	border: 1.5px solid #ea580c;
+	color: #9a3412;
+}
+[data-theme="light"] .lobby-diff-tag[data-diff="hell"],
+[data-theme="light"] .lobby-diff-tag[data-diff="legendary"] {
+	background: #ffe4e6;
+	border: 1.5px solid #e11d48;
+	color: #881337;
 }
 
 .lobby-players-title {
@@ -1513,25 +1808,55 @@ body {
 
 #lobby-players-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-	gap: 10px;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 12px;
 	margin: 15px 0;
 }
 
 .lobby-player-card {
 	position: relative;
 	background: var(--input-bg);
-	border: 1px solid var(--primary);
+	border: 1.5px solid var(--primary);
 	border-radius: var(--border-radius-box);
-	padding: 12px 24px 12px 12px;
-	text-align: center;
-	font-weight: 700;
-	font-size: 13px;
+	padding: 10px 24px 10px 14px;
+	text-align: left;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 54px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	transition: all 0.2s ease;
+}
+
+.lobby-player-card:hover {
+	border-color: var(--accent);
+	transform: translateY(-2px);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.lobby-player-icon {
+	font-size: 28px;
+	line-height: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 48px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+	flex-shrink: 0;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+	transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.lobby-player-card:hover .lobby-player-icon {
+	transform: scale(1.2);
+}
+
+.lobby-player-name {
+	font-weight: 800;
+	font-size: 13.5px;
+	color: var(--text-main);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
 }
 
 .kick-player-btn {
@@ -1637,9 +1962,7 @@ body {
 	cursor: not-allowed;
 }
 
-/* ========================================================= */
 /* 9. BÀN CHƠI CHÍNH & TRACK TIẾN ĐỘ                        */
-/* ========================================================= */
 .game-hud-header {
 	width: 100%;
 	display: flex;
@@ -1768,14 +2091,25 @@ body {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
+[data-style="pixel"] .track-line-bg {
+	border-radius: 0px !important;
+	border: 2px solid var(--border-color);
+	height: 24px;
+}
+[data-style="pixel"] .track-line-fill {
+	border-radius: 0px !important;
+}
+[data-style="pixel"] .runner-icon-badge {
+	border-radius: 0px !important;
+	border: 2px solid var(--accent);
+}
+
 .track-row.disabled-track {
 	opacity: 0.45 !important;
 	filter: grayscale(1) !important;
 }
 
-/* ========================================================= */
 /* 10. KHU VỰC GÕ CHỮ (TYPING AREA)                          */
-/* ========================================================= */
 #typing-area {
 	width: 100%;
 	padding: 18px;
@@ -1816,6 +2150,13 @@ body {
 	gap: 6px 10px;
 	scroll-behavior: smooth;
 	transition: transform 0.3s ease;
+}
+
+[data-style="pixel"] #words-display {
+	font-size: 26px;
+	letter-spacing: 1px;
+	border-radius: 0px !important;
+	border: 2px solid var(--border-color);
 }
 
 .ngau-hung-mode-display {
@@ -1885,9 +2226,14 @@ body {
 	box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.35);
 }
 
-/* ========================================================= */
-/* 11. BOSS ARENA & COMBO HUD & KỸ NĂNG HIỆU ỨNG             */
-/* ========================================================= */
+[data-style="pixel"] #type-input {
+	border-radius: 0px !important;
+	border: 2px solid var(--border-color);
+	font-size: 24px;
+	letter-spacing: 1px;
+}
+
+/* 11. BOSS ARENA & COMBO HUD                                */
 .boss-arena-container {
 	width: 100%;
 	padding: 16px;
@@ -1900,7 +2246,6 @@ body {
 	transition: all 0.3s ease;
 }
 
-/* HIỆU ỨNG BOSS BỊ CHOÁNG */
 .boss-arena-container.boss-stunned {
 	border-color: #ffd700 !important;
 	box-shadow:
@@ -1958,6 +2303,14 @@ body {
 	height: 100%;
 	background: linear-gradient(90deg, #ff0055, #ff7700);
 	transition: width 0.15s linear;
+}
+
+[data-style="pixel"] .boss-hp-bar-bg {
+	border-radius: 0px !important;
+	border: 2px solid #000;
+}
+[data-style="pixel"] .boss-hp-bar-fill {
+	border-radius: 0px !important;
 }
 
 .boss-shield-wrapper {
@@ -2048,11 +2401,7 @@ body {
 	border-radius: 6px;
 }
 
-/* ========================================================= */
 /* 11.1 HIỆU ỨNG KỸ NĂNG BOSS: SHAKE, FOG, MIRROR           */
-/* ========================================================= */
-
-/* 1. RUNG CHẤN TREMOR */
 .boss-shake-active {
 	animation: bossTremorAnim 0.12s infinite ease-in-out !important;
 }
@@ -2078,7 +2427,6 @@ body {
 	}
 }
 
-/* 2. SƯƠNG MÙ DARK FOG */
 .boss-fog-layer {
 	position: absolute;
 	inset: 0;
@@ -2107,14 +2455,11 @@ body {
 	}
 }
 
-/* 3. ĐẢO NGƯỢC CHỮ GƯƠNG MIRROR */
 .boss-reverse-active {
 	transform: scaleX(-1) !important;
 }
 
-/* ========================================================= */
 /* 11.2 TOAST TỰ BẠO DIỆT BOSS                              */
-/* ========================================================= */
 .boss-toast-container {
 	position: fixed;
 	top: 75px;
@@ -2203,9 +2548,7 @@ body {
 	line-height: 1.35;
 }
 
-/* ========================================================= */
 /* 12. CHAT ENGINE & NÚT EMOJI ĐỒNG BỘ                       */
-/* ========================================================= */
 .global-chat-box {
 	margin-top: 18px;
 	background: var(--input-bg);
@@ -2279,7 +2622,6 @@ body {
 	flex-shrink: 0;
 }
 
-/* NÚT EMOJI ĐỒNG BỘ HIỆN ĐẠI CHO TẤT CẢ KHUNG CHAT */
 .chat-emoji-btn {
 	height: 40px;
 	width: 44px;
@@ -2309,9 +2651,6 @@ body {
 	transform: scale(0.95);
 }
 
-/* ========================================================= */
-/* 12.1 IN-GAME CHAT STREAMLINED                             */
-/* ========================================================= */
 .in-game-chat-box {
 	width: 100%;
 	padding: 8px 12px !important;
@@ -2351,35 +2690,6 @@ body {
 	letter-spacing: 0.5px;
 	flex-shrink: 0;
 	width: auto;
-}
-
-/* THIẾT KẾ ĐẶC TRƯNG CHO IN-GAME CHAT THEO THEME */
-[data-style="cyberpunk"] .in-game-chat-box {
-	border: 1px solid rgba(0, 240, 255, 0.35);
-}
-[data-style="vintage"] .in-game-chat-box {
-	border: 1.5px solid var(--border-color);
-	background: var(--panel-bg);
-}
-[data-style="xianxia"] .in-game-chat-box {
-	border-radius: 20px;
-	border: 1px solid rgba(0, 255, 170, 0.3);
-}
-[data-style="xianxia"] .in-game-chat-input {
-	border-radius: 18px;
-}
-[data-style="xianxia"] .chat-emoji-btn {
-	border-radius: 50%;
-}
-[data-style="xianxia"] .in-game-chat-send-btn {
-	border-radius: 18px;
-}
-[data-style="steampunk"] .in-game-chat-box {
-	border: 1.5px solid var(--border-color);
-}
-[data-style="thuymac"] .in-game-chat-box {
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	border-radius: 8px;
 }
 
 #chat-popups {
@@ -2452,55 +2762,123 @@ body {
 	transform: scale(1.2);
 }
 
-/* ========================================================= */
-/* 13. BẢNG TỔNG KẾT & FOOTER (HOÀN THIỆN)                  */
-/* ========================================================= */
+/* 13. BẢNG TỔNG KẾT                                         */
 .summary-box {
-	max-width: 760px !important;
-	padding: 26px 20px !important;
+	max-width: 920px !important;
+	padding: 34px 28px !important;
+	border-radius: var(--border-radius-box);
 }
+
 .summary-modal-title {
-	font-size: 22px;
+	font-size: 26px;
 	text-align: center;
+	margin-bottom: 4px;
 }
+
+[data-style="pixel"] .summary-modal-title {
+	font-size: 32px;
+}
+
 .boss-result-subtitle {
 	font-family: var(--font-heading);
-	font-size: 14px;
+	font-size: 15px;
 	font-weight: bold;
 	margin-top: 6px;
+	margin-bottom: 12px;
 	text-align: center;
 }
+
 #summary-table {
 	width: 100%;
 	border-collapse: collapse;
-	margin: 18px 0;
+	margin: 22px 0;
+	font-size: 14px;
 }
+
 #summary-table th,
 #summary-table td {
-	padding: 10px 6px;
+	padding: 13px 10px;
 	border-bottom: 1px solid var(--border-color);
 	text-align: center;
 }
+
 #summary-table th {
 	color: var(--primary);
 	font-family: var(--font-heading);
-	font-size: 12px;
+	font-size: 13px;
+	letter-spacing: 0.5px;
 }
+
+[data-style="pixel"] #summary-table th {
+	font-size: 16px;
+}
+
+/* HIỆU ỨNG NHẤP NHÁY HOÀNG KIM (TOP 1) */
 #summary-table tr.winner-row td {
-	color: var(--accent) !important;
-	font-weight: bold;
-	background: rgba(var(--accent-rgb), 0.12);
+	color: #ffe600 !important;
+	font-weight: 900;
+	font-size: 15px;
 }
+
+#summary-table tr.winner-row {
+	background: rgba(255, 230, 0, 0.16) !important;
+	animation: pulseGoldWinner 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGoldWinner {
+	0%,
+	100% {
+		background: rgba(255, 230, 0, 0.14);
+		box-shadow:
+			inset 0 0 10px rgba(255, 230, 0, 0.3),
+			0 0 15px rgba(255, 230, 0, 0.2);
+	}
+	50% {
+		background: rgba(255, 230, 0, 0.32);
+		box-shadow:
+			inset 0 0 25px rgba(255, 230, 0, 0.6),
+			0 0 28px rgba(255, 230, 0, 0.5);
+	}
+}
+
+/* HIỆU ỨNG NHẤP NHÁY ĐỎ CẢNH BÁO (TOP CUỐI BẢNG) */
 #summary-table tr.last-place-row td {
-	color: var(--incorrect) !important;
-	font-weight: bold;
-	background: rgba(255, 51, 102, 0.12);
+	color: #ff3366 !important;
+	font-weight: 800;
 }
+
+#summary-table tr.last-place-row {
+	background: rgba(255, 51, 102, 0.14) !important;
+	animation: pulseRedLastPlace 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseRedLastPlace {
+	0%,
+	100% {
+		background: rgba(255, 51, 102, 0.12);
+		box-shadow:
+			inset 0 0 10px rgba(255, 51, 102, 0.25),
+			0 0 12px rgba(255, 51, 102, 0.15);
+	}
+	50% {
+		background: rgba(255, 51, 102, 0.28);
+		box-shadow:
+			inset 0 0 22px rgba(255, 51, 102, 0.55),
+			0 0 22px rgba(255, 51, 102, 0.4);
+	}
+}
+
 .summary-actions-row {
 	display: flex;
-	gap: 12px;
+	gap: 16px;
 	justify-content: center;
-	margin-top: 15px;
+	margin-top: 20px;
+}
+
+.summary-actions-row .cyber-btn {
+	width: auto;
+	padding: 12px 34px;
+	font-size: 15px;
 }
 
 .footer-copyright {
@@ -2528,4 +2906,10 @@ body {
 	height: 6px;
 	background-color: var(--primary);
 	border-radius: 50%;
+}
+
+[data-style="pixel"] .footer-copyright {
+	border-radius: 0px !important;
+	border: 2px solid var(--border-color);
+	font-size: 14px;
 }

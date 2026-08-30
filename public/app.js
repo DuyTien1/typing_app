@@ -79,11 +79,11 @@ let clientGameConfig = {
 	sanBoss: {
 		wordPoolCount: 400,
 		difficulties: {
-			easy: {
-				id: "easy",
-				name: "Dễ",
-				icon: "🟢",
-				color: "#00ff66",
+			custom: {
+				id: "custom",
+				name: "Tùy Chỉnh",
+				icon: "🛠️",
+				color: "#00f0ff",
 				duration: 180,
 				baseHp: 450,
 				hpPerPlayer: 400,
@@ -348,10 +348,11 @@ const styleNames = {
 	xianxia: "🪷 Tiên Hiệp",
 	steampunk: "⚙️ Cơ Khí",
 	thuymac: "☯️ Thủy Mặc",
+	pixel: "👾 Arcade 8-Bit",
 };
 
 const difficultyMeta = {
-	easy: { name: "DỄ", color: "#00ff66", icon: "🟢" },
+	custom: { name: "TÙY CHỈNH", color: "#00f0ff", icon: "🛠️" },
 	normal: { name: "BÌNH THƯỜNG", color: "#ffe600", icon: "🟡" },
 	hard: { name: "KHÓ", color: "#ff7700", icon: "🔴" },
 	hell: { name: "ĐỊA NGỤC", color: "#ff0055", icon: "💀" },
@@ -785,7 +786,6 @@ function saveActiveDiffInputsToState() {
 			? $("cfg-skill-enable-reverse").checked
 			: false;
 
-		// Tỷ lệ xuất hiện từng kỹ năng
 		if ($("cfg-skill-weight-shield"))
 			diff.skillWeights.shield = parseInt($("cfg-skill-weight-shield").value) || 0;
 		if ($("cfg-skill-weight-capslock"))
@@ -1241,7 +1241,8 @@ function renderLobbyPlayers() {
 		.map(
 			(p) => `
 		<div class="lobby-player-card">
-			${p.icon || DEFAULT_ICON} ${p.username} ${p.id === socket.id ? "(Bạn)" : ""}
+			<span class="lobby-player-icon">${p.icon || DEFAULT_ICON}</span>
+			<span class="lobby-player-name">${p.username} ${p.id === socket.id ? "(Bạn)" : ""}</span>
 			${isAdmin && p.id !== socket.id ? `<button class="kick-player-btn" onclick="socket.emit('admin_kick_lobby_player', { targetSocketId: '${p.id}' })">&times;</button>` : ""}
 		</div>
 	`,
@@ -1306,6 +1307,7 @@ socket.on("update_lobby", (data) => {
 		if (isDiffMode) {
 			const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
 			diffTag.innerText = `ĐỘ KHÓ: ${meta.name}`;
+			diffTag.setAttribute("data-diff", currentDifficulty);
 			diffTag.style.borderColor = meta.color;
 			diffTag.style.color = meta.color;
 		}
