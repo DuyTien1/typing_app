@@ -310,6 +310,27 @@
 	--box-shadow-style: 4px 4px 0px #2a1b42;
 }
 
+/* QUY TẮC CỠ CHỮ TĂNG 2PX RIÊNG CHO ARCADE PIXEL THEME */
+[data-style="pixel"] body,
+[data-style="pixel"] input,
+[data-style="pixel"] button,
+[data-style="pixel"] table {
+	font-size: 15px;
+}
+
+[data-style="pixel"] .cyber-btn {
+	font-size: 15px;
+}
+
+[data-style="pixel"] .track-header {
+	font-size: 15px;
+}
+
+[data-style="pixel"] .leaderboard-table td,
+[data-style="piel"] #summary-table td {
+	font-size: 15px;
+}
+
 /* 2. CƠ SỞ & BỐ CỤC TỔNG THỂ                                */
 * {
 	box-sizing: border-box;
@@ -738,7 +759,7 @@ body {
 }
 
 [data-style="pixel"] .glitch-title {
-	font-size: 38px;
+	font-size: 40px;
 	letter-spacing: 3px;
 	text-shadow: 3px 3px 0px #bd00ff;
 }
@@ -753,7 +774,7 @@ body {
 }
 
 [data-style="pixel"] .subtitle {
-	font-size: 16px;
+	font-size: 18px;
 	color: var(--accent);
 }
 
@@ -781,7 +802,7 @@ body {
 }
 
 [data-style="pixel"] .section-label {
-	font-size: 15px;
+	font-size: 17px;
 	letter-spacing: 2px;
 }
 
@@ -847,7 +868,7 @@ body {
 }
 
 [data-style="pixel"] .mode-card .title {
-	font-size: 14px;
+	font-size: 16px;
 }
 
 .high-score-board {
@@ -882,7 +903,7 @@ body {
 }
 
 [data-style="pixel"] .leaderboard-table th {
-	font-size: 14px;
+	font-size: 16px;
 }
 
 .leaderboard-table td {
@@ -906,7 +927,7 @@ body {
 }
 
 [data-style="pixel"] .main-action-btn {
-	font-size: 20px;
+	font-size: 22px;
 }
 
 /* 6. POPUP, DIALOG & ADMIN CONFIG MODAL                     */
@@ -986,7 +1007,7 @@ body {
 }
 
 [data-style="pixel"] .popup-auth-title {
-	font-size: 20px;
+	font-size: 22px;
 }
 
 .popup-auth-desc {
@@ -1075,7 +1096,7 @@ body {
 [data-style="pixel"] .cyber-input {
 	border-radius: 0px !important;
 	border: 2px solid var(--border-color);
-	font-size: 18px;
+	font-size: 20px;
 }
 
 /* 6.2 THEME SELECTOR                                        */
@@ -1172,13 +1193,19 @@ body {
 		var(--glow);
 }
 
+/* THIẾT KẾ SELECTED MỚI: TƯƠNG PHẢN CAO, ĐẸP MẮT TRÊN CẢ NỀN SÁNG VÀ TỐI */
 .style-card.selected {
 	border-color: var(--accent) !important;
-	background: rgba(var(--accent-rgb), 0.16) !important;
+	background: linear-gradient(
+		180deg,
+		rgba(var(--accent-rgb), 0.12) 0%,
+		var(--input-bg) 100%
+	) !important;
 	box-shadow:
-		0 0 20px rgba(var(--accent-rgb), 0.4),
-		inset 0 0 15px rgba(var(--accent-rgb), 0.08);
-	transform: translateY(-2px);
+		0 0 0 1.5px var(--accent),
+		0 10px 25px rgba(0, 0, 0, 0.45),
+		0 0 20px rgba(var(--accent-rgb), 0.35) !important;
+	transform: translateY(-3px);
 }
 
 .style-card-badge {
@@ -1188,18 +1215,20 @@ body {
 	font-size: 9px;
 	font-family: var(--font-heading);
 	font-weight: 800;
-	padding: 2px 6px;
+	padding: 2px 7px;
 	border-radius: 4px;
 	background: rgba(255, 255, 255, 0.08);
 	color: var(--text-muted);
 	border: 1px solid rgba(255, 255, 255, 0.12);
+	transition: all 0.2s ease;
 }
 
 .style-card.selected .style-card-badge {
-	background: var(--accent);
-	color: #000;
-	font-weight: 900;
-	border-color: var(--accent);
+	background: var(--accent) !important;
+	color: #000000 !important;
+	font-weight: 900 !important;
+	border-color: var(--accent) !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .style-card-icon-wrap {
@@ -1215,7 +1244,7 @@ body {
 
 .style-card-name {
 	font-family: var(--font-heading);
-	font-weight: 900;
+	font-weight: 800;
 	font-size: 15px;
 	color: var(--text-main);
 	margin-bottom: 6px;
@@ -1224,8 +1253,9 @@ body {
 }
 
 .style-card.selected .style-card-name {
-	color: var(--accent) !important;
-	font-weight: 900;
+	color: #ffffff !important;
+	font-weight: 900 !important;
+	text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
 }
 
 .style-card-desc {
@@ -1238,49 +1268,74 @@ body {
 }
 
 .style-card.selected .style-card-desc {
-	color: var(--text-main) !important;
-	opacity: 0.95;
-}
-
-[data-theme="light"] .style-card-name {
-	color: #0f172a !important;
-}
-[data-theme="light"] .style-card.selected .style-card-name {
-	color: var(--accent) !important;
-}
-[data-theme="light"] .style-card-desc {
-	color: #334155 !important;
+	color: #d1d5db !important;
 	font-weight: 600;
-}
-[data-theme="light"] .style-card.selected .style-card-desc {
-	color: #0f172a !important;
-}
-[data-theme="light"] .style-card-badge {
-	background: rgba(0, 0, 0, 0.06);
-	color: #475569;
-	border-color: rgba(0, 0, 0, 0.15);
-}
-[data-theme="light"] .style-card {
-	background: #ffffff;
-	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+	opacity: 0.95;
 }
 
 .style-card-tag {
 	font-family: var(--font-heading);
 	font-size: 10px;
 	font-weight: 800;
-	padding: 3px 8px;
+	padding: 3px 10px;
 	border-radius: 12px;
 	background: rgba(var(--primary-rgb), 0.15);
 	color: var(--primary);
 	border: 1px solid rgba(var(--primary-rgb), 0.3);
+	transition: all 0.2s ease;
 }
 
 .style-card.selected .style-card-tag {
-	background: rgba(var(--accent-rgb), 0.25);
-	color: var(--accent);
-	border-color: var(--accent);
-	font-weight: 900;
+	background: var(--accent) !important;
+	color: #000000 !important;
+	border-color: var(--accent) !important;
+	font-weight: 900 !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* HIỆU CHỈNH RIÊNG CHO LIGHT MODE (NỀN SÁNG) */
+[data-theme="light"] .style-card {
+	background: #ffffff;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .style-card-name {
+	color: #0f172a !important;
+}
+[data-theme="light"] .style-card-desc {
+	color: #475569 !important;
+	font-weight: 500;
+}
+[data-theme="light"] .style-card-badge {
+	background: rgba(0, 0, 0, 0.06);
+	color: #475569;
+	border-color: rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] .style-card.selected {
+	background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%) !important;
+	border-color: var(--accent) !important;
+	box-shadow:
+		0 0 0 1.5px var(--accent),
+		0 8px 25px rgba(180, 83, 9, 0.18) !important;
+}
+[data-theme="light"] .style-card.selected .style-card-name {
+	color: #1e293b !important;
+	font-weight: 900 !important;
+	text-shadow: none;
+}
+[data-theme="light"] .style-card.selected .style-card-desc {
+	color: #334155 !important;
+	font-weight: 600;
+}
+[data-theme="light"] .style-card.selected .style-card-badge {
+	background: var(--accent) !important;
+	color: #ffffff !important;
+	border-color: var(--accent) !important;
+}
+[data-theme="light"] .style-card.selected .style-card-tag {
+	background: var(--accent) !important;
+	color: #ffffff !important;
+	border-color: var(--accent) !important;
+	font-weight: 900 !important;
 }
 
 .style-modal-footer {
@@ -1666,7 +1721,6 @@ body {
 	padding: 24px 22px;
 	text-align: center;
 	width: 100%;
-	/* max-width: 820px; */
 	margin: auto;
 }
 
@@ -2153,7 +2207,7 @@ body {
 }
 
 [data-style="pixel"] #words-display {
-	font-size: 26px;
+	font-size: 28px;
 	letter-spacing: 1px;
 	border-radius: 0px !important;
 	border: 2px solid var(--border-color);
@@ -2229,7 +2283,7 @@ body {
 [data-style="pixel"] #type-input {
 	border-radius: 0px !important;
 	border: 2px solid var(--border-color);
-	font-size: 24px;
+	font-size: 26px;
 	letter-spacing: 1px;
 }
 
@@ -2401,7 +2455,7 @@ body {
 	border-radius: 6px;
 }
 
-/* 11.1 HIỆU ỨNG KỸ NĂNG BOSS: SHAKE, FOG, MIRROR           */
+/* 11.1 HIỆU ỨNG KỸ NĂNG BOSS: SHAKE, FOG (ĐÃ NERF), MIRROR   */
 .boss-shake-active {
 	animation: bossTremorAnim 0.12s infinite ease-in-out !important;
 }
@@ -2427,31 +2481,32 @@ body {
 	}
 }
 
+/* DARK FOG ĐÃ ĐƯỢC GIẢM ĐỘ PHỦ ĐEN & NHẤP NHÁY CHẬM HƠN */
 .boss-fog-layer {
 	position: absolute;
 	inset: 0;
 	background: radial-gradient(
 		circle at 50% 50%,
-		rgba(0, 0, 0, 0.2) 0%,
-		rgba(5, 5, 15, 0.94) 65%,
-		#020205 100%
+		rgba(0, 0, 0, 0.1) 0%,
+		rgba(5, 5, 15, 0.78) 65%,
+		rgba(2, 2, 5, 0.85) 100%
 	);
 	pointer-events: none;
 	z-index: 50;
-	backdrop-filter: blur(4px);
-	-webkit-backdrop-filter: blur(4px);
-	animation: fogBreatheAnim 2.5s infinite ease-in-out;
+	backdrop-filter: blur(2.8px);
+	-webkit-backdrop-filter: blur(2.8px);
+	animation: fogBreatheAnim 3.3s infinite ease-in-out;
 }
 
 @keyframes fogBreatheAnim {
 	0%,
 	100% {
-		opacity: 0.88;
-		backdrop-filter: blur(3.5px);
+		opacity: 0.72;
+		backdrop-filter: blur(2.5px);
 	}
 	50% {
-		opacity: 0.98;
-		backdrop-filter: blur(6px);
+		opacity: 0.82;
+		backdrop-filter: blur(4.5px);
 	}
 }
 
@@ -2776,7 +2831,7 @@ body {
 }
 
 [data-style="pixel"] .summary-modal-title {
-	font-size: 32px;
+	font-size: 34px;
 }
 
 .boss-result-subtitle {
@@ -2810,40 +2865,63 @@ body {
 }
 
 [data-style="pixel"] #summary-table th {
-	font-size: 16px;
+	font-size: 18px;
 }
 
-/* HIỆU ỨNG NHẤP NHÁY HOÀNG KIM (TOP 1) */
+/* THIẾT KẾ MỚI CHO TOP 1 (MVP) RÕ NÉT TRÊN CẢ DARK & LIGHT MODE */
 #summary-table tr.winner-row td {
-	color: #ffe600 !important;
-	font-weight: 900;
+	color: #ffffff !important;
+	font-weight: 800;
 	font-size: 15px;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+#summary-table tr.winner-row td:first-child,
+#summary-table tr.winner-row td:nth-child(3),
+#summary-table tr.winner-row td:nth-child(4) {
+	color: #ffe600 !important;
 }
 
 #summary-table tr.winner-row {
-	background: rgba(255, 230, 0, 0.16) !important;
-	animation: pulseGoldWinner 1.8s infinite ease-in-out;
+	background: rgba(255, 230, 0, 0.18) !important;
+	border-top: 2px solid rgba(255, 230, 0, 0.6);
+	border-bottom: 2px solid rgba(255, 230, 0, 0.6);
+	animation: pulseGoldWinner 2.2s infinite ease-in-out;
+}
+
+[data-theme="light"] #summary-table tr.winner-row {
+	background: rgba(234, 179, 8, 0.18) !important;
+	border-top: 2px solid #ca8a04;
+	border-bottom: 2px solid #ca8a04;
+}
+
+[data-theme="light"] #summary-table tr.winner-row td {
+	color: #0f172a !important;
+	text-shadow: none;
+	font-weight: 900;
+}
+
+[data-theme="light"] #summary-table tr.winner-row td:first-child,
+[data-theme="light"] #summary-table tr.winner-row td:nth-child(3),
+[data-theme="light"] #summary-table tr.winner-row td:nth-child(4) {
+	color: #a16207 !important;
 }
 
 @keyframes pulseGoldWinner {
 	0%,
 	100% {
 		background: rgba(255, 230, 0, 0.14);
-		box-shadow:
-			inset 0 0 10px rgba(255, 230, 0, 0.3),
-			0 0 15px rgba(255, 230, 0, 0.2);
+		box-shadow: inset 0 0 10px rgba(255, 230, 0, 0.25);
 	}
 	50% {
-		background: rgba(255, 230, 0, 0.32);
-		box-shadow:
-			inset 0 0 25px rgba(255, 230, 0, 0.6),
-			0 0 28px rgba(255, 230, 0, 0.5);
+		background: rgba(255, 230, 0, 0.26);
+		box-shadow: inset 0 0 18px rgba(255, 230, 0, 0.45);
 	}
 }
 
 /* HIỆU ỨNG NHẤP NHÁY ĐỎ CẢNH BÁO (TOP CUỐI BẢNG) */
 #summary-table tr.last-place-row td {
-	color: #ff3366 !important;
+	color: #ffffff !important;
 	font-weight: 800;
 }
 
@@ -2911,5 +2989,5 @@ body {
 [data-style="pixel"] .footer-copyright {
 	border-radius: 0px !important;
 	border: 2px solid var(--border-color);
-	font-size: 14px;
+	font-size: 16px;
 }

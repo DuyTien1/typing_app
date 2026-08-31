@@ -70,36 +70,36 @@ const GAME_CONFIG = {
 				icon: "🛠️",
 				color: "#00f0ff",
 				duration: 180,
-				baseHp: 450,
-				hpPerPlayer: 400,
-				selfDestructTarget: 450,
+				baseHp: 800,
+				hpPerPlayer: 700,
+				selfDestructTarget: 600,
 				skillInterval: 16,
-				shieldBasePerPlayer: 30,
-				shieldDuration: 8,
-				stunDuration: 4,
+				shieldBasePerPlayer: 40,
+				shieldDuration: 5,
+				stunDuration: 3,
 				shakeDuration: 5,
 				fogDuration: 5,
 				reverseDuration: 5,
 				capslockDuration: 5,
-				ratioViDau: 20,
-				ratioViNoDau: 40,
-				ratioEn: 30,
-				ratioNum: 10,
-				hardViDauRate: 20,
-				hardViNoDauRate: 20,
-				hardEnRate: 20,
+				ratioViDau: 0,
+				ratioViNoDau: 0,
+				ratioEn: 0,
+				ratioNum: 100,
+				hardViDauRate: 0,
+				hardViNoDauRate: 0,
+				hardEnRate: 0,
 				enabledSkills: {
 					shield: true,
 					capslock: false,
 					shake: true,
-					fog: false,
+					fog: true,
 					reverse: false,
 				},
 				skillWeights: {
-					shield: 40,
+					shield: 50,
 					capslock: 0,
-					shake: 30,
-					fog: 30,
+					shake: 25,
+					fog: 25,
 					reverse: 0,
 				},
 			},
@@ -1421,6 +1421,7 @@ const BIG_WORD_BANKS = {
 		],
 	},
 };
+
 BIG_WORD_BANKS.vi_nodau = {
 	easy: BIG_WORD_BANKS.vi_dau.easy.map(removeVietnameseTones),
 	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
@@ -2407,7 +2408,7 @@ io.on("connection", (socket) => {
 					currentRoom.boss.isStunned = true;
 					clearTimeout(currentRoom.boss.shieldTimer);
 
-					io.to(room.id).emit("boss_shield_broken", {
+					io.to(currentRoom.id).emit("boss_shield_broken", {
 						stunDuration: currentRoom.boss.stunDuration,
 						message: `⚡ GIÁP ĐÃ VỠ! Boss bị Choáng ${currentRoom.boss.stunDuration}s (Nhận x1.5 Sát thương)!`,
 					});
