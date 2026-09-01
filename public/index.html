@@ -7,11 +7,11 @@
 
 		<meta
 			name="description"
-			content="Thử thách luyện gõ 10 ngón và phím số Numpad trực tuyến cực nhanh cùng bạn bè. Nhiều chế độ thi đấu tiếng Việt, English, Numpad, Ngẫu Hứng và Săn Boss hấp dẫn."
+			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ và Săn Boss trực tuyến cực nhanh cùng bạn bè."
 		/>
 		<meta
 			name="keywords"
-			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, fast typing challenge, săn boss"
+			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, fast typing challenge, săn boss"
 		/>
 		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
 		<meta name="robots" content="index, follow" />
@@ -21,7 +21,7 @@
 		<meta property="og:title" content="FASTTYPING CHALLENGE - Đua Gõ Phím & Săn Boss Trực Tuyến" />
 		<meta
 			property="og:description"
-			content="Tham gia phòng đua gõ chữ tiếng Việt, Numpad và chế độ Co-op Săn Boss đỉnh cao cùng hàng trăm người chơi khác!"
+			content="Tham gia phòng đua gõ chữ tiếng Việt, Đoán Chữ Bí Ẩn, Numpad và chế độ Co-op Săn Boss đỉnh cao cùng hàng trăm người chơi khác!"
 		/>
 		<meta property="og:image" content="/preview.png" />
 		<link rel="icon" type="image/x-icon" href="https://a.favicon.im/hey.com" />
@@ -118,6 +118,11 @@
 								<div class="mode-card-glow"></div>
 								<div class="icon">🎲</div>
 								<div class="title">Ngẫu Hứng</div>
+							</div>
+							<div class="mode-card" data-lang="doan_chu">
+								<div class="mode-card-glow"></div>
+								<div class="icon">🧩</div>
+								<div class="title">Đoán Chữ</div>
 							</div>
 							<div class="mode-card" data-lang="san_boss">
 								<div class="mode-card-glow"></div>
@@ -397,6 +402,64 @@
 									<div class="config-field-row">
 										<label>Tỷ lệ từ KHÓ English (%):</label>
 										<input type="number" id="cfg-nh-hard-en" min="0" max="100" />
+									</div>
+								</div>
+							</div>
+						</fieldset>
+
+						<!-- CẤU HÌNH ĐOÁN CHỮ (MỚI) -->
+						<fieldset class="admin-config-fieldset full-width">
+							<legend>Chế Độ Đoán Chữ (Tùy chỉnh theo từng Độ Khó)</legend>
+							<div class="config-field-row" style="margin-bottom: 12px">
+								<label style="color: var(--accent); font-weight: bold"
+									>🎯 CHỌN ĐỘ KHÓ ĐOÁN CHỮ:</label
+								>
+								<select id="cfg-dc-diff-select" class="admin-select-input">
+									<option value="normal" selected>🟡 Bình thường</option>
+									<option value="hard">🔴 Khó</option>
+									<option value="legendary">👑 Huyền Thoại</option>
+								</select>
+							</div>
+
+							<div class="admin-diff-detail-box">
+								<div id="cfg-dc-diff-active-title" class="diff-active-indicator">
+									⚙️ THÔNG SỐ ĐỘ KHÓ: BÌNH THƯỜNG
+								</div>
+
+								<div class="config-sub-grid">
+									<div class="config-field-row">
+										<label>Thời gian mỗi vòng (giây):</label>
+										<input type="number" id="cfg-dc-round-dur" min="5" max="60" />
+									</div>
+									<div class="config-field-row">
+										<label>Giãn cách lật 1 chữ (giây):</label>
+										<input type="number" id="cfg-dc-reveal-interval" min="0.3" max="5" step="0.1" />
+									</div>
+									<div class="config-field-row">
+										<label>Thời gian nghỉ giữa vòng (giây):</label>
+										<input type="number" id="cfg-dc-inter-dur" min="1" max="10" step="0.5" />
+									</div>
+									<div class="config-field-row">
+										<label>Tổng số vòng thi đấu:</label>
+										<input type="number" id="cfg-dc-total-rounds" min="3" max="30" />
+									</div>
+								</div>
+
+								<hr class="config-divider" />
+								<div class="skill-config-header">🎲 TỶ LỆ XUẤT HIỆN NGÔN NGỮ ĐOÁN CHỮ (%)</div>
+
+								<div class="config-sub-grid">
+									<div class="config-field-row">
+										<label>Tỷ lệ Tiếng Việt CÓ DẤU (%):</label>
+										<input type="number" id="cfg-dc-ratio-vi-dau" min="0" max="100" />
+									</div>
+									<div class="config-field-row">
+										<label>Tỷ lệ Tiếng Việt KHÔNG DẤU (%):</label>
+										<input type="number" id="cfg-dc-ratio-vi-nodau" min="0" max="100" />
+									</div>
+									<div class="config-field-row">
+										<label>Tỷ lệ English (%):</label>
+										<input type="number" id="cfg-dc-ratio-en" min="0" max="100" />
 									</div>
 								</div>
 							</div>
@@ -756,6 +819,13 @@
 						</button>
 
 						<button
+							id="btn-open-dc-difficulty-select"
+							class="cyber-btn lobby-nav-btn btn-diff-dc hidden"
+						>
+							🧩 ĐỘ KHÓ
+						</button>
+
+						<button
 							id="btn-open-boss-difficulty-select"
 							class="cyber-btn lobby-nav-btn btn-diff-boss hidden"
 						>
@@ -841,7 +911,48 @@
 			</div>
 		</div>
 
-		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO SĂN BOSS -->
+		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO ĐOÁN CHỮ (MỚI) -->
+		<div id="dc-difficulty-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3 class="popup-section-title" style="color: var(--secondary)">
+					🧩 CHỌN ĐỘ KHÓ: ĐOÁN CHỮ
+				</h3>
+				<div class="diff-picker-grid">
+					<div class="diff-card selected" data-dc-diff="normal">
+						<div class="diff-icon">🟡</div>
+						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
+						<div class="diff-desc">
+							Từ vựng thân thuộc, hiển thị gợi ý chủ đề rõ ràng và thời gian lật chữ hợp lý.
+						</div>
+					</div>
+					<div class="diff-card" data-dc-diff="hard">
+						<div class="diff-icon">🔴</div>
+						<div class="diff-name" style="color: #ff7700">KHÓ</div>
+						<div class="diff-desc">
+							Thành ngữ, tục ngữ và thuật ngữ phức tạp, tốc độ mở ô chữ nhanh hơn.
+						</div>
+					</div>
+					<div class="diff-card" data-dc-diff="legendary">
+						<div class="diff-icon">👑</div>
+						<div class="diff-name" style="color: #ff0055">HUYỀN THOẠI</div>
+						<div class="diff-desc">
+							Không có gợi ý chủ đề! Ký tự lật chớp nhoáng, thử thách trí tuệ suy đoán cực hạn.
+						</div>
+					</div>
+				</div>
+				<div style="margin-top: 20px">
+					<button
+						class="cyber-btn btn-secondary-style"
+						data-close="dc-difficulty-popup"
+						style="padding: 8px 25px; width: auto; margin: 0 auto"
+					>
+						ĐÓNG
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP 3: CHỌN ĐỘ KHÓ CHO SĂN BOSS -->
 		<div id="boss-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
 				<h3 class="popup-section-title" style="color: var(--secondary)">
@@ -1003,10 +1114,19 @@
 
 			<div id="typing-area" class="cyber-box">
 				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
+
 				<!-- KHU VỰC TRẠNG THÁI NGẪU HỨNG -->
 				<div id="ngau-hung-status" class="ngau-hung-badge-wrapper hidden">
 					<span id="ngau-hung-round-text" class="ngau-hung-round-text">VÒNG 1/15</span>
 				</div>
+
+				<!-- KHU VỰC GỢI Ý & TRẠNG THÁI ĐOÁN CHỮ (MỚI) -->
+				<div id="doan-chu-status" class="doan-chu-badge-wrapper hidden">
+					<span id="doan-chu-round-text" class="doan-chu-round-text">VÒNG 1/10</span>
+					<div id="doan-chu-hint-badge" class="doan-chu-hint-badge">💡 GỢI Ý: ---</div>
+					<span id="doan-chu-hidden-count" class="doan-chu-hidden-count">KÝ TỰ ẨN: --</span>
+				</div>
+
 				<div id="words-display"></div>
 				<input
 					type="text"

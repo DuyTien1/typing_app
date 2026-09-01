@@ -327,11 +327,11 @@
 }
 
 [data-style="pixel"] .leaderboard-table td,
-[data-style="piel"] #summary-table td {
+[data-style="pixel"] #summary-table td {
 	font-size: 15px;
 }
 
-/* 2. CƠ SỞ & BỐ CỤC TỔNG THỂ                                */
+/* 2. CƠ SỞ & BỐ CỤC TỔNG THỂ */
 * {
 	box-sizing: border-box;
 	margin: 0;
@@ -431,7 +431,7 @@ body {
 	image-rendering: pixelated;
 }
 
-/* 3. THANH ĐIỀU HƯỚNG GÓC TRÊN                              */
+/* 3. THANH ĐIỀU HƯỚNG GÓC TRÊN */
 #user-profile-bar.left-bar {
 	position: fixed;
 	top: 14px;
@@ -618,7 +618,7 @@ body {
 	box-shadow: 0 0 10px var(--secondary) !important;
 }
 
-/* 4. NÚT CHÍNH (CYBER-BTN) THEO TỪNG THEME                  */
+/* 4. NÚT CHÍNH (CYBER-BTN) */
 .cyber-btn {
 	position: relative;
 	width: 100%;
@@ -713,7 +713,7 @@ body {
 	color: #000 !important;
 }
 
-/* 5. MODAL TRANG CHỦ & PHONG THẦN BẢNG                      */
+/* 5. MODAL TRANG CHỦ & PHONG THẦN BẢNG */
 .modal {
 	position: fixed;
 	inset: 0;
@@ -930,7 +930,7 @@ body {
 	font-size: 22px;
 }
 
-/* 6. POPUP, DIALOG & ADMIN CONFIG MODAL                     */
+/* 6. POPUP, DIALOG & ADMIN CONFIG MODAL */
 .custom-popup {
 	position: fixed;
 	inset: 0;
@@ -974,7 +974,6 @@ body {
 	width: 95% !important;
 }
 
-/* 6.1 THIẾT KẾ MỚI CHO CÁC POPUP ĐƠN GIẢN (AUTH & BOT)      */
 .modal-auth {
 	max-width: 380px !important;
 	padding: 24px 20px !important;
@@ -1099,7 +1098,7 @@ body {
 	font-size: 20px;
 }
 
-/* 6.2 THEME SELECTOR                                        */
+/* 6.2 THEME SELECTOR */
 .style-modal-content {
 	max-height: 90vh;
 	overflow-y: auto;
@@ -1193,7 +1192,6 @@ body {
 		var(--glow);
 }
 
-/* THIẾT KẾ SELECTED MỚI: TƯƠNG PHẢN CAO, ĐẸP MẮT TRÊN CẢ NỀN SÁNG VÀ TỐI */
 .style-card.selected {
 	border-color: var(--accent) !important;
 	background: linear-gradient(
@@ -1293,7 +1291,6 @@ body {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
-/* HIỆU CHỈNH RIÊNG CHO LIGHT MODE (NỀN SÁNG) */
 [data-theme="light"] .style-card {
 	background: #ffffff;
 	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
@@ -1344,7 +1341,7 @@ body {
 	justify-content: center;
 }
 
-/* 6.3 BẢNG CÀI ĐẶT THÔNG SỐ ADMIN                           */
+/* 6.3 BẢNG CÀI ĐẶT THÔNG SỐ ADMIN */
 .admin-config-modal-content {
 	display: flex;
 	flex-direction: column;
@@ -1532,7 +1529,7 @@ body {
 	gap: 6px;
 }
 
-/* 6.4 MODAL XÁC NHẬN ĐẦU HÀNG                               */
+/* 6.4 MODAL XÁC NHẬN ĐẦU HÀNG */
 .surrender-popup-content {
 	max-width: 420px !important;
 	padding: 26px 22px !important;
@@ -1592,7 +1589,7 @@ body {
 	background: linear-gradient(135deg, #4f586b 0%, #2b3240 100%) !important;
 }
 
-/* 7. ADMIN TABLE                                            */
+/* 7. ADMIN TABLE */
 .admin-table-wrapper {
 	width: 100%;
 	max-height: 55vh;
@@ -1704,7 +1701,7 @@ body {
 	box-shadow: 0 4px 12px rgba(0, 255, 102, 0.7);
 }
 
-/* 8. PHÒNG CHỜ (LOBBY) & THIẾT KẾ ĐỘ KHÓ                    */
+/* 8. PHÒNG CHỜ (LOBBY) */
 .screen {
 	width: 100%;
 	max-width: 900px;
@@ -1751,6 +1748,7 @@ body {
 }
 
 .btn-diff-nh,
+.btn-diff-dc,
 .btn-diff-boss {
 	background: linear-gradient(135deg, var(--secondary) 0%, #ff5500 100%) !important;
 	border-color: var(--secondary) !important;
@@ -1791,7 +1789,6 @@ body {
 	font-size: 15px;
 }
 
-/* THIẾT KẾ LOBBY DIFFICULTY TAG TƯƠNG PHẢN CAO CHO CẢ DARK & LIGHT */
 .lobby-diff-tag {
 	font-family: var(--font-heading);
 	font-weight: 900;
@@ -2016,7 +2013,7 @@ body {
 	cursor: not-allowed;
 }
 
-/* 9. BÀN CHƠI CHÍNH & TRACK TIẾN ĐỘ                        */
+/* 9. BÀN CHƠI CHÍNH & TRACK TIẾN ĐỘ */
 .game-hud-header {
 	width: 100%;
 	display: flex;
@@ -2163,7 +2160,7 @@ body {
 	filter: grayscale(1) !important;
 }
 
-/* 10. KHU VỰC GÕ CHỮ (TYPING AREA)                          */
+/* 10. KHU VỰC GÕ CHỮ & ĐOÁN CHỮ (TYPING AREA) */
 #typing-area {
 	width: 100%;
 	padding: 18px;
@@ -2171,18 +2168,41 @@ body {
 	overflow: hidden;
 }
 
-.ngau-hung-badge-wrapper {
+.ngau-hung-badge-wrapper,
+.doan-chu-badge-wrapper {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 10px;
-	margin-bottom: 10px;
+	gap: 12px;
+	margin-bottom: 12px;
+	flex-wrap: wrap;
 }
-.ngau-hung-round-text {
+
+.ngau-hung-round-text,
+.doan-chu-round-text {
 	font-family: var(--font-heading);
 	font-size: 14px;
 	font-weight: 900;
 	color: var(--accent);
+}
+
+.doan-chu-hint-badge {
+	background: rgba(var(--primary-rgb), 0.15);
+	border: 1.5px solid var(--primary);
+	color: var(--primary);
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 800;
+	padding: 3px 12px;
+	border-radius: 20px;
+	letter-spacing: 0.5px;
+}
+
+.doan-chu-hidden-count {
+	font-family: var(--font-heading);
+	font-size: 12px;
+	font-weight: 800;
+	color: var(--correct);
 }
 
 #words-display {
@@ -2190,7 +2210,7 @@ body {
 	font-size: 21px;
 	font-weight: 500;
 	line-height: 1.6;
-	height: 125px;
+	height: 135px;
 	overflow-y: auto;
 	padding: 12px 14px;
 	background: var(--input-bg);
@@ -2218,6 +2238,130 @@ body {
 	justify-content: center !important;
 	font-size: 38px !important;
 	font-weight: 700 !important;
+}
+
+/* 10.1 KHUNG Ô CHỮ BÍ ẨN CHO CHẾ ĐỘ ĐOÁN CHỮ */
+.doan-chu-mode-display {
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 8px 16px !important;
+	padding: 15px 10px !important;
+}
+
+.doan-chu-word-group {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 4px 6px;
+}
+
+.mystery-tile {
+	width: 38px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-heading) !important;
+	font-size: 22px;
+	font-weight: 900;
+	background: var(--panel-bg);
+	border: 2px solid var(--border-color);
+	border-radius: var(--border-radius-btn);
+	color: var(--text-main);
+	text-transform: uppercase;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+	transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	position: relative;
+	perspective: 600px;
+}
+
+.mystery-tile.tile-hidden {
+	background: rgba(var(--primary-rgb), 0.05);
+	border-color: rgba(var(--primary-rgb), 0.3);
+	color: transparent;
+}
+
+.mystery-tile.tile-hidden::after {
+	content: "?";
+	position: absolute;
+	color: var(--text-muted);
+	font-size: 18px;
+	font-weight: bold;
+	opacity: 0.6;
+}
+
+.mystery-tile.tile-revealed {
+	background: rgba(var(--accent-rgb), 0.15);
+	border-color: var(--accent);
+	color: var(--accent);
+	animation: tileFlipIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes tileFlipIn {
+	0% {
+		transform: rotateY(90deg) scale(0.8);
+		opacity: 0;
+	}
+	100% {
+		transform: rotateY(0deg) scale(1);
+		opacity: 1;
+	}
+}
+
+.mystery-tile.tile-space {
+	width: 14px;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+/* THEME SPECIFIC CHO TILE ĐOÁN CHỮ */
+[data-style="cyberpunk"] .mystery-tile.tile-revealed {
+	box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
+	text-shadow: 0 0 8px var(--accent);
+}
+
+[data-style="vintage"] .mystery-tile {
+	border: 2px solid #d4af37;
+	box-shadow: 0 4px 0 #331500;
+}
+
+[data-style="pixel"] .mystery-tile {
+	border-radius: 0px !important;
+	border: 2px solid var(--border-color);
+	box-shadow: 3px 3px 0px #000;
+	font-size: 26px;
+}
+[data-style="pixel"] .mystery-tile.tile-revealed {
+	border-color: var(--accent);
+	background: #3a155a;
+	box-shadow: 3px 3px 0px #000;
+}
+
+/* HIỆU ỨNG PHẠT KHI ĐOÁN SAI */
+.input-penalty-shake {
+	animation: penaltyShakeAnim 0.35s ease-in-out !important;
+	border-color: var(--incorrect) !important;
+	box-shadow: 0 0 15px rgba(255, 0, 85, 0.6) !important;
+}
+
+@keyframes penaltyShakeAnim {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	20% {
+		transform: translateX(-8px);
+	}
+	40% {
+		transform: translateX(8px);
+	}
+	60% {
+		transform: translateX(-6px);
+	}
+	80% {
+		transform: translateX(6px);
+	}
 }
 
 .word {
@@ -2287,7 +2431,7 @@ body {
 	letter-spacing: 1px;
 }
 
-/* 11. BOSS ARENA & COMBO HUD                                */
+/* 11. BOSS ARENA & COMBO HUD */
 .boss-arena-container {
 	width: 100%;
 	padding: 16px;
@@ -2455,7 +2599,7 @@ body {
 	border-radius: 6px;
 }
 
-/* 11.1 HIỆU ỨNG KỸ NĂNG BOSS: SHAKE, FOG (ĐÃ NERF), MIRROR   */
+/* 11.1 HIỆU ỨNG KỸ NĂNG BOSS */
 .boss-shake-active {
 	animation: bossTremorAnim 0.12s infinite ease-in-out !important;
 }
@@ -2481,7 +2625,6 @@ body {
 	}
 }
 
-/* DARK FOG ĐÃ ĐƯỢC GIẢM ĐỘ PHỦ ĐEN & NHẤP NHÁY CHẬM HƠN */
 .boss-fog-layer {
 	position: absolute;
 	inset: 0;
@@ -2514,7 +2657,7 @@ body {
 	transform: scaleX(-1) !important;
 }
 
-/* 11.2 TOAST TỰ BẠO DIỆT BOSS                              */
+/* 11.2 TOAST TỰ BẠO DIỆT BOSS */
 .boss-toast-container {
 	position: fixed;
 	top: 75px;
@@ -2603,7 +2746,7 @@ body {
 	line-height: 1.35;
 }
 
-/* 12. CHAT ENGINE & NÚT EMOJI ĐỒNG BỘ                       */
+/* 12. CHAT ENGINE & NÚT EMOJI ĐỒNG BỘ */
 .global-chat-box {
 	margin-top: 18px;
 	background: var(--input-bg);
@@ -2817,7 +2960,7 @@ body {
 	transform: scale(1.2);
 }
 
-/* 13. BẢNG TỔNG KẾT                                         */
+/* 13. BẢNG TỔNG KẾT */
 .summary-box {
 	max-width: 920px !important;
 	padding: 34px 28px !important;
@@ -2868,7 +3011,6 @@ body {
 	font-size: 18px;
 }
 
-/* THIẾT KẾ MỚI CHO TOP 1 (MVP) RÕ NÉT TRÊN CẢ DARK & LIGHT MODE */
 #summary-table tr.winner-row td {
 	color: #ffffff !important;
 	font-weight: 800;
@@ -2919,7 +3061,6 @@ body {
 	}
 }
 
-/* HIỆU ỨNG NHẤP NHÁY ĐỎ CẢNH BÁO (TOP CUỐI BẢNG) */
 #summary-table tr.last-place-row td {
 	color: #ffffff !important;
 	font-weight: 800;

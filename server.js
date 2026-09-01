@@ -61,6 +61,52 @@ const GAME_CONFIG = {
 			},
 		},
 	},
+	doanChu: {
+		difficulties: {
+			normal: {
+				id: "normal",
+				name: "Bình thường",
+				icon: "🟡",
+				color: "#ffe600",
+				roundDuration: 30,
+				revealInterval: 2.5,
+				intermissionDuration: 3,
+				totalRounds: 10,
+				showHint: true,
+				ratioViDau: 0,
+				ratioViNoDau: 100,
+				ratioEn: 0,
+			},
+			hard: {
+				id: "hard",
+				name: "Khó",
+				icon: "🔴",
+				color: "#ff7700",
+				roundDuration: 14,
+				revealInterval: 1.0,
+				intermissionDuration: 2.5,
+				totalRounds: 12,
+				showHint: true,
+				ratioViDau: 40,
+				ratioViNoDau: 30,
+				ratioEn: 30,
+			},
+			legendary: {
+				id: "legendary",
+				name: "Huyền Thoại",
+				icon: "👑",
+				color: "#ff0055",
+				roundDuration: 10,
+				revealInterval: 0.7,
+				intermissionDuration: 2,
+				totalRounds: 15,
+				showHint: false,
+				ratioViDau: 34,
+				ratioViNoDau: 33,
+				ratioEn: 33,
+			},
+		},
+	},
 	sanBoss: {
 		wordPoolCount: 400,
 		difficulties: {
@@ -237,6 +283,7 @@ function removeVietnameseTones(str) {
 
 const BIG_WORD_BANKS = {
 	vi_dau: {
+		// ~650 TỪ TIẾNG VIỆT CƠ BẢN / DỄ (CHUẨN ĐẶT DẤU BỘ GÕ HIỆN ĐẠI)
 		easy: [
 			// Thiên nhiên, thời tiết & thời gian
 			"ngày",
@@ -1427,10 +1474,168 @@ BIG_WORD_BANKS.vi_nodau = {
 	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
 };
 
+// 1.1 NGÂN HÀNG TỪ VỰNG DÀNH RIÊNG CHO CHẾ ĐỘ ĐOÁN CHỮ (CÓ GỢI Ý CHỦ ĐỀ)
+const MYSTERY_WORD_BANKS = {
+	vi_dau: [
+		{ word: "mặt trời", hint: "Thiên văn học" },
+		{ word: "bàn phím", hint: "Công nghệ / Tin học" },
+		{ word: "lập trình viên", hint: "Nghề nghiệp" },
+		{ word: "con sư tử", hint: "Động vật" },
+		{ word: "hoa hướng dương", hint: "Thực vật / Hoa" },
+		{ word: "nước giải khát", hint: "Ẩm thực / Đồ uống" },
+		{ word: "bánh chưng", hint: "Món ăn truyền thống" },
+		{ word: "thành phố", hint: "Địa lý / Đô thị" },
+		{ word: "máy vi tính", hint: "Thiết bị điện tử" },
+		{ word: "uống nước nhớ nguồn", hint: "Thành ngữ / Đạo lý" },
+		{ word: "kiên trì bền bỉ", hint: "Phẩm chất con người" },
+		{ word: "bách chiến bách thắng", hint: "Thành ngữ quân sự" },
+		{ word: "thao trường rèn luyện", hint: "Quân sự / Đời sống" },
+		{ word: "chuột túi", hint: "Động vật châu Úc" },
+		{ word: "vịnh hạ long", hint: "Danh lam thắng cảnh" },
+		{ word: "bác sĩ nha khoa", hint: "Y tế / Nghề nghiệp" },
+		{ word: "núi fansipan", hint: "Địa danh Việt Nam" },
+		{ word: "điện thoại thông minh", hint: "Công nghệ số" },
+		{ word: "trí tuệ nhân tạo", hint: "Khoa học công nghệ" },
+		{ word: "hồ hoàn kiếm", hint: "Địa danh Hà Nội" },
+		{ word: "chim cánh cụt", hint: "Động vật Nam Cực" },
+		{ word: "khủng long bạo chúa", hint: "Động vật tiền sử" },
+		{ word: "hoa mai vàng", hint: "Thực vật / Ngày Tết" },
+		{ word: "cầu rồng đà nẵng", hint: "Địa danh du lịch" },
+		{ word: "bún chả hà nội", hint: "Ẩm thực Việt Nam" },
+		{ word: "phi hành gia", hint: "Nghề nghiệp vũ trụ" },
+		{ word: "kính thiên văn", hint: "Thiết bị khoa học" },
+		{ word: "vạn sự như ý", hint: "Lời chúc / Lễ Tết" },
+		{ word: "học đi đôi với hành", hint: "Châm ngôn giáo dục" },
+		{ word: "rừng nguyên sinh", hint: "Môi trường tự nhiên" },
+		{ word: "con hươu cao cổ", hint: "Động vật hoang dã" },
+		{ word: "máy giặt sấy", hint: "Thiết bị gia dụng" },
+		{ word: "nhà hát lớn", hint: "Công trình kiến trúc" },
+		{ word: "xe máy điện", hint: "Phương tiện giao thông" },
+		{ word: "bánh mì kẹp thịt", hint: "Ẩm thực đường phố" },
+		{ word: "cá heo đại dương", hint: "Sinh vật biển" },
+		{ word: "đèn giao thông", hint: "Giao thông đô thị" },
+		{ word: "họa sĩ truyện tranh", hint: "Nghệ thuật / Sáng tác" },
+		{ word: "năng lượng mặt trời", hint: "Khoa học môi trường" },
+		{ word: "công viên giải trí", hint: "Địa điểm vui chơi" },
+		{ word: "lá rụng về cội", hint: "Thành ngữ / Đạo lý" },
+		{ word: "đồng hồ cát", hint: "Dụng cụ đo lường cổ" },
+		{ word: "chim đại bàng", hint: "Chúa tể bầu trời" },
+		{ word: "núi lửa phun trào", hint: "Hiện tượng địa chất" },
+		{ word: "động phong nha", hint: "Di sản thiên nhiên" },
+		{ word: "phim hoạt hình", hint: "Giải trí / Điện ảnh" },
+		{ word: "hoa sen hồng", hint: "Quốc hoa Việt Nam" },
+		{ word: "trung tâm thương mại", hint: "Mua sắm / Đô thị" },
+		{ word: "tai vách mạch rừng", hint: "Thành ngữ dân gian" },
+		{ word: "tàu ngầm hạt nhân", hint: "Khí tài quân sự" },
+		{ word: "con tê giác", hint: "Động vật hoang dã" },
+		{ word: "cây đa giếng nước", hint: "Biểu tượng làng quê" },
+		{ word: "thác bản giốc", hint: "Thắng cảnh Cao Bằng" },
+		{ word: "bác sĩ thú y", hint: "Y tế / Chăm sóc vật nuôi" },
+		{ word: "an cư lạc nghiệp", hint: "Thành ngữ cuộc sống" },
+		{ word: "kem sô cô la", hint: "Món tráng miệng" },
+		{ word: "cầu thủ bóng đá", hint: "Thể thao / Nghề nghiệp" },
+		{ word: "kỷ băng hà", hint: "Thời kỳ lịch sử Trái Đất" },
+		{ word: "kỹ sư xây dựng", hint: "Ngành nghề kỹ thuật" },
+		{ word: "sóng thần", hint: "Thiên tai biển cả" },
+	],
+	en: [
+		{ word: "sunflower", hint: "Nature / Flower" },
+		{ word: "keyboard", hint: "Computer Hardware" },
+		{ word: "software developer", hint: "Career / Tech" },
+		{ word: "artificial intelligence", hint: "Modern Technology" },
+		{ word: "smartphone", hint: "Electronic Device" },
+		{ word: "waterfall", hint: "Landscape / Geography" },
+		{ word: "refrigerator", hint: "Home Appliance" },
+		{ word: "golden bridge", hint: "Famous Landmark" },
+		{ word: "cheetah", hint: "Fastest Land Animal" },
+		{ word: "chocolate cake", hint: "Dessert / Bakery" },
+		{ word: "helicopter", hint: "Aviation / Transport" },
+		{ word: "synchronization", hint: "Computer Science" },
+		{ word: "microscope", hint: "Science Laboratory" },
+		{ word: "photographer", hint: "Art / Profession" },
+		{ word: "action speaks louder", hint: "Famous Proverb" },
+		{ word: "astronaut", hint: "Space Explorer" },
+		{ word: "tyrannosaurus rex", hint: "Prehistoric Dinosaur" },
+		{ word: "eiffel tower", hint: "Famous Paris Landmark" },
+		{ word: "electric car", hint: "Green Transportation" },
+		{ word: "penguin", hint: "Antarctic Bird" },
+		{ word: "strawberry cheesecake", hint: "Bakery / Dessert" },
+		{ word: "telescope", hint: "Astronomy Tool" },
+		{ word: "solar system", hint: "Space / Planetary Science" },
+		{ word: "great wall of china", hint: "Ancient World Wonder" },
+		{ word: "cybersecurity", hint: "Information Technology" },
+		{ word: "kangaroo", hint: "Australian Native Animal" },
+		{ word: "statue of liberty", hint: "New York Landmark" },
+		{ word: "graphic designer", hint: "Creative Profession" },
+		{ word: "submarine", hint: "Underwater Vessel" },
+		{ word: "roller coaster", hint: "Theme Park Ride" },
+		{ word: "polar bear", hint: "Arctic Wildlife" },
+		{ word: "chameleon", hint: "Color Changing Reptile" },
+		{ word: "pineapple pizza", hint: "Controversial Food" },
+		{ word: "volcano eruption", hint: "Geological Event" },
+		{ word: "grand canyon", hint: "Natural Wonder in USA" },
+		{ word: "cloud computing", hint: "Internet Technology" },
+		{ word: "butterfly", hint: "Winged Insect" },
+		{ word: "hot air balloon", hint: "Aerial Transport" },
+		{ word: "break a leg", hint: "Idiom for Good Luck" },
+		{ word: "veterinarian", hint: "Animal Doctor" },
+		{ word: "rainbow", hint: "Optical Weather Phenomenon" },
+		{ word: "space telescope", hint: "Deep Space Observation" },
+		{ word: "golden retriever", hint: "Popular Dog Breed" },
+		{ word: "renewable energy", hint: "Clean Power / Ecology" },
+		{ word: "hummingbird", hint: "Smallest Bird in the World" },
+		{ word: "water under the bridge", hint: "English Idiom" },
+		{ word: "ice cream sandwich", hint: "Sweet Frozen Treat" },
+		{ word: "traffic congestion", hint: "Urban Transportation" },
+		{ word: "quantum physics", hint: "Advanced Science" },
+		{ word: "firefighter", hint: "Emergency Service Job" },
+		{ word: "amazon rainforest", hint: "Earth's Lungs" },
+		{ word: "better late than never", hint: "Common English Proverb" },
+		{ word: "orchestra conductor", hint: "Classical Music Leader" },
+		{ word: "augmented reality", hint: "Interactive Tech" },
+		{ word: "blue whale", hint: "Largest Animal on Earth" },
+	],
+};
+
+MYSTERY_WORD_BANKS.vi_nodau = MYSTERY_WORD_BANKS.vi_dau.map((item) => ({
+	word: removeVietnameseTones(item.word),
+	hint: item.hint,
+}));
+
 function getRandomWordFromBank(bankEasy, bankHard, hardRatePercent) {
 	const isHard = Math.random() < hardRatePercent / 100;
 	const pool = isHard ? bankHard : bankEasy;
 	return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function generateDoanChuWords(difficulty = "normal", count) {
+	const diffConfig =
+		GAME_CONFIG.doanChu.difficulties[difficulty] || GAME_CONFIG.doanChu.difficulties.normal;
+	const total = count || diffConfig.totalRounds || 10;
+
+	const ratioViDau = typeof diffConfig.ratioViDau === "number" ? diffConfig.ratioViDau : 50;
+	const ratioViNoDau = typeof diffConfig.ratioViNoDau === "number" ? diffConfig.ratioViNoDau : 25;
+	const ratioEn = typeof diffConfig.ratioEn === "number" ? diffConfig.ratioEn : 25;
+	const sumRatio = Math.max(1, ratioViDau + ratioViNoDau + ratioEn);
+
+	return Array.from({ length: total }, () => {
+		const rand = Math.random() * sumRatio;
+		let selectedBank = MYSTERY_WORD_BANKS.vi_dau;
+
+		if (ratioViDau > 0 && rand < ratioViDau) {
+			selectedBank = MYSTERY_WORD_BANKS.vi_dau;
+		} else if (ratioViNoDau > 0 && rand < ratioViDau + ratioViNoDau) {
+			selectedBank = MYSTERY_WORD_BANKS.vi_nodau;
+		} else {
+			selectedBank = MYSTERY_WORD_BANKS.en;
+		}
+
+		const item = selectedBank[Math.floor(Math.random() * selectedBank.length)];
+		return {
+			word: item.word,
+			hint: diffConfig.showHint ? item.hint : "Không có gợi ý",
+		};
+	});
 }
 
 function generateWords(lang, count, difficulty = "normal") {
@@ -1503,6 +1708,7 @@ const defaultHighScores = {
 	en: null,
 	numpad: null,
 	ngau_hung: null,
+	doan_chu: null,
 	san_boss: null,
 };
 let highScores = { ...defaultHighScores };
@@ -1548,10 +1754,10 @@ scheduleDailyReset();
 function updateHighScoresAndBroadcast(lang, username, wpm, errors, playerCount, score = 0) {
 	if (playerCount < 3) return;
 	const curr = highScores[lang];
-	const isNew =
-		lang === "ngau_hung" || lang === "san_boss"
-			? !curr || score > (curr.score || 0) || (score === (curr.score || 0) && errors < curr.errors)
-			: !curr || wpm > curr.wpm || (wpm === curr.wpm && errors < curr.errors);
+	const isScoreBased = lang === "ngau_hung" || lang === "doan_chu" || lang === "san_boss";
+	const isNew = isScoreBased
+		? !curr || score > (curr.score || 0) || (score === (curr.score || 0) && errors < curr.errors)
+		: !curr || wpm > curr.wpm || (wpm === curr.wpm && errors < curr.errors);
 
 	if (isNew) {
 		highScores[lang] = { username, wpm, score, errors, timestamp: Date.now() };
@@ -1659,20 +1865,29 @@ function broadcastAdminData() {
 	});
 }
 
-// 5. PHÒNG ĐẤU & BOSS ENGINE
-const rooms = { en: [], vi_nodau: [], vi_dau: [], numpad: [], ngau_hung: [], san_boss: [] };
+// 5. PHÒNG ĐẤU ENGINE
+const rooms = {
+	en: [],
+	vi_nodau: [],
+	vi_dau: [],
+	numpad: [],
+	ngau_hung: [],
+	doan_chu: [],
+	san_boss: [],
+};
 let totalOnlineUsers = 0;
 
 function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 	let roomList = rooms[lang] || rooms.vi_dau;
-
 	let room = roomList.find((r) => r.state === "waiting" && r.players.length < 10);
 
 	if (!room) {
 		const totalRounds =
 			lang === "ngau_hung"
 				? GAME_CONFIG.ngauHung.difficulties[preferredDifficulty]?.totalRounds || 15
-				: 15;
+				: lang === "doan_chu"
+					? GAME_CONFIG.doanChu.difficulties[preferredDifficulty]?.totalRounds || 10
+					: 15;
 
 		room = {
 			id: `room_${lang}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -1680,7 +1895,10 @@ function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 			difficulty: preferredDifficulty,
 			state: "waiting",
 			players: [],
-			words: generateWords(lang, null, preferredDifficulty),
+			words:
+				lang === "doan_chu"
+					? generateDoanChuWords(preferredDifficulty, totalRounds)
+					: generateWords(lang, null, preferredDifficulty),
 			matchInterval: null,
 			matchTimeout: null,
 			startTime: null,
@@ -1690,6 +1908,12 @@ function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 			roundActive: false,
 			roundTimer: null,
 			roundIntermissionTimer: null,
+			// Đoán chữ state
+			unrevealedIndices: [],
+			mysteryTargetWord: "",
+			mysteryHint: "",
+			revealTimer: null,
+			// Boss state
 			boss: null,
 			bossSkillTimer: null,
 		};
@@ -1703,6 +1927,7 @@ function clearRoomTimers(room) {
 	clearTimeout(room.matchTimeout);
 	clearTimeout(room.roundTimer);
 	clearTimeout(room.roundIntermissionTimer);
+	if (room.revealTimer) clearInterval(room.revealTimer);
 	if (room.bossSkillTimer) clearInterval(room.bossSkillTimer);
 	if (room.boss) {
 		clearTimeout(room.boss.shieldTimer);
@@ -1712,9 +1937,102 @@ function clearRoomTimers(room) {
 }
 
 function checkMatchCompletion(room) {
-	if (room.lang === "ngau_hung") return;
+	if (room.lang === "ngau_hung" || room.lang === "doan_chu") return;
 	const finished = room.players.filter((p) => p.isFinished || p.isSurrendered || p.isDisconnected);
 	if (finished.length >= room.players.length) finishMatch(room);
+}
+
+// 5.1 XỬ LÝ CHẾ ĐỘ ĐOÁN CHỮ (MYSTERY WORD)
+function startDoanChuRound(room) {
+	if (room.state !== "playing") return;
+	if (++room.currentRound > room.totalRounds) return finishMatch(room);
+
+	const dcDiff =
+		GAME_CONFIG.doanChu.difficulties[room.difficulty] || GAME_CONFIG.doanChu.difficulties.normal;
+	const roundDur = dcDiff.roundDuration || 18;
+	const revealInterval = (dcDiff.revealInterval || 1.2) * 1000;
+
+	const roundData = room.words[room.currentRound - 1];
+	const targetWord = roundData.word.trim();
+	room.mysteryTargetWord = targetWord;
+	room.mysteryHint = roundData.hint || "";
+	room.roundWinners = [];
+	room.roundActive = true;
+
+	// Tạo danh sách chỉ số ký tự chưa lật (loại trừ khoảng trắng)
+	room.unrevealedIndices = [];
+	for (let i = 0; i < targetWord.length; i++) {
+		if (targetWord[i] !== " ") room.unrevealedIndices.push(i);
+	}
+
+	// Gửi thông tin vòng đấu cho client (KHÔNG gửi targetWord để chống hack F12)
+	io.to(room.id).emit("doan_chu_new_round", {
+		round: room.currentRound,
+		totalRounds: room.totalRounds,
+		length: targetWord.length,
+		hint: room.mysteryHint,
+		spaceIndices: targetWord
+			.split("")
+			.map((c, i) => (c === " " ? i : -1))
+			.filter((i) => i !== -1),
+		duration: roundDur,
+		difficulty: room.difficulty,
+	});
+
+	// Bắt đầu chu kỳ lật mở từng ký tự
+	if (room.revealTimer) clearInterval(room.revealTimer);
+	room.revealTimer = setInterval(() => {
+		if (!room.roundActive || room.state !== "playing") return clearInterval(room.revealTimer);
+
+		if (room.unrevealedIndices.length > 0) {
+			const randIdx = Math.floor(Math.random() * room.unrevealedIndices.length);
+			const charIndex = room.unrevealedIndices.splice(randIdx, 1)[0];
+			const char = room.mysteryTargetWord[charIndex];
+
+			io.to(room.id).emit("doan_chu_reveal_char", {
+				charIndex,
+				char,
+				remainingHiddenCount: room.unrevealedIndices.length,
+			});
+		} else {
+			clearInterval(room.revealTimer);
+		}
+	}, revealInterval);
+
+	clearTimeout(room.roundTimer);
+	room.roundTimer = setTimeout(() => endDoanChuRound(room), roundDur * 1000);
+}
+
+function endDoanChuRound(room) {
+	if (!room.roundActive || room.state !== "playing") return;
+	room.roundActive = false;
+	clearTimeout(room.roundTimer);
+	if (room.revealTimer) clearInterval(room.revealTimer);
+
+	const dcDiff =
+		GAME_CONFIG.doanChu.difficulties[room.difficulty] || GAME_CONFIG.doanChu.difficulties.normal;
+	const interDur = dcDiff.intermissionDuration || 3;
+
+	const roundProgress = Math.round((room.currentRound / room.totalRounds) * 100);
+	room.players.forEach((p) => {
+		if (!p.isSurrendered && !p.isDisconnected && !p.isAFK) p.progress = roundProgress;
+	});
+
+	io.to(room.id).emit("race_update", room.players);
+	io.to(room.id).emit("doan_chu_round_ended", {
+		round: room.currentRound,
+		targetWord: room.mysteryTargetWord,
+		roundWinners: room.roundWinners,
+		players: room.players,
+	});
+
+	if (room.currentRound >= room.totalRounds) {
+		setTimeout(() => finishMatch(room), 1800);
+	} else {
+		io.to(room.id).emit("doan_chu_intermission", { duration: interDur });
+		clearTimeout(room.roundIntermissionTimer);
+		room.roundIntermissionTimer = setTimeout(() => startDoanChuRound(room), interDur * 1000);
+	}
 }
 
 function handlePlayerSelfDestruct(room, targetPlayer, reasonText = "đầu hàng") {
@@ -1956,8 +2274,9 @@ function finishMatch(room) {
 		if (inactA && inactB)
 			return (b.correctChars || 0) - (a.correctChars || 0) || (a.errors || 0) - (b.errors || 0);
 
-		const scoreA = room.lang === "ngau_hung" || isBoss ? a.score || 0 : a.wpm || 0;
-		const scoreB = room.lang === "ngau_hung" || isBoss ? b.score || 0 : b.wpm || 0;
+		const isScore = room.lang === "ngau_hung" || room.lang === "doan_chu" || isBoss;
+		const scoreA = isScore ? a.score || 0 : a.wpm || 0;
+		const scoreB = isScore ? b.score || 0 : b.wpm || 0;
 		return (
 			scoreB - scoreA ||
 			(b.correctChars || 0) - (a.correctChars || 0) ||
@@ -2018,7 +2337,9 @@ io.on("connection", (socket) => {
 				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
 			);
 			if (
-				(currentRoom.lang === "ngau_hung" || currentRoom.lang === "san_boss") &&
+				(currentRoom.lang === "ngau_hung" ||
+					currentRoom.lang === "doan_chu" ||
+					currentRoom.lang === "san_boss") &&
 				active.length === 0
 			) {
 				finishMatch(currentRoom);
@@ -2070,6 +2391,13 @@ io.on("connection", (socket) => {
 				Object.keys(newConfig.ngauHung.difficulties).forEach((k) => {
 					if (GAME_CONFIG.ngauHung.difficulties[k]) {
 						Object.assign(GAME_CONFIG.ngauHung.difficulties[k], newConfig.ngauHung.difficulties[k]);
+					}
+				});
+			}
+			if (newConfig.doanChu && newConfig.doanChu.difficulties) {
+				Object.keys(newConfig.doanChu.difficulties).forEach((k) => {
+					if (GAME_CONFIG.doanChu.difficulties[k]) {
+						Object.assign(GAME_CONFIG.doanChu.difficulties[k], newConfig.doanChu.difficulties[k]);
 					}
 				});
 			}
@@ -2259,6 +2587,19 @@ io.on("connection", (socket) => {
 					difficulty: currentRoom.difficulty,
 				});
 			}
+		} else if (currentRoom.lang === "doan_chu") {
+			if (GAME_CONFIG.doanChu.difficulties[diff]) {
+				currentRoom.difficulty = diff;
+				const dcDiff = GAME_CONFIG.doanChu.difficulties[diff];
+				currentRoom.totalRounds = dcDiff.totalRounds || 10;
+				currentRoom.words = generateDoanChuWords(diff, currentRoom.totalRounds);
+
+				io.to(currentRoom.id).emit("update_lobby", {
+					players: currentRoom.players,
+					language: currentRoom.lang,
+					difficulty: currentRoom.difficulty,
+				});
+			}
 		} else if (currentRoom.lang === "san_boss") {
 			if (GAME_CONFIG.sanBoss.difficulties[diff]) {
 				currentRoom.difficulty = diff;
@@ -2311,22 +2652,10 @@ io.on("connection", (socket) => {
 					skillInterval: diffConfig.skillInterval,
 					enabledSkills: diffConfig.enabledSkills
 						? { ...diffConfig.enabledSkills }
-						: {
-								shield: true,
-								capslock: true,
-								shake: true,
-								fog: true,
-								reverse: false,
-							},
+						: { shield: true, capslock: true, shake: true, fog: true, reverse: false },
 					skillWeights: diffConfig.skillWeights
 						? { ...diffConfig.skillWeights }
-						: {
-								shield: 35,
-								capslock: 25,
-								shake: 20,
-								fog: 20,
-								reverse: 0,
-							},
+						: { shield: 35, capslock: 25, shake: 20, fog: 20, reverse: 0 },
 					selfDestructTarget: diffConfig.selfDestructTarget,
 				};
 
@@ -2347,10 +2676,16 @@ io.on("connection", (socket) => {
 					currentRoom.totalRounds,
 					currentRoom.difficulty,
 				);
+			} else if (currentRoom.lang === "doan_chu") {
+				const dcDiff =
+					GAME_CONFIG.doanChu.difficulties[currentRoom.difficulty] ||
+					GAME_CONFIG.doanChu.difficulties.normal;
+				currentRoom.totalRounds = dcDiff.totalRounds || 10;
+				currentRoom.words = generateDoanChuWords(currentRoom.difficulty, currentRoom.totalRounds);
 			}
 
 			io.to(currentRoom.id).emit("game_start", {
-				words: currentRoom.words,
+				words: currentRoom.lang === "doan_chu" ? [] : currentRoom.words,
 				players: currentRoom.players,
 				countdown: 3,
 				language: currentRoom.lang,
@@ -2362,6 +2697,11 @@ io.on("connection", (socket) => {
 				currentRoom.currentRound = 0;
 				setTimeout(() => {
 					if (currentRoom?.state === "playing") startNgauHungRound(currentRoom);
+				}, 3000);
+			} else if (currentRoom.lang === "doan_chu") {
+				currentRoom.currentRound = 0;
+				setTimeout(() => {
+					if (currentRoom?.state === "playing") startDoanChuRound(currentRoom);
 				}, 3000);
 			} else if (currentRoom.lang === "san_boss") {
 				setTimeout(() => {
@@ -2486,6 +2826,64 @@ io.on("connection", (socket) => {
 		}
 	});
 
+	// XỬ LÝ ĐOÁN CHỮ (MYSTERY GUESS SUBMISSION)
+	socket.on("doan_chu_submit_guess", (data) => {
+		if (
+			!currentRoom ||
+			currentRoom.lang !== "doan_chu" ||
+			!currentRoom.roundActive ||
+			!player ||
+			player.isSurrendered
+		)
+			return;
+
+		const userGuess = (data.guess || "").trim().toLowerCase();
+		const target = (currentRoom.mysteryTargetWord || "").trim().toLowerCase();
+
+		if (userGuess === target && !currentRoom.roundWinners.includes(socket.id)) {
+			currentRoom.roundWinners.push(socket.id);
+			const rank = currentRoom.roundWinners.length;
+
+			// Tính điểm: Điểm hạng (5, 3, 1) + Điểm bonus cho mỗi ký tự chưa mở
+			const rankPoints = rank === 1 ? 5 : rank === 2 ? 3 : rank === 3 ? 1 : 0;
+			const hiddenBonus = currentRoom.unrevealedIndices ? currentRoom.unrevealedIndices.length : 0;
+			const totalPoints = rankPoints + hiddenBonus;
+
+			player.score = (player.score || 0) + totalPoints;
+			player.correctChars = (player.correctChars || 0) + target.length;
+			player.progress = Math.round((currentRoom.currentRound / currentRoom.totalRounds) * 100);
+
+			socket.emit("doan_chu_player_success", {
+				rank,
+				rankPoints,
+				hiddenBonus,
+				totalPoints,
+				totalScore: player.score,
+				targetWord: currentRoom.mysteryTargetWord,
+			});
+
+			io.to(currentRoom.id).emit("race_update", currentRoom.players);
+
+			const activeCount = currentRoom.players.filter(
+				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
+			).length;
+			if (currentRoom.roundWinners.length >= Math.min(3, activeCount)) {
+				endDoanChuRound(currentRoom);
+			}
+		} else if (userGuess !== target) {
+			player.errors = (player.errors || 0) + 1;
+			socket.emit("doan_chu_guess_failed", {
+				errors: player.errors,
+				penaltySeconds: 1.0,
+			});
+			socket.emit("update_progress", {
+				wpm: 0,
+				correctChars: player.correctChars,
+				errors: player.errors,
+			});
+		}
+	});
+
 	socket.on("leave_lobby", leaveCurrentLobby);
 
 	socket.on("update_progress", (data) => {
@@ -2527,7 +2925,9 @@ io.on("connection", (socket) => {
 				(p) => !p.isSurrendered && !p.isDisconnected && !p.isAFK,
 			);
 			if (
-				(currentRoom.lang === "ngau_hung" || currentRoom.lang === "san_boss") &&
+				(currentRoom.lang === "ngau_hung" ||
+					currentRoom.lang === "doan_chu" ||
+					currentRoom.lang === "san_boss") &&
 				active.length === 0
 			) {
 				finishMatch(currentRoom);
