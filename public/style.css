@@ -1,5 +1,8 @@
-/* FASTTYPING CHALLENGE - MULTI-THEME ULTRA ENGINE CSS      */
-/* 1. ĐỊNH NGHĨA BIẾN THEME & TÍNH CÁCH ĐỒ HOẠ               */
+/* ========================================================== */
+/* FASTTYPING CHALLENGE - ULTRA MONKEYTYPE SMOOTH ENGINE CSS */
+/* ========================================================== */
+
+/* 1. ĐỊNH NGHĨA BIẾN THEME & TÍNH CÁCH ĐỒ HOẠ */
 /* 1.1 CYBERPUNK (MẶC ĐỊNH - NEON SCI-FI HUD) */
 :root,
 [data-style="cyberpunk"] {
@@ -17,9 +20,13 @@
 	--accent: #ffe600;
 	--accent-rgb: 255, 230, 0;
 	--text-main: #f0f6fc;
-	--text-muted: #8b9bb4;
-	--correct: #00ff66;
+	--text-muted: #53647d;
+	--char-upcoming: #64748b;
+	--correct: #00ffaa;
 	--incorrect: #ff3366;
+	--incorrect-extra: #ff0055;
+	--caret-color: #00f0ff;
+	--caret-glow: 0 0 12px #00f0ff, 0 0 24px rgba(0, 240, 255, 0.5);
 	--track-bg: rgba(0, 240, 255, 0.05);
 	--border-color: rgba(0, 240, 255, 0.35);
 	--border-radius-box: 10px;
@@ -50,9 +57,13 @@
 	--accent: #b45309;
 	--accent-rgb: 180, 83, 9;
 	--text-main: #0c1322;
-	--text-muted: #4b5d78;
+	--text-muted: #8494ab;
+	--char-upcoming: #94a3b8;
 	--correct: #059669;
 	--incorrect: #dc2626;
+	--incorrect-extra: #b91c1c;
+	--caret-color: #0077ff;
+	--caret-glow: 0 0 10px rgba(0, 119, 255, 0.6);
 	--track-bg: rgba(0, 119, 255, 0.06);
 	--border-color: rgba(0, 119, 255, 0.35);
 	--box-shadow-style: 0 10px 30px rgba(0, 119, 255, 0.15);
@@ -74,9 +85,13 @@
 	--accent: #e59866;
 	--accent-rgb: 229, 152, 102;
 	--text-main: #fbf5e8;
-	--text-muted: #b8a694;
+	--text-muted: #7d6b5c;
+	--char-upcoming: #8f7d6e;
 	--correct: #58d68d;
 	--incorrect: #ec7063;
+	--incorrect-extra: #cb4335;
+	--caret-color: #d4af37;
+	--caret-glow: 0 0 12px rgba(212, 175, 55, 0.7);
 	--track-bg: rgba(212, 175, 55, 0.08);
 	--border-color: rgba(212, 175, 55, 0.45);
 	--border-radius-box: 6px;
@@ -99,9 +114,13 @@
 	--accent: #9a4d00;
 	--accent-rgb: 154, 77, 0;
 	--text-main: #2c1b10;
-	--text-muted: #6e5849;
+	--text-muted: #968172;
+	--char-upcoming: #a89484;
 	--correct: #196f3d;
 	--incorrect: #943126;
+	--incorrect-extra: #78281f;
+	--caret-color: #875a1d;
+	--caret-glow: 0 0 8px rgba(135, 90, 29, 0.5);
 	--track-bg: rgba(135, 90, 29, 0.08);
 	--border-color: rgba(135, 90, 29, 0.4);
 	--box-shadow-style: 0 8px 25px rgba(135, 90, 29, 0.15), inset 0 0 0 1px rgba(135, 90, 29, 0.2);
@@ -123,9 +142,13 @@
 	--accent: #ffd166;
 	--accent-rgb: 255, 209, 102;
 	--text-main: #e8faf4;
-	--text-muted: #85b0a6;
+	--text-muted: #4e736a;
+	--char-upcoming: #628c82;
 	--correct: #00ffaa;
 	--incorrect: #ff4d6d;
+	--incorrect-extra: #c9184a;
+	--caret-color: #00ffaa;
+	--caret-glow: 0 0 14px #00ffaa, 0 0 28px rgba(0, 255, 170, 0.4);
 	--track-bg: rgba(0, 255, 170, 0.06);
 	--border-color: rgba(0, 255, 170, 0.35);
 	--border-radius-box: 18px;
@@ -148,9 +171,13 @@
 	--accent: #9a5b00;
 	--accent-rgb: 154, 91, 0;
 	--text-main: #0a2922;
-	--text-muted: #4e736a;
+	--text-muted: #6f958d;
+	--char-upcoming: #85aba3;
 	--correct: #059669;
 	--incorrect: #be123c;
+	--incorrect-extra: #881337;
+	--caret-color: #009966;
+	--caret-glow: 0 0 10px rgba(0, 153, 102, 0.5);
 	--track-bg: rgba(0, 153, 102, 0.08);
 	--border-color: rgba(0, 153, 102, 0.35);
 	--box-shadow-style: 0 10px 30px rgba(0, 153, 102, 0.12);
@@ -172,9 +199,13 @@
 	--accent: #e67e22;
 	--accent-rgb: 230, 126, 34;
 	--text-main: #faebd7;
-	--text-muted: #ab9582;
+	--text-muted: #7a6857;
+	--char-upcoming: #93806f;
 	--correct: #2ecc71;
 	--incorrect: #e74c3c;
+	--incorrect-extra: #922b21;
+	--caret-color: #f39c12;
+	--caret-glow: 0 0 12px rgba(243, 156, 18, 0.7);
 	--track-bg: rgba(243, 156, 18, 0.08);
 	--border-color: rgba(243, 156, 18, 0.45);
 	--border-radius-box: 6px;
@@ -205,9 +236,13 @@
 	--accent: #b44a00;
 	--accent-rgb: 180, 74, 0;
 	--text-main: #2b1d11;
-	--text-muted: #725f4e;
+	--text-muted: #8d7967;
+	--char-upcoming: #a38f7d;
 	--correct: #1e824c;
 	--incorrect: #b03a2e;
+	--incorrect-extra: #78281f;
+	--caret-color: #b95d0b;
+	--caret-glow: 0 0 8px rgba(185, 93, 11, 0.6);
 	--track-bg: rgba(185, 93, 11, 0.08);
 	--border-color: rgba(185, 93, 11, 0.4);
 }
@@ -228,9 +263,13 @@
 	--accent: #dcdde1;
 	--accent-rgb: 220, 221, 225;
 	--text-main: #f5f5f7;
-	--text-muted: #9595a5;
+	--text-muted: #5e5e6e;
+	--char-upcoming: #747487;
 	--correct: #00cec9;
 	--incorrect: #e84118;
+	--incorrect-extra: #b71540;
+	--caret-color: #f5f6fa;
+	--caret-glow: 0 0 12px rgba(245, 246, 250, 0.7);
 	--track-bg: rgba(255, 255, 255, 0.05);
 	--border-color: rgba(245, 246, 250, 0.3);
 	--border-radius-box: 12px;
@@ -253,14 +292,18 @@
 	--accent: #78350f;
 	--accent-rgb: 120, 53, 15;
 	--text-main: #1e272e;
-	--text-muted: #6a7482;
+	--text-muted: #8894a4;
+	--char-upcoming: #9caab9;
 	--correct: #079992;
 	--incorrect: #c0392b;
+	--incorrect-extra: #881337;
+	--caret-color: #2f3542;
+	--caret-glow: 0 0 8px rgba(47, 53, 66, 0.5);
 	--track-bg: rgba(47, 53, 66, 0.06);
 	--border-color: rgba(47, 53, 66, 0.35);
 }
 
-/* 1.6 ARCADE 8-BIT PIXEL (ĐIỆN TỬ BĂNG HOÀI NIỆM) */
+/* 1.6 ARCADE 8-BIT PIXEL */
 [data-style="pixel"] {
 	--font-heading: "VT323", "Silkscreen", monospace;
 	--font-ui: "VT323", "Lexend", monospace;
@@ -276,9 +319,13 @@
 	--accent: #ffe600;
 	--accent-rgb: 255, 230, 0;
 	--text-main: #f0e6ff;
-	--text-muted: #9e8cb8;
+	--text-muted: #645579;
+	--char-upcoming: #7b6b93;
 	--correct: #00ffaa;
 	--incorrect: #ff0055;
+	--incorrect-extra: #ff0077;
+	--caret-color: #ffe600;
+	--caret-glow: 0 0 8px #ffe600;
 	--track-bg: rgba(0, 240, 170, 0.08);
 	--border-color: #00f0aa;
 	--border-radius-box: 0px;
@@ -302,15 +349,19 @@
 	--accent: #b8860b;
 	--accent-rgb: 184, 134, 11;
 	--text-main: #18082e;
-	--text-muted: #5e4c78;
+	--text-muted: #82709a;
+	--char-upcoming: #9684b0;
 	--correct: #00875a;
 	--incorrect: #c40040;
+	--incorrect-extra: #88002d;
+	--caret-color: #8c00bd;
+	--caret-glow: 0 0 8px rgba(140, 0, 189, 0.6);
 	--track-bg: rgba(0, 150, 107, 0.08);
 	--border-color: #00966b;
 	--box-shadow-style: 4px 4px 0px #2a1b42;
 }
 
-/* QUY TẮC CỠ CHỮ TĂNG 2PX RIÊNG CHO ARCADE PIXEL THEME */
+/* QUY TẮC CỠ CHỮ RIÊNG CHO ARCADE PIXEL THEME */
 [data-style="pixel"] body,
 [data-style="pixel"] input,
 [data-style="pixel"] button,
@@ -357,7 +408,6 @@ body {
 		color 0.3s ease;
 }
 
-/* QUÉT MÀN HÌNH CRT DÀNH CHO ARCADE PIXEL THEME */
 [data-style="pixel"] body::before {
 	content: " ";
 	display: block;
@@ -1802,7 +1852,6 @@ body {
 	transition: all 0.2s ease;
 }
 
-/* DARK THEME */
 .lobby-diff-tag[data-diff="custom"] {
 	background: rgba(0, 240, 255, 0.15);
 	border: 1.5px solid #00f0ff;
@@ -1825,7 +1874,6 @@ body {
 	color: #ff0055;
 }
 
-/* LIGHT THEME */
 [data-theme="light"] .lobby-diff-tag[data-diff="custom"] {
 	background: #e0f2fe;
 	border: 1.5px solid #0284c7;
@@ -2160,10 +2208,12 @@ body {
 	filter: grayscale(1) !important;
 }
 
-/* 10. KHU VỰC GÕ CHỮ & ĐOÁN CHỮ (TYPING AREA) */
+/* ========================================================== */
+/* 10. ULTRA MONKEYTYPE ENGINE: SMOOTH CARET & WORDS VIEWPORT */
+/* ========================================================== */
 #typing-area {
 	width: 100%;
-	padding: 18px;
+	padding: 20px 24px 18px;
 	position: relative;
 	overflow: hidden;
 }
@@ -2174,7 +2224,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	gap: 12px;
-	margin-bottom: 12px;
+	margin-bottom: 14px;
 	flex-wrap: wrap;
 }
 
@@ -2205,47 +2255,231 @@ body {
 	color: var(--correct);
 }
 
-#words-display {
-	font-family: var(--font-typing) !important;
-	font-size: 21px;
-	font-weight: 500;
-	line-height: 1.6;
-	height: 135px;
-	overflow-y: auto;
-	padding: 12px 14px;
+/* 10.1 MONKEYTYPE VIEWPORT VÀ TRƯỢT DÒNG */
+.words-display-viewport {
+	position: relative;
+	width: 100%;
+	height: 142px; /* 3 dòng chuẩn */
+	overflow: hidden;
 	background: var(--input-bg);
 	border-radius: var(--border-radius-box);
-	border: 1px solid var(--border-color);
-	margin-bottom: 15px;
+	border: 1.5px solid var(--border-color);
+	margin-bottom: 14px;
 	user-select: none;
+	padding: 0;
+	box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Hiệu ứng mờ biên trên dưới nhẹ nhàng khi cuộn nhiều dòng */
+.words-display-viewport::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	box-shadow:
+		inset 0 6px 12px -4px rgba(0, 0, 0, 0.5),
+		inset 0 -6px 12px -4px rgba(0, 0, 0, 0.5);
+	z-index: 15;
+}
+
+/* 10.2 CON TRỎ NỘI SUY MƯỢT (MONKEYTYPE SMOOTH CARET) */
+.custom-caret {
+	position: absolute;
+	width: 2.5px;
+	height: 32px;
+	background: var(--caret-color);
+	box-shadow: var(--caret-glow);
+	border-radius: 2px;
+	pointer-events: none;
+	z-index: 20;
+	top: 0;
+	left: 0;
+	will-change: transform, left, top;
+	/* Đường cong chuyển động mượt mà */
+	transition:
+		left 0.1s cubic-bezier(0.25, 1, 0.5, 1),
+		top 0.12s cubic-bezier(0.25, 1, 0.5, 1),
+		height 0.1s ease,
+		opacity 0.2s ease;
+	animation: caretPulseBreathe 1s ease-in-out infinite alternate;
+}
+
+@keyframes caretPulseBreathe {
+	0% {
+		opacity: 0.85;
+		filter: drop-shadow(0 0 2px var(--caret-color));
+	}
+	100% {
+		opacity: 1;
+		filter: drop-shadow(0 0 10px var(--caret-color));
+	}
+}
+
+[data-style="pixel"] .custom-caret {
+	width: 8px;
+	height: 30px;
+	border-radius: 0 !important;
+	animation: none;
+}
+
+/* 10.3 WORDS DISPLAY & SMOOTH TRANSFORM LINE SHIFT */
+.words-display {
+	position: relative;
+	width: 100%;
+	padding: 14px 18px;
+	font-family: var(--font-typing) !important;
+	font-size: 24px;
+	line-height: 1.6;
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
-	gap: 6px 10px;
-	scroll-behavior: smooth;
-	transition: transform 0.3s ease;
+	gap: 6px 12px;
+	will-change: transform;
+	/* Trượt dòng mượt mà */
+	transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-[data-style="pixel"] #words-display {
-	font-size: 28px;
+[data-style="pixel"] .words-display {
+	font-size: 29px;
+	line-height: 1.5;
+	gap: 4px 12px;
+}
+
+/* BỐ CỤC CHUYÊN BIỆT CHO CHẾ ĐỘ NUMPAD / ZIPCODE: 9 CỘT ĐỀU NHAU, CANH GIỮA MỖI DÒNG */
+.words-display.numpad-mode-display {
+	display: grid !important;
+	grid-template-columns: repeat(9, minmax(0, 1fr)) !important;
+	gap: 8px 8px !important;
+	padding: 14px 12px !important;
+	justify-items: center !important;
+	align-items: center !important;
+	width: 100% !important;
+}
+
+.words-display.numpad-mode-display .word {
+	width: 100% !important;
+	justify-content: center !important;
+	text-align: center !important;
 	letter-spacing: 1px;
-	border-radius: 0px !important;
-	border: 2px solid var(--border-color);
 }
 
+/* 10.4 PHÂN TÁCH TỪ VÀ TỪNG KÝ TỰ (.WORD & .LETTER) */
+.word {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+	font-family: var(--font-typing) !important;
+	font-weight: 500;
+	line-height: 1.5;
+	border-bottom: 2px solid transparent;
+	transition:
+		border-color 0.15s ease,
+		transform 0.15s ease,
+		opacity 0.15s ease;
+}
+
+.word.error-word {
+	border-bottom-color: var(--incorrect);
+	animation: wordErrorWiggle 0.25s ease-in-out;
+}
+
+.word.shake-overflow {
+	animation: wordOverflowShake 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+}
+
+@keyframes wordErrorWiggle {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-3px);
+	}
+	75% {
+		transform: translateX(3px);
+	}
+}
+
+@keyframes wordOverflowShake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	20% {
+		transform: translateX(-4px);
+	}
+	40% {
+		transform: translateX(4px);
+	}
+	60% {
+		transform: translateX(-3px);
+	}
+	80% {
+		transform: translateX(3px);
+	}
+}
+
+.letter {
+	position: relative;
+	display: inline-block;
+	font-family: inherit;
+	color: var(--char-upcoming);
+	opacity: 0.65;
+	transition:
+		color 0.12s cubic-bezier(0.25, 1, 0.5, 1),
+		opacity 0.12s cubic-bezier(0.25, 1, 0.5, 1),
+		text-shadow 0.15s ease,
+		transform 0.1s ease;
+	user-select: none;
+}
+
+/* Trạng thái ký tự đã gõ đúng */
+.letter.correct {
+	color: var(--correct) !important;
+	opacity: 1 !important;
+	text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.25);
+}
+
+[data-style="cyberpunk"] .letter.correct {
+	text-shadow: 0 0 8px rgba(0, 255, 170, 0.6);
+}
+[data-style="xianxia"] .letter.correct {
+	text-shadow: 0 0 10px rgba(0, 255, 170, 0.8);
+}
+[data-style="pixel"] .letter.correct {
+	text-shadow: 2px 2px 0px #000;
+}
+
+/* Trạng thái ký tự gõ sai */
+.letter.incorrect {
+	color: var(--incorrect) !important;
+	opacity: 1 !important;
+	text-shadow: 0 0 8px rgba(255, 51, 102, 0.4);
+}
+
+/* Trạng thái ký tự gõ dư ra */
+.letter.extra {
+	color: var(--incorrect-extra) !important;
+	opacity: 0.9 !important;
+	text-decoration: underline;
+}
+
+/* 10.5 CHẾ ĐỘ ĐOÁN CHỮ & NGẪU HỨNG OVERRIDE */
 .ngau-hung-mode-display {
 	align-items: center !important;
 	justify-content: center !important;
 	font-size: 38px !important;
 	font-weight: 700 !important;
+	height: 100% !important;
 }
 
-/* 10.1 KHUNG Ô CHỮ BÍ ẨN CHO CHẾ ĐỘ ĐOÁN CHỮ */
 .doan-chu-mode-display {
 	align-items: center !important;
 	justify-content: center !important;
 	gap: 8px 16px !important;
-	padding: 15px 10px !important;
+	padding: 20px 10px !important;
+	height: 100% !important;
 }
 
 .doan-chu-word-group {
@@ -2315,7 +2549,6 @@ body {
 	box-shadow: none;
 }
 
-/* THEME SPECIFIC CHO TILE ĐOÁN CHỮ */
 [data-style="cyberpunk"] .mystery-tile.tile-revealed {
 	box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.5);
 	text-shadow: 0 0 8px var(--accent);
@@ -2338,7 +2571,6 @@ body {
 	box-shadow: 3px 3px 0px #000;
 }
 
-/* HIỆU ỨNG PHẠT KHI ĐOÁN SAI */
 .input-penalty-shake {
 	animation: penaltyShakeAnim 0.35s ease-in-out !important;
 	border-color: var(--incorrect) !important;
@@ -2364,47 +2596,7 @@ body {
 	}
 }
 
-.word {
-	font-family: var(--font-typing) !important;
-	display: inline-block;
-	white-space: nowrap;
-	color: var(--text-muted);
-	padding: 2px 6px;
-	border-radius: 4px;
-	border-bottom: 3px solid transparent;
-	font-weight: 500;
-	opacity: 0.65;
-	transition:
-		background-color 0.1s,
-		color 0.1s;
-}
-.word.correct {
-	color: var(--correct) !important;
-	opacity: 1 !important;
-}
-.word.incorrect {
-	color: var(--incorrect) !important;
-	opacity: 1 !important;
-	background: rgba(255, 51, 102, 0.15) !important;
-	border-bottom-color: var(--incorrect) !important;
-}
-.word.current {
-	color: var(--text-main) !important;
-	opacity: 1 !important;
-	background: rgba(255, 255, 255, 0.08) !important;
-	border-bottom: 3px solid var(--primary) !important;
-}
-.word.current.correct-typing {
-	color: var(--correct) !important;
-	background: rgba(0, 255, 102, 0.15) !important;
-	border-bottom-color: var(--correct) !important;
-}
-.word.current.incorrect-typing {
-	color: var(--incorrect) !important;
-	background: rgba(255, 51, 102, 0.2) !important;
-	border-bottom-color: var(--incorrect) !important;
-}
-
+/* 10.6 Ô INPUT ẨN HỖ TRỢ BỘ GÕ TIẾNG VIỆT HOÀN HẢO */
 #type-input {
 	font-family: var(--font-typing) !important;
 	width: 100%;

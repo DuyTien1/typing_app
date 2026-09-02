@@ -338,6 +338,10 @@ let bannedModalTimer = null,
 let isRenderTracksPending = false;
 let latestPlayersData = null;
 
+// Biến điều khiển chuyển dòng mượt mà (Monkeytype Smooth Line Shift)
+let currentViewportOffsetY = 0;
+let firstLineOffsetTop = 0;
+
 const chatEmojis = [
 	"😀",
 	"😂",
@@ -443,27 +447,83 @@ function initBotWorker() {
 	}
 }
 
-function scrollActiveWordToCenter() {
-	const container = $("words-display");
-	const activeWord = container?.children[wordIndex];
+// ==========================================================
+// MONKEYTYPE ENGINE: ĐIỀU KHIỂN CON TRỎ VÀ TRƯỢT DÒNG THỜI GIAN THỰC
+// ==========================================================
+function updateCaretPosition() {
+	const caret = $("caret");
+	const viewport = $("words-display-viewport");
+	const display = $("words-display");
 	if (
-		!container ||
-		!activeWord ||
-		currentLanguage === "ngau_hung" ||
-		currentLanguage === "doan_chu"
-	)
+		!caret ||
+		!viewport ||
+		!display ||
+		!isPlaying ||
+		currentLanguage === "doan_chu" ||
+		currentLanguage === "ngau_hung"
+	) {
+		caret?.classList.add("hidden");
 		return;
-
-	const firstWord = container.firstElementChild;
-	const firstRowTop = firstWord ? firstWord.offsetTop : 0;
-
-	if (activeWord.offsetTop <= firstRowTop + 5) {
-		container.scrollTop = 0;
-	} else {
-		const targetScroll =
-			activeWord.offsetTop - container.clientHeight / 2 + activeWord.offsetHeight / 2;
-		container.scrollTop = Math.max(0, targetScroll);
 	}
+
+	const currentWordEl = $(`word-${wordIndex}`);
+	if (!currentWordEl) {
+		caret.classList.add("hidden");
+		return;
+	}
+
+	// Cập nhật trượt dòng trước
+	handleSmoothLineShift(currentWordEl);
+
+	caret.classList.remove("hidden");
+
+	const inputVal = $("type-input")?.value || "";
+	const letterElements = currentWordEl.querySelectorAll(".letter:not(.extra)");
+
+	let letterOffsetX = 0;
+	let targetHeight = currentWordEl.offsetHeight || 32;
+
+	if (inputVal.length < letterElements.length) {
+		const targetLetter = letterElements[inputVal.length];
+		letterOffsetX = targetLetter.offsetLeft;
+		targetHeight = targetLetter.offsetHeight || targetHeight;
+	} else if (letterElements.length > 0) {
+		const lastLetter = letterElements[letterElements.length - 1];
+		letterOffsetX = lastLetter.offsetLeft + lastLetter.offsetWidth;
+		targetHeight = lastLetter.offsetHeight || targetHeight;
+	}
+
+	// Tính toán toạ độ trực tiếp từ offset DOM nội bộ để loại bỏ hoàn toàn lỗi nhảy 2 dòng
+	const finalLeft = currentWordEl.offsetLeft + letterOffsetX;
+	const finalTop = currentWordEl.offsetTop + currentViewportOffsetY;
+
+	caret.style.left = `${finalLeft}px`;
+	caret.style.top = `${finalTop}px`;
+	caret.style.height = `${Math.max(22, targetHeight)}px`;
+}
+
+function handleSmoothLineShift(currentWordEl) {
+	const display = $("words-display");
+	if (!display || !currentWordEl) return;
+
+	const firstWord = display.firstElementChild;
+	if (!firstWord) return;
+
+	if (firstLineOffsetTop === 0 || wordIndex === 0) {
+		firstLineOffsetTop = firstWord.offsetTop;
+	}
+
+	const currentWordTop = currentWordEl.offsetTop;
+	const diffY = currentWordTop - firstLineOffsetTop;
+
+	// Khi con trỏ chuyển sang dòng 2 hoặc 3 trở đi, trượt nhẹ nhàng lên
+	if (diffY > 38) {
+		currentViewportOffsetY = -(diffY - 6);
+	} else {
+		currentViewportOffsetY = 0;
+	}
+
+	display.style.transform = `translate3d(0, ${currentViewportOffsetY}px, 0)`;
 }
 
 function loadHighScores() {
@@ -587,6 +647,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (closeBtn) $(closeBtn.dataset.close)?.classList.add("hidden");
 	});
 
+	// Luôn tự động giữ focus vào ô nhập liệu khi đang chơi
+	$("typing-area")?.addEventListener("click", () => {
+		if (isPlaying && $("type-input") && !$("type-input").disabled) {
+			$("type-input").focus();
+		}
+	});
+
 	$$(".mode-card").forEach((card) => {
 		card.addEventListener("click", () => {
 			$$(".mode-card").forEach((c) => c.classList.remove("selected"));
@@ -647,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Chọn độ khó cho Đoán Chữ (MỚI)
+	// Chọn độ khó cho Đoán Chữ
 	$("btn-open-dc-difficulty-select")?.addEventListener("click", () => {
 		$$("#dc-difficulty-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.dcDiff === currentDifficulty);
@@ -699,6 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		currentDifficulty = "normal";
 		mySelectedIcon = DEFAULT_ICON;
 		clearAllBossSkillEffects();
+		$("caret")?.classList.add("hidden");
 		if ($("user-icon-status")) $("user-icon-status").innerText = mySelectedIcon;
 		["lobby-screen", "game-container", "summary-modal"].forEach((id) =>
 			$(id).classList.add("hidden"),
@@ -714,6 +782,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	$("btn-play-again")?.addEventListener("click", () => {
 		clearAllBossSkillEffects();
+		$("caret")?.classList.add("hidden");
 		["summary-modal", "game-container"].forEach((id) => $(id).classList.add("hidden"));
 		$("lobby-screen").classList.remove("hidden");
 		socket.emit("join_lobby", {
@@ -772,6 +841,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				typeInput.dispatchEvent(new Event("input", { bubbles: true }));
 			}
 		}
+	});
+
+	window.addEventListener("resize", () => {
+		if (isPlaying) updateCaretPosition();
 	});
 
 	setupChatHandling();
@@ -925,7 +998,6 @@ function saveActiveDiffInputsToState() {
 				: parseInt($("cfg-nh-hard-en").value);
 	}
 
-	// Cấu hình Đoán Chữ (MỚI)
 	if (tempAdminDcDifficulties[selectedConfigDcDiffKey]) {
 		const dc = tempAdminDcDifficulties[selectedConfigDcDiffKey];
 		if ($("cfg-dc-round-dur")) dc.roundDuration = parseFloat($("cfg-dc-round-dur").value) || 18;
@@ -1489,6 +1561,8 @@ socket.on("game_start", (data) => {
 	currentWords = data.words || [];
 	wordIndex = correctChars = totalErrors = 0;
 	isPlaying = false;
+	currentViewportOffsetY = 0;
+	firstLineOffsetTop = 0;
 
 	bossComboCount = 0;
 	bossFractionalDamageBuffer = 0.0;
@@ -1498,6 +1572,7 @@ socket.on("game_start", (data) => {
 
 	const isNgauHung = currentLanguage === "ngau_hung";
 	const isDoanChu = currentLanguage === "doan_chu";
+	const isNumpad = currentLanguage === "numpad";
 	const isBoss = currentLanguage === "san_boss";
 
 	$("ngau-hung-status")?.classList.toggle("hidden", !isNgauHung);
@@ -1515,6 +1590,8 @@ socket.on("game_start", (data) => {
 
 	$("words-display").classList.toggle("ngau-hung-mode-display", isNgauHung);
 	$("words-display").classList.toggle("doan-chu-mode-display", isDoanChu);
+	$("words-display").classList.toggle("numpad-mode-display", isNumpad);
+	$("words-display").style.transform = "translate3d(0, 0, 0)";
 
 	if (isNgauHung) {
 		const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
@@ -1526,13 +1603,15 @@ socket.on("game_start", (data) => {
 		}
 		$("ngau-hung-round-text").innerText = `VÒNG 1/${currentWords.length || 15}`;
 		$("words-display").innerHTML =
-			`<span class="word current" style="color: var(--accent);">Chuẩn bị...</span>`;
+			`<span class="word" style="color: var(--accent);"><span class="letter">Chuẩn bị...</span></span>`;
+		$("caret")?.classList.add("hidden");
 	} else if (isDoanChu) {
 		$("doan-chu-round-text").innerText = "VÒNG 1/10";
 		$("doan-chu-hint-badge").innerText = "💡 GỢI Ý: Chuẩn bị...";
 		$("doan-chu-hidden-count").innerText = "KÝ TỰ ẨN: --";
 		$("words-display").innerHTML =
-			`<span class="word current" style="color: var(--accent);">Chuẩn bị đoán chữ...</span>`;
+			`<span class="word" style="color: var(--accent);"><span class="letter">Chuẩn bị đoán chữ...</span></span>`;
+		$("caret")?.classList.add("hidden");
 	} else if (isBoss && data.boss) {
 		currentBossData = data.boss;
 		$("boss-name").innerText = data.boss.name;
@@ -1594,6 +1673,8 @@ function startCountdown(seconds) {
 						? "Gõ thật nhanh để xả sát thương lên Boss..."
 						: "Gõ chữ vào đây...";
 				$("type-input").focus();
+
+				updateCaretPosition();
 				startRaceTimer(duration);
 			}
 		}
@@ -1620,6 +1701,7 @@ socket.on("doan_chu_new_round", (d) => {
 	doanChuCurrentRound = d.round;
 	doanChuTotalTiles = d.length;
 	isPlaying = true;
+	$("caret")?.classList.add("hidden");
 
 	if (d.difficulty) currentDifficulty = d.difficulty;
 	$("doan-chu-round-text").innerText = `VÒNG ${d.round}/${d.totalRounds}`;
@@ -1684,9 +1766,7 @@ socket.on("doan_chu_player_success", (d) => {
 	input.disabled = true;
 	input.placeholder = `🎉 ĐOÁN ĐÚNG! Hạng ${d.rank} (+${d.totalPoints}đ: Hạng +${d.rankPoints}, Ẩn +${d.hiddenBonus})`;
 
-	// Hiển thị toàn bộ từ trên các tile
 	if (d.targetWord) {
-		let charIdx = 0;
 		for (let i = 0; i < d.targetWord.length; i++) {
 			if (d.targetWord[i] !== " ") {
 				const tile = $(`dc-tile-${i}`);
@@ -1931,6 +2011,7 @@ socket.on("ngau_hung_new_round", (d) => {
 	ngauHungHasSubmittedThisRound = false;
 	ngauHungCurrentRound = d.round;
 	isPlaying = true;
+	$("caret")?.classList.add("hidden");
 
 	if (d.difficulty) currentDifficulty = d.difficulty;
 	const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
@@ -1944,8 +2025,13 @@ socket.on("ngau_hung_new_round", (d) => {
 	}
 
 	$("ngau-hung-round-text").innerText = `VÒNG ${d.round}/${d.totalRounds}`;
+
+	const lettersHTML = d.targetWord
+		.split("")
+		.map((c) => `<span class="letter">${c}</span>`)
+		.join("");
 	$("words-display").innerHTML =
-		`<span id="ngau-hung-word" class="word current correct-typing">${d.targetWord}</span>`;
+		`<div id="ngau-hung-word" class="word current">${lettersHTML}</div>`;
 
 	const input = $("type-input");
 	input.value = "";
@@ -1968,7 +2054,10 @@ socket.on("ngau_hung_new_round", (d) => {
 socket.on("ngau_hung_player_success", (d) => {
 	$("type-input").disabled = true;
 	$("type-input").placeholder = `🎉 Hạng ${d.rank} (+${d.pointsAwarded} điểm)!`;
-	if ($("ngau-hung-word")) $("ngau-hung-word").className = "word correct";
+	const wordEl = $("ngau-hung-word");
+	if (wordEl) {
+		wordEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter correct"));
+	}
 });
 
 socket.on("ngau_hung_round_ended", () => {
@@ -1976,7 +2065,10 @@ socket.on("ngau_hung_round_ended", () => {
 	$("type-input").disabled = true;
 	if (!ngauHungHasSubmittedThisRound) {
 		$("type-input").placeholder = "Hết thời gian!";
-		if ($("ngau-hung-word")) $("ngau-hung-word").className = "word incorrect";
+		const wordEl = $("ngau-hung-word");
+		if (wordEl) {
+			wordEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter incorrect"));
+		}
 	}
 });
 
@@ -1984,11 +2076,11 @@ socket.on("ngau_hung_intermission", (d) => {
 	let t = d.duration;
 	$("timer").innerText = t;
 	$("words-display").innerHTML =
-		`<span class="word" style="color: var(--accent);">Vòng kế tiếp sau ${t}s...</span>`;
+		`<span class="word" style="color: var(--accent);"><span class="letter">Vòng kế tiếp sau ${t}s...</span></span>`;
 	const it = setInterval(() => {
 		if (--t > 0)
 			$("words-display").innerHTML =
-				`<span class="word" style="color: var(--accent);">Vòng kế tiếp sau ${t}s...</span>`;
+				`<span class="word" style="color: var(--accent);"><span class="letter">Vòng kế tiếp sau ${t}s...</span></span>`;
 		else clearInterval(it);
 	}, 1000);
 });
@@ -2007,44 +2099,71 @@ function getRenderedWord(w, idx) {
 	return displayWord;
 }
 
+// ==========================================================
+// RENDER TỪ VỰNG PHÂN TÁCH TỪNG KÝ TỰ (MONKEYTYPE DOM ENGINE)
+// ==========================================================
 function renderWords() {
 	const wd = $("words-display");
-	wd.classList.toggle("numpad-mode", currentLanguage === "numpad");
+	if (!wd) return;
+
 	wd.innerHTML = currentWords
 		.map((w, idx) => {
 			const wordText = getRenderedWord(w, idx);
-			let cls = "word";
-			if (idx < wordIndex) {
-				cls = "word correct";
-			} else if (idx === wordIndex) {
-				cls = "word current correct-typing";
-			}
-			return `<span class="${cls}">${wordText}</span>`;
+			const lettersHtml = wordText
+				.split("")
+				.map((char) => `<span class="letter">${char}</span>`)
+				.join("");
+			return `<div class="word" id="word-${idx}">${lettersHtml}</div>`;
 		})
 		.join("");
-	scrollActiveWordToCenter();
+
+	// Cập nhật trạng thái cho các từ đã gõ nếu có
+	for (let i = 0; i < wordIndex; i++) {
+		const wEl = $(`word-${i}`);
+		if (wEl) {
+			wEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter correct"));
+		}
+	}
+
+	updateCaretPosition();
 }
 
+// ==========================================================
+// XỬ LÝ GÕ PHÍM & CON TRỎ CAO CẤP
+// ==========================================================
 function handleTypingInput() {
 	if (!isPlaying) return;
-	const input = $("type-input"),
-		val = input.value;
+	const input = $("type-input");
+	let val = input.value;
 
 	if (currentLanguage === "doan_chu") return;
 
 	if (currentLanguage === "ngau_hung") {
 		if (ngauHungHasSubmittedThisRound) return (input.value = "");
 		const wordEl = $("ngau-hung-word");
+
+		// Khóa cứng không cho gõ quá độ dài từ mục tiêu, chỉ kích hoạt rung và giữ nguyên focus
+		if (val.length > ngauHungTargetWord.length && !val.endsWith(" ")) {
+			input.value = val.slice(0, ngauHungTargetWord.length);
+			if (wordEl) {
+				wordEl.classList.remove("shake-overflow");
+				void wordEl.offsetWidth;
+				wordEl.classList.add("shake-overflow");
+			}
+			return;
+		}
+
 		if (val.endsWith(" ")) {
 			const typed = val.trim();
 			input.value = "";
 			if (typed === ngauHungTargetWord) {
 				ngauHungHasSubmittedThisRound = true;
 				socket.emit("submit_ngau_hung_word", { word: typed, errors: totalErrors });
-				if (wordEl) wordEl.className = "word correct";
+				if (wordEl) {
+					wordEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter correct"));
+				}
 			} else {
 				totalErrors++;
-				if (wordEl) wordEl.className = "word current correct-typing";
 				socket.emit("update_progress", {
 					wpm: 0,
 					correctChars,
@@ -2053,22 +2172,47 @@ function handleTypingInput() {
 			}
 			return;
 		}
-		if (wordEl)
-			wordEl.className = `word current ${ngauHungTargetWord.startsWith(val) ? "correct-typing" : "incorrect-typing"}`;
+
+		if (wordEl) {
+			const letters = wordEl.querySelectorAll(".letter");
+			letters.forEach((l, i) => {
+				if (i < val.length) {
+					l.className = `letter ${val[i] === ngauHungTargetWord[i] ? "correct" : "incorrect"}`;
+				} else {
+					l.className = "letter";
+				}
+			});
+		}
 		return;
 	}
 
 	const baseTarget = currentWords[wordIndex];
 	const target = getRenderedWord(baseTarget, wordIndex);
-	const currSpan = $("words-display").children[wordIndex];
+	const currentWordEl = $(`word-${wordIndex}`);
+
+	// Khóa cứng không cho gõ quá số ký tự của từ hiện tại - kích hoạt hiệu ứng rung và giữ nguyên focus
+	if (val.length > target.length && !val.endsWith(" ")) {
+		input.value = val.slice(0, target.length);
+		val = input.value;
+		if (currentWordEl) {
+			currentWordEl.classList.remove("shake-overflow");
+			void currentWordEl.offsetWidth;
+			currentWordEl.classList.add("shake-overflow");
+		}
+	}
 
 	if (val.endsWith(" ")) {
-		if (val.trim() === target) {
+		const typedWord = val.slice(0, -1);
+		input.value = "";
+
+		if (typedWord === target) {
 			const wordLength = target.length + 1;
 			correctChars += wordLength;
-			if (currSpan) currSpan.className = "word correct";
+			if (currentWordEl) {
+				currentWordEl.classList.remove("error-word");
+				currentWordEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter correct"));
+			}
 			wordIndex++;
-			input.value = "";
 
 			if (currentLanguage === "san_boss") {
 				bossComboCount++;
@@ -2090,22 +2234,37 @@ function handleTypingInput() {
 			}
 
 			if (wordIndex >= currentWords.length) return finishGame();
-			if ($("words-display").children[wordIndex])
-				$("words-display").children[wordIndex].className = "word current correct-typing";
 
-			scrollActiveWordToCenter();
+			updateCaretPosition();
 		} else {
 			totalErrors++;
-			input.value = "";
-			if (currSpan) currSpan.className = "word current correct-typing";
+			if (currentWordEl) {
+				currentWordEl.classList.add("error-word");
+			}
 
 			if (currentLanguage === "san_boss") {
 				resetBossCombo("Gõ sai từ");
 				socket.emit("deal_boss_damage", { damage: 0, errors: totalErrors });
 			}
+			updateCaretPosition();
 		}
-	} else if (currSpan) {
-		currSpan.className = `word current ${target.startsWith(val) ? "correct-typing" : "incorrect-typing"}`;
+	} else if (currentWordEl) {
+		const letters = currentWordEl.querySelectorAll(".letter:not(.extra)");
+
+		// Cập nhật trạng thái từng ký tự chính xác theo độ dài cho phép
+		letters.forEach((l, i) => {
+			if (i < val.length) {
+				if (val[i] === target[i]) {
+					l.className = "letter correct";
+				} else {
+					l.className = "letter incorrect";
+				}
+			} else {
+				l.className = "letter";
+			}
+		});
+
+		updateCaretPosition();
 	}
 
 	if (currentLanguage !== "san_boss") {
@@ -2126,6 +2285,7 @@ function finishGame() {
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearAllBossSkillEffects();
+	$("caret")?.classList.add("hidden");
 
 	const elapsed = Math.max(1, (Date.now() - startTime) / 1000);
 	$("type-input").disabled = true;
@@ -2145,6 +2305,7 @@ function surrenderGame(isAFK = false) {
 	clearInterval(ngauHungRoundTimer);
 	clearInterval(doanChuRoundTimer);
 	clearAllBossSkillEffects();
+	$("caret")?.classList.add("hidden");
 	$("type-input").disabled = true;
 	$("status-box").innerText = isAFK ? "AFK" : "ĐÃ ĐẦU HÀNG";
 	socket.emit("surrender", { isAFK });
@@ -2212,6 +2373,7 @@ socket.on("game_over", (d) => {
 	clearInterval(ngauHungRoundTimer);
 	clearInterval(doanChuRoundTimer);
 	clearAllBossSkillEffects();
+	$("caret")?.classList.add("hidden");
 
 	$("game-container").classList.add("hidden");
 	$("chat-container").classList.add("hidden");

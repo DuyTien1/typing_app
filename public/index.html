@@ -407,7 +407,7 @@
 							</div>
 						</fieldset>
 
-						<!-- CẤU HÌNH ĐOÁN CHỮ (MỚI) -->
+						<!-- CẤU HÌNH ĐOÁN CHỮ -->
 						<fieldset class="admin-config-fieldset full-width">
 							<legend>Chế Độ Đoán Chữ (Tùy chỉnh theo từng Độ Khó)</legend>
 							<div class="config-field-row" style="margin-bottom: 12px">
@@ -798,7 +798,7 @@
 			</div>
 		</div>
 
-		<!-- PHÒNG CHỜ (LOBBY - THANH ĐIỀU HƯỚNG FLEXBOX) -->
+		<!-- PHÒNG CHỜ (LOBBY) -->
 		<div id="lobby-screen" class="screen hidden">
 			<div class="cyber-box lobby-box">
 				<div class="lobby-nav-bar">
@@ -911,7 +911,7 @@
 			</div>
 		</div>
 
-		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO ĐOÁN CHỮ (MỚI) -->
+		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO ĐOÁN CHỮ -->
 		<div id="dc-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
 				<h3 class="popup-section-title" style="color: var(--secondary)">
@@ -1112,6 +1112,7 @@
 				<div id="race-tracks-container"></div>
 			</div>
 
+			<!-- KHU VỰC GÕ CHỮ & CON TRỎ CAO CẤP KIỂU MONKEYTYPE -->
 			<div id="typing-area" class="cyber-box">
 				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
 
@@ -1120,18 +1121,26 @@
 					<span id="ngau-hung-round-text" class="ngau-hung-round-text">VÒNG 1/15</span>
 				</div>
 
-				<!-- KHU VỰC GỢI Ý & TRẠNG THÁI ĐOÁN CHỮ (MỚI) -->
+				<!-- KHU VỰC GỢI Ý & TRẠNG THÁI ĐOÁN CHỮ -->
 				<div id="doan-chu-status" class="doan-chu-badge-wrapper hidden">
 					<span id="doan-chu-round-text" class="doan-chu-round-text">VÒNG 1/10</span>
 					<div id="doan-chu-hint-badge" class="doan-chu-hint-badge">💡 GỢI Ý: ---</div>
 					<span id="doan-chu-hidden-count" class="doan-chu-hidden-count">KÝ TỰ ẨN: --</span>
 				</div>
 
-				<div id="words-display"></div>
+				<!-- WORDS DISPLAY VIEWPORT VỚI CON TRỎ MONKEYTYPE VÀ WORDS WRAPPER -->
+				<div id="words-display-viewport" class="words-display-viewport">
+					<div id="caret" class="custom-caret hidden"></div>
+					<div id="words-display" class="words-display"></div>
+				</div>
+
 				<input
 					type="text"
 					id="type-input"
 					autocomplete="off"
+					autocapitalize="off"
+					autocorrect="off"
+					spellcheck="false"
 					placeholder="Chờ bắt đầu..."
 					disabled
 				/>
