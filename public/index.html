@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi" data-style="cyberpunk">
+<html lang="vi" data-theme="serika_dark" data-font="lexend">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,15 +7,15 @@
 
 		<meta
 			name="description"
-			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ và Săn Boss trực tuyến cực nhanh cùng bạn bè."
+			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ và Săn Boss trực tuyến cực nhanh cùng bạn bè theo phong cách Monkeytype."
 		/>
 		<meta
 			name="keywords"
-			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, fast typing challenge, săn boss"
+			content="luyện gõ phím, typing test, monkeytype, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, fast typing challenge, săn boss"
 		/>
 		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
 		<meta name="robots" content="index, follow" />
-		<meta name="theme-color" content="#00f0ff" />
+		<meta name="theme-color" content="#e2b714" />
 
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content="FASTTYPING CHALLENGE - Đua Gõ Phím & Săn Boss Trực Tuyến" />
@@ -28,14 +28,15 @@
 		<link rel="stylesheet" href="style.css" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+		<!-- DANH SÁCH 20 FONTS CHUẨN MONKEYTYPE & CODE TYPING -->
 		<link
-			href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Cinzel:wght@600;700;800;900&family=EB+Garamond:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif:ital,wght@0,600;0,700;1,400;1,600&family=Orbitron:wght@600;700;800;900&family=Philosopher:ital,wght@0,700;1,700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600;1,700&family=Silkscreen:wght@400;700&family=VT323&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400&family=Comfortaa:wght@400;600;700&family=Cousine:ital,wght@0,400;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=Inconsolata:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Major+Mono+Display&family=Montserrat:wght@400;500;600;700&family=Nanum+Gothic+Coding:wght@400;700&family=Nova+Mono&family=Nunito:wght@400;600;700;800&family=Overpass+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Share+Tech+Mono&family=Source+Code+Pro:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Ubuntu+Mono:wght@400;700&family=VT323&display=swap"
 			rel="stylesheet"
 		/>
 		<script src="/socket.io/socket.io.js"></script>
 	</head>
 	<body>
-		<!-- NỀN HIỆU ỨNG ÁNH SÁNG THEO THEME -->
 		<div class="ambient-background-glow"></div>
 
 		<!-- TOAST CONTAINER CHO THÔNG BÁO TỰ BẠO DIỆT BOSS -->
@@ -48,14 +49,14 @@
 				<span id="profile-name">Vô danh</span>
 			</div>
 			<span class="admin-badge admin-only hidden">ADMIN</span>
-			<button id="btn-change-name" class="btn-small btn-hud" title="Thay đổi biệt danh">
+			<button id="btn-change-name" class="btn-small" title="Thay đổi biệt danh">
 				<span class="btn-icon">✏️</span> ĐỔI TÊN
 			</button>
-			<button id="theme-toggle-btn" class="btn-small theme-btn" title="Chuyển đổi Sáng/Tối">
-				🌙 Tối
+			<button id="theme-select-btn" class="btn-small theme-btn" title="Chọn Theme Monkeytype">
+				🎨 <span id="theme-btn-label">Serika Dark</span>
 			</button>
-			<button id="style-toggle-btn" class="btn-small style-btn" title="Đổi giao diện">
-				⚡ Cyberpunk
+			<button id="font-select-btn" class="btn-small font-btn" title="Chọn Font gõ phím">
+				🔤 <span id="font-btn-label">Lexend</span>
 			</button>
 		</header>
 
@@ -87,7 +88,7 @@
 			<div class="cyber-box modal-content home-main-container">
 				<div class="brand-header">
 					<h1 class="glitch-title" data-text="FASTTYPING CHALLENGE">FASTTYPING CHALLENGE</h1>
-					<p class="subtitle">Thử Thách Đánh Máy & NumPad Đỉnh Cao</p>
+					<p class="subtitle">Monkeytype Style Typing & Boss Arena</p>
 				</div>
 
 				<div class="home-flex-row">
@@ -95,37 +96,30 @@
 						<label class="section-label">CHỌN CHẾ ĐỘ THI ĐẤU</label>
 						<div class="mode-grid">
 							<div class="mode-card selected" data-lang="vi_dau">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🇻🇳</div>
 								<div class="title">Tiếng Việt</div>
 							</div>
 							<div class="mode-card" data-lang="vi_nodau">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🔤</div>
 								<div class="title">Không Dấu</div>
 							</div>
 							<div class="mode-card" data-lang="en">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🔠</div>
 								<div class="title">English</div>
 							</div>
 							<div class="mode-card" data-lang="numpad">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🔢</div>
 								<div class="title">Numpad</div>
 							</div>
 							<div class="mode-card" data-lang="ngau_hung">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🎲</div>
 								<div class="title">Ngẫu Hứng</div>
 							</div>
 							<div class="mode-card" data-lang="doan_chu">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🧩</div>
 								<div class="title">Đoán Chữ</div>
 							</div>
 							<div class="mode-card" data-lang="san_boss">
-								<div class="mode-card-glow"></div>
 								<div class="icon">🐉</div>
 								<div class="title">Săn Boss</div>
 							</div>
@@ -177,105 +171,38 @@
 			</div>
 		</main>
 
-		<!-- MODAL CHỌN PHONG CÁCH GIAO DIỆN -->
-		<div id="style-select-popup" class="custom-popup hidden">
-			<div class="popup-content modal-large style-modal-content">
-				<div class="style-modal-header">
-					<div class="style-header-badge">THEME SELECTOR</div>
-					<h3 class="style-popup-title">🎨 CHỌN PHONG CÁCH GIAO DIỆN</h3>
-					<p class="style-popup-subtitle">
-						Tùy biến toàn bộ không gian trải nghiệm và ngôn ngữ đồ họa của bạn
+		<!-- POPUP CHỌN THEME (20 THEMES MONKEYTYPE) -->
+		<div id="theme-select-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large monkey-modal-content">
+				<div class="monkey-modal-header">
+					<div class="monkey-header-badge">20 MONKEYTYPE THEMES</div>
+					<h3 class="monkey-popup-title">🎨 CHỌN THEME MÀU SẮC</h3>
+					<p class="monkey-popup-subtitle">
+						Bộ sưu tập 20 bảng màu tương phản cao, dịu mắt chuẩn Monkeytype
 					</p>
 				</div>
-				<div class="style-cards-grid">
-					<div class="style-card selected" data-style="cyberpunk">
-						<div
-							class="style-card-accent-bar"
-							style="background: linear-gradient(90deg, #00f0ff, #ff0055)"
-						></div>
-						<div class="style-card-badge">THEME 1</div>
-						<div class="style-card-icon-wrap">⚡</div>
-						<div class="style-card-name">Cyberpunk</div>
-						<div class="style-card-desc">
-							Tương lai vi mạch, đèn Neon rực rỡ, đường cắt HUD sắc bén & hiệu ứng Glitch
-						</div>
-						<div class="style-card-tag">Sci-Fi HUD</div>
-					</div>
-					<div class="style-card" data-style="vintage">
-						<div
-							class="style-card-accent-bar"
-							style="background: linear-gradient(90deg, #d4af37, #873600)"
-						></div>
-						<div class="style-card-badge">THEME 2</div>
-						<div class="style-card-icon-wrap">📜</div>
-						<div class="style-card-name">Cổ Điển Hoàng Gia</div>
-						<div class="style-card-desc">
-							Châu Âu trung cổ, giấy da cổ điển, hoa văn đồng thau & nét chạm khắc quý tộc
-						</div>
-						<div class="style-card-tag">Royal Serif</div>
-					</div>
-					<div class="style-card" data-style="xianxia">
-						<div
-							class="style-card-accent-bar"
-							style="background: linear-gradient(90deg, #00ffaa, #ff3377)"
-						></div>
-						<div class="style-card-badge">THEME 3</div>
-						<div class="style-card-icon-wrap">🪷</div>
-						<div class="style-card-name">Tiên Hiệp Bồng Lai</div>
-						<div class="style-card-desc">
-							Ngọc bích linh khí, sương khói bồng bềnh mộng ảo & phong thái tiên đạo xuất trần
-						</div>
-						<div class="style-card-tag">Jade Spirit</div>
-					</div>
-					<div class="style-card" data-style="steampunk">
-						<div
-							class="style-card-accent-bar"
-							style="background: linear-gradient(90deg, #f39c12, #c0392b)"
-						></div>
-						<div class="style-card-badge">THEME 4</div>
-						<div class="style-card-icon-wrap">⚙️</div>
-						<div class="style-card-name">Cơ Khí Hơi Nước</div>
-						<div class="style-card-desc">
-							Bánh răng chuyển động, đồng thau tán đinh, buồng áp suất & ngọn lửa công nghiệp
-						</div>
-						<div class="style-card-tag">Steam Gear</div>
-					</div>
-					<div class="style-card" data-style="thuymac">
-						<div
-							class="style-card-accent-bar"
-							style="background: linear-gradient(90deg, #f5f6fa, #eb2f06)"
-						></div>
-						<div class="style-card-badge">THEME 5</div>
-						<div class="style-card-icon-wrap">☯️</div>
-						<div class="style-card-name">Thủy Mặc Âm Dương</div>
-						<div class="style-card-desc">
-							Hội họa thủy mặc thanh tao, nét cọ uyển chuyển phóng khoáng & ấn triện tĩnh tại
-						</div>
-						<div class="style-card-tag">Ink Brush</div>
-					</div>
-					<div class="style-card" data-style="pixel">
-						<div
-							class="style-card-accent-bar"
-							style="background: linear-gradient(90deg, #bd00ff, #00f0aa)"
-						></div>
-						<div class="style-card-badge">THEME 6</div>
-						<div class="style-card-icon-wrap">👾</div>
-						<div class="style-card-name">Arcade 8-Bit Pixel</div>
-						<div class="style-card-desc">
-							Điện tử băng hoài niệm, máy game thùng 4 nút, viền pixel khối vuông & quét bóng hình
-							CRT
-						</div>
-						<div class="style-card-tag">Retro 8-Bit</div>
-					</div>
-				</div>
-				<div class="style-modal-footer">
-					<button
-						class="cyber-btn btn-secondary-style"
-						data-close="style-select-popup"
-						style="padding: 10px 36px; width: auto"
-					>
+				<div class="monkey-grid" id="theme-cards-grid"></div>
+				<div class="monkey-modal-footer">
+					<button class="cyber-btn btn-secondary-style" data-close="theme-select-popup">
 						ĐÓNG
 					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP CHỌN FONT (20 FONTS MONKEYTYPE) -->
+		<div id="font-select-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large monkey-modal-content">
+				<div class="monkey-modal-header">
+					<div class="monkey-header-badge">20 MONKEYTYPE FONTS</div>
+					<h3 class="monkey-popup-title">🔤 CHỌN FONT GÕ CHỮ</h3>
+					<p class="monkey-popup-subtitle">
+						Bộ sưu tập 20 kiểu chữ lập trình & sans-serif tối ưu cho tốc độ phản xạ
+					</p>
+				</div>
+				<div class="monkey-grid" id="font-cards-grid"></div>
+				<div class="monkey-modal-footer">
+					<button class="cyber-btn btn-secondary-style" data-close="font-select-popup">ĐÓNG</button>
 				</div>
 			</div>
 		</div>
@@ -287,9 +214,7 @@
 					<span class="auth-icon-tag">🔑</span>
 					<h3 class="popup-auth-title">QUẢN TRỊ VIÊN</h3>
 				</div>
-				<p class="popup-auth-desc">
-					Nhập mật mã quản trị để mở khóa quyền cấu hình và điều hành hệ thống.
-				</p>
+				<p class="popup-auth-desc">Nhập mật mã quản trị để mở khóa quyền cấu hình hệ thống.</p>
 				<div class="auth-input-group">
 					<input
 						type="password"
@@ -340,7 +265,7 @@
 						<fieldset class="admin-config-fieldset full-width">
 							<legend>Chế Độ Ngẫu Hứng (Tùy chỉnh theo từng Độ Khó)</legend>
 							<div class="config-field-row" style="margin-bottom: 12px">
-								<label style="color: var(--accent); font-weight: bold"
+								<label style="color: var(--main-color); font-weight: bold"
 									>🎯 CHỌN ĐỘ KHÓ NGẪU HỨNG:</label
 								>
 								<select id="cfg-nh-diff-select" class="admin-select-input">
@@ -411,7 +336,7 @@
 						<fieldset class="admin-config-fieldset full-width">
 							<legend>Chế Độ Đoán Chữ (Tùy chỉnh theo từng Độ Khó)</legend>
 							<div class="config-field-row" style="margin-bottom: 12px">
-								<label style="color: var(--accent); font-weight: bold"
+								<label style="color: var(--main-color); font-weight: bold"
 									>🎯 CHỌN ĐỘ KHÓ ĐOÁN CHỮ:</label
 								>
 								<select id="cfg-dc-diff-select" class="admin-select-input">
@@ -469,7 +394,7 @@
 						<fieldset class="admin-config-fieldset full-width">
 							<legend>Chế Độ Săn Boss (Tùy chỉnh theo từng Độ Khó)</legend>
 							<div class="config-field-row" style="margin-bottom: 12px">
-								<label style="color: var(--accent); font-weight: bold"
+								<label style="color: var(--main-color); font-weight: bold"
 									>🎯 CHỌN ĐỘ KHÓ SĂN BOSS:</label
 								>
 								<select id="cfg-boss-diff-select" class="admin-select-input">
@@ -545,9 +470,7 @@
 								</div>
 
 								<hr class="config-divider" />
-								<div class="skill-config-header">
-									🔥 KÍCH HOẠT KỸ NĂNG & THỜI GIAN HIỆU LỰC (THEO ĐỘ KHÓ)
-								</div>
+								<div class="skill-config-header">🔥 KÍCH HOẠT KỸ NĂNG & THỜI GIAN HIỆU LỰC</div>
 
 								<div class="skill-config-list">
 									<div class="skill-config-card">
@@ -704,7 +627,7 @@
 					<button
 						class="cyber-btn btn-secondary-style"
 						data-close="online-users-modal"
-						style="padding: 8px 30px; width: auto"
+						style="width: auto"
 					>
 						ĐÓNG
 					</button>
@@ -715,7 +638,7 @@
 		<!-- MODAL NGƯỜI CHƠI BỊ BAN (ADMIN) -->
 		<div id="banned-users-modal" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 class="popup-section-title" style="color: var(--secondary)">🚫 DANH SÁCH BỊ BAN</h3>
+				<h3 class="popup-section-title" style="color: var(--error-color)">🚫 DANH SÁCH BỊ BAN</h3>
 				<div class="admin-table-wrapper">
 					<table class="admin-table">
 						<thead>
@@ -732,7 +655,7 @@
 					<button
 						class="cyber-btn btn-secondary-style"
 						data-close="banned-users-modal"
-						style="padding: 8px 30px; width: auto"
+						style="width: auto"
 					>
 						ĐÓNG
 					</button>
@@ -751,7 +674,7 @@
 				<button
 					class="cyber-btn btn-secondary-style"
 					data-close="ban-notice-popup"
-					style="padding: 8px 25px; width: auto"
+					style="width: auto"
 				>
 					ĐÃ HIỂU
 				</button>
@@ -781,7 +704,7 @@
 					<span class="auth-icon-tag">✏️</span>
 					<h3 class="popup-auth-title">ĐỔI BIỆT DANH</h3>
 				</div>
-				<p class="popup-auth-desc">Tên hiển thị độc nhất của bạn trên đường đua và bảng vàng.</p>
+				<p class="popup-auth-desc">Tên hiển thị của bạn trên đường đua và bảng vàng.</p>
 				<div class="auth-input-group">
 					<input
 						type="text"
@@ -817,21 +740,18 @@
 						>
 							🎲 ĐỘ KHÓ
 						</button>
-
 						<button
 							id="btn-open-dc-difficulty-select"
 							class="cyber-btn lobby-nav-btn btn-diff-dc hidden"
 						>
 							🧩 ĐỘ KHÓ
 						</button>
-
 						<button
 							id="btn-open-boss-difficulty-select"
 							class="cyber-btn lobby-nav-btn btn-diff-boss hidden"
 						>
 							⚔️ ĐỘ KHÓ
 						</button>
-
 						<button
 							id="btn-open-icon-select"
 							class="cyber-btn lobby-nav-btn btn-icon-lobby"
@@ -879,20 +799,20 @@
 		<!-- POPUP 1: CHỌN ĐỘ KHÓ CHO NGẪU HỨNG -->
 		<div id="nh-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 class="popup-section-title" style="color: var(--secondary)">
+				<h3 class="popup-section-title" style="color: var(--main-color)">
 					🎲 CHỌN ĐỘ KHÓ: NGẪU HỨNG
 				</h3>
 				<div class="diff-picker-grid" style="grid-template-columns: repeat(2, 1fr)">
 					<div class="diff-card selected" data-nh-diff="normal">
 						<div class="diff-icon">🟡</div>
-						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
+						<div class="diff-name" style="color: var(--main-color)">BÌNH THƯỜNG</div>
 						<div class="diff-desc">
 							Thích hợp cho mọi người chơi làm quen phản xạ, từ ngữ quen thuộc và nhịp độ cân bằng.
 						</div>
 					</div>
 					<div class="diff-card" data-nh-diff="legendary">
 						<div class="diff-icon">👑</div>
-						<div class="diff-name" style="color: #ff0055">HUYỀN THOẠI</div>
+						<div class="diff-name" style="color: var(--error-color)">HUYỀN THOẠI</div>
 						<div class="diff-desc">
 							Đấu trường đỉnh cao cho cao thủ phản xạ chớp nhoáng, đòi hỏi tốc độ siêu tốc và xử lý
 							từ khó dưới áp lực lớn.
@@ -903,7 +823,7 @@
 					<button
 						class="cyber-btn btn-secondary-style"
 						data-close="nh-difficulty-popup"
-						style="padding: 8px 25px; width: auto; margin: 0 auto"
+						style="width: auto; margin: 0 auto"
 					>
 						ĐÓNG
 					</button>
@@ -914,13 +834,13 @@
 		<!-- POPUP 2: CHỌN ĐỘ KHÓ CHO ĐOÁN CHỮ -->
 		<div id="dc-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 class="popup-section-title" style="color: var(--secondary)">
+				<h3 class="popup-section-title" style="color: var(--main-color)">
 					🧩 CHỌN ĐỘ KHÓ: ĐOÁN CHỮ
 				</h3>
 				<div class="diff-picker-grid">
 					<div class="diff-card selected" data-dc-diff="normal">
 						<div class="diff-icon">🟡</div>
-						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
+						<div class="diff-name" style="color: var(--main-color)">BÌNH THƯỜNG</div>
 						<div class="diff-desc">
 							Từ vựng thân thuộc, hiển thị gợi ý chủ đề rõ ràng và thời gian lật chữ hợp lý.
 						</div>
@@ -934,7 +854,7 @@
 					</div>
 					<div class="diff-card" data-dc-diff="legendary">
 						<div class="diff-icon">👑</div>
-						<div class="diff-name" style="color: #ff0055">HUYỀN THOẠI</div>
+						<div class="diff-name" style="color: var(--error-color)">HUYỀN THOẠI</div>
 						<div class="diff-desc">
 							Không có gợi ý chủ đề! Ký tự lật chớp nhoáng, thử thách trí tuệ suy đoán cực hạn.
 						</div>
@@ -944,7 +864,7 @@
 					<button
 						class="cyber-btn btn-secondary-style"
 						data-close="dc-difficulty-popup"
-						style="padding: 8px 25px; width: auto; margin: 0 auto"
+						style="width: auto; margin: 0 auto"
 					>
 						ĐÓNG
 					</button>
@@ -955,7 +875,7 @@
 		<!-- POPUP 3: CHỌN ĐỘ KHÓ CHO SĂN BOSS -->
 		<div id="boss-difficulty-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large">
-				<h3 class="popup-section-title" style="color: var(--secondary)">
+				<h3 class="popup-section-title" style="color: var(--main-color)">
 					🐉 CHỌN ĐỘ KHÓ: SĂN BOSS
 				</h3>
 				<div class="diff-picker-grid">
@@ -968,7 +888,7 @@
 					</div>
 					<div class="diff-card selected" data-boss-diff="normal">
 						<div class="diff-icon">🟡</div>
-						<div class="diff-name" style="color: #ffe600">BÌNH THƯỜNG</div>
+						<div class="diff-name" style="color: var(--main-color)">BÌNH THƯỜNG</div>
 						<div class="diff-desc">
 							Thích hợp cho người chơi phổ thông, đòi hỏi sự phối hợp nhịp nhàng và duy trì sát
 							thương ổn định.
@@ -978,16 +898,14 @@
 						<div class="diff-icon">🔴</div>
 						<div class="diff-name" style="color: #ff7700">KHÓ</div>
 						<div class="diff-desc">
-							Thử thách cho các tay đua kinh nghiệm, cần tốc độ gõ cao và xử lý chuẩn xác trước các
-							chiêu thức của Boss.
+							Thử thách cho các tay đua kinh nghiệm, cần tốc độ gõ cao và xử lý chuẩn xác.
 						</div>
 					</div>
 					<div class="diff-card" data-boss-diff="hell">
 						<div class="diff-icon">💀</div>
-						<div class="diff-name" style="color: #ff0055">ĐỊA NGỤC</div>
+						<div class="diff-name" style="color: var(--error-color)">ĐỊA NGỤC</div>
 						<div class="diff-desc">
-							Đấu trường sinh tử cho cao thủ đỉnh phong, yêu cầu DPS cực đại và không được phép phạm
-							sai lầm.
+							Đấu trường sinh tử cho cao thủ đỉnh phong, yêu cầu DPS cực đại.
 						</div>
 					</div>
 				</div>
@@ -995,7 +913,7 @@
 					<button
 						class="cyber-btn btn-secondary-style"
 						data-close="boss-difficulty-popup"
-						style="padding: 8px 25px; width: auto; margin: 0 auto"
+						style="width: auto; margin: 0 auto"
 					>
 						ĐÓNG
 					</button>
@@ -1012,7 +930,7 @@
 					<button
 						class="cyber-btn btn-secondary-style"
 						data-close="icon-select-popup"
-						style="padding: 8px 25px; width: auto"
+						style="width: auto"
 					>
 						ĐÓNG
 					</button>
@@ -1128,7 +1046,7 @@
 					<span id="doan-chu-hidden-count" class="doan-chu-hidden-count">KÝ TỰ ẨN: --</span>
 				</div>
 
-				<!-- WORDS DISPLAY VIEWPORT VỚI CON TRỎ MONKEYTYPE VÀ WORDS WRAPPER -->
+				<!-- WORDS DISPLAY VIEWPORT VỚI CON TRỎ MONKEYTYPE -->
 				<div id="words-display-viewport" class="words-display-viewport">
 					<div id="caret" class="custom-caret hidden"></div>
 					<div id="words-display" class="words-display"></div>
@@ -1198,7 +1116,7 @@
 		</div>
 
 		<footer class="footer-copyright">
-			<span class="footer-dot"></span> © 2026 Nguyễn Duy Tiến (niTe)
+			<span class="footer-dot"></span> © 2026 Nguyễn Duy Tiến (niTe) - FastTyping Monkeytype Engine
 		</footer>
 		<script src="app.js"></script>
 	</body>

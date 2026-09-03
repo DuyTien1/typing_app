@@ -22,18 +22,213 @@ function eraseCookie(n) {
 	document.cookie = `${n}=; max-age=0; path=/`;
 }
 
-// Khôi phục phong cách giao diện
-const savedInitialStyle =
-	localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
+// ==========================================================
+// DANH SÁCH 20 THEMES & 20 FONTS CHUẨN MONKEYTYPE
+// ==========================================================
+const MONKEY_THEMES = [
+	{
+		id: "serika_dark",
+		name: "Serika Dark",
+		bg: "#323437",
+		main: "#e2b714",
+		sub: "#646669",
+		text: "#d1d0c5",
+	},
+	{ id: "carbon", name: "Carbon", bg: "#313131", main: "#f66e0d", sub: "#616161", text: "#f5e6c8" },
+	{
+		id: "dracula",
+		name: "Dracula",
+		bg: "#282a36",
+		main: "#f1fa8c",
+		sub: "#6272a4",
+		text: "#f8f8f2",
+	},
+	{ id: "nord", name: "Nord", bg: "#2e3440", main: "#88c0d0", sub: "#4c566a", text: "#eceff4" },
+	{
+		id: "botanical",
+		name: "Botanical",
+		bg: "#7b9c98",
+		main: "#eaf1f1",
+		sub: "#495e5b",
+		text: "#eaf1f1",
+	},
+	{ id: "olivia", name: "Olivia", bg: "#1c1b1d", main: "#deaf9d", sub: "#4f4749", text: "#f2efed" },
+	{ id: "matrix", name: "Matrix", bg: "#000000", main: "#15ff00", sub: "#006600", text: "#00cc00" },
+	{
+		id: "cyberpunk",
+		name: "Cyberpunk",
+		bg: "#181c24",
+		main: "#00f0ff",
+		sub: "#53647d",
+		text: "#f0f6fc",
+	},
+	{ id: "bento", name: "Bento", bg: "#2d394d", main: "#ff7a90", sub: "#4a5974", text: "#fffaf8" },
+	{
+		id: "vaporwave",
+		name: "Vaporwave",
+		bg: "#a4a7de",
+		main: "#ff75a0",
+		sub: "#67699d",
+		text: "#2b2b46",
+	},
+	{
+		id: "theme_8008",
+		name: "8008",
+		bg: "#333a45",
+		main: "#f44c7f",
+		sub: "#939eae",
+		text: "#e9ecf0",
+	},
+	{
+		id: "milkshake",
+		name: "Milkshake",
+		bg: "#ffffff",
+		main: "#212b43",
+		sub: "#626e82",
+		text: "#212b43",
+	},
+	{ id: "muted", name: "Muted", bg: "#525252", main: "#c4c4c4", sub: "#808080", text: "#e0e0e0" },
+	{
+		id: "modern_dolch",
+		name: "Modern Dolch",
+		bg: "#2d3139",
+		main: "#03a89e",
+		sub: "#5c6370",
+		text: "#e5e9f0",
+	},
+	{ id: "laser", name: "Laser", bg: "#221b44", main: "#00e8c6", sub: "#b82375", text: "#dbeafe" },
+	{
+		id: "dualshot",
+		name: "Dualshot",
+		bg: "#737373",
+		main: "#212224",
+		sub: "#aaaaaa",
+		text: "#212224",
+	},
+	{ id: "taro", name: "Taro", bg: "#b388eb", main: "#ffe1a8", sub: "#6c4675", text: "#1b1b2f" },
+	{
+		id: "red_samurai",
+		name: "Red Samurai",
+		bg: "#84202a",
+		main: "#c79e54",
+		sub: "#551319",
+		text: "#e2dadb",
+	},
+	{
+		id: "magic_girl",
+		name: "Magic Girl",
+		bg: "#ffffff",
+		main: "#f5b0cb",
+		sub: "#9cdcf0",
+		text: "#000000",
+	},
+	{
+		id: "metaverse",
+		name: "Metaverse",
+		bg: "#232323",
+		main: "#d82934",
+		sub: "#525252",
+		text: "#e1e1e1",
+	},
+];
+
+const MONKEY_FONTS = [
+	{ id: "lexend", name: "Lexend", sample: "The quick brown fox jumps" },
+	{ id: "fira_code", name: "Fira Code", sample: "const code = 100;" },
+	{ id: "jetbrains_mono", name: "JetBrains Mono", sample: "function typeFast() {}" },
+	{ id: "roboto_mono", name: "Roboto Mono", sample: "Clean and balanced glyphs" },
+	{ id: "space_mono", name: "Space Mono", sample: "Retro technological type" },
+	{ id: "ubuntu_mono", name: "Ubuntu Mono", sample: "Warm and friendly terminal" },
+	{ id: "inconsolata", name: "Inconsolata", sample: "Clear monospaced rendering" },
+	{ id: "source_code_pro", name: "Source Code Pro", sample: "Adobe engineered monospace" },
+	{ id: "inter", name: "Inter", sample: "Modern screen-first sans" },
+	{ id: "montserrat", name: "Montserrat", sample: "Geometric and elegant" },
+	{ id: "nunito", name: "Nunito", sample: "Rounded, soft letterforms" },
+	{ id: "vt323", name: "VT323", sample: "Retro 8-bit arcade terminal" },
+	{ id: "anonymous_pro", name: "Anonymous Pro", sample: "Fixed-width coding font" },
+	{ id: "comfortaa", name: "Comfortaa", sample: "Geometric rounded design" },
+	{ id: "cousine", name: "Cousine", sample: "Functional typewriter design" },
+	{ id: "major_mono", name: "Major Mono Display", sample: "Eclectic geometric mono" },
+	{ id: "nanum_coding", name: "Nanum Gothic Coding", sample: "Crisp and legible monotype" },
+	{ id: "nova_mono", name: "Nova Mono", sample: "Futuristic stylistic typeface" },
+	{ id: "overpass_mono", name: "Overpass Mono", sample: "Highway signage inspired" },
+	{ id: "plus_jakarta", name: "Plus Jakarta Sans", sample: "Refined geometric sans" },
+];
+
+// Khôi phục Theme và Font đã lưu
+const savedTheme =
+	localStorage.getItem("monkey_theme") || getCookie("monkey_theme") || "serika_dark";
+const savedFont = localStorage.getItem("monkey_font") || getCookie("monkey_font") || "lexend";
+
+let currentTheme = savedTheme;
+let currentFont = savedFont;
 
 let currentLanguage = "vi_dau",
 	currentDifficulty = "normal",
 	myUsername = "bot_1000",
-	mySelectedIcon = DEFAULT_ICON,
-	currentStyle = savedInitialStyle;
+	mySelectedIcon = DEFAULT_ICON;
 
-if (document.documentElement) {
-	document.documentElement.setAttribute("data-style", currentStyle);
+// Áp dụng Theme và Font vào DOM gốc
+function applyTheme(themeId) {
+	if (isPlaying) return;
+
+	const theme = MONKEY_THEMES.find((t) => t.id === themeId) || MONKEY_THEMES[0];
+	currentTheme = theme.id;
+	document.documentElement.setAttribute("data-theme", currentTheme);
+
+	const label = $("theme-btn-label");
+	if (label) label.innerText = theme.name;
+
+	localStorage.setItem("monkey_theme", currentTheme);
+	setCookie("monkey_theme", currentTheme, 365);
+
+	$$("#theme-cards-grid .monkey-card").forEach((card) => {
+		card.classList.toggle("selected", card.dataset.themeId === currentTheme);
+	});
+}
+
+function applyFont(fontId) {
+	if (isPlaying) return;
+
+	const font = MONKEY_FONTS.find((f) => f.id === fontId) || MONKEY_FONTS[0];
+	currentFont = font.id;
+	document.documentElement.setAttribute("data-font", currentFont);
+
+	const label = $("font-btn-label");
+	if (label) label.innerText = font.name;
+
+	localStorage.setItem("monkey_font", currentFont);
+	setCookie("monkey_font", currentFont, 365);
+
+	$$("#font-cards-grid .monkey-card").forEach((card) => {
+		card.classList.toggle("selected", card.dataset.fontId === currentFont);
+	});
+
+	if (isPlaying) updateCaretPosition();
+}
+
+// Cập nhật trạng thái hiển thị của các nút đổi theme/font (khóa hoàn toàn khi đang trong trận đấu)
+function updateThemeFontButtonsState() {
+	const themeBtn = $("theme-select-btn");
+	const fontBtn = $("font-select-btn");
+
+	const disabled = isPlaying;
+
+	[themeBtn, fontBtn].forEach((btn) => {
+		if (btn) {
+			btn.disabled = disabled;
+			btn.title = disabled
+				? "Không thể đổi Theme/Font khi đang trong trận đấu"
+				: btn.id === "theme-select-btn"
+					? "Chọn Theme Monkeytype"
+					: "Chọn Font gõ phím";
+		}
+	});
+
+	if (isPlaying) {
+		$("theme-select-popup")?.classList.add("hidden");
+		$("font-select-popup")?.classList.add("hidden");
+	}
 }
 
 // Cấu hình Client nhận từ Server
@@ -402,15 +597,6 @@ const modeNames = {
 	san_boss: "🐉 Săn Boss",
 };
 
-const styleNames = {
-	cyberpunk: "⚡ Cyberpunk",
-	vintage: "📜 Cổ Điển",
-	xianxia: "🪷 Tiên Hiệp",
-	steampunk: "⚙️ Cơ Khí",
-	thuymac: "☯️ Thủy Mặc",
-	pixel: "👾 Arcade 8-Bit",
-};
-
 const difficultyMeta = {
 	custom: { name: "TÙY CHỈNH", color: "#00f0ff", icon: "🛠️" },
 	normal: { name: "BÌNH THƯỜNG", color: "#ffe600", icon: "🟡" },
@@ -447,6 +633,59 @@ function initBotWorker() {
 	}
 }
 
+// RENDER DANH SÁCH 20 THEMES VÀ 20 FONTS
+function renderThemeSelector() {
+	const grid = $("theme-cards-grid");
+	if (!grid) return;
+	grid.innerHTML = MONKEY_THEMES.map(
+		(t) => `
+		<div class="monkey-card ${t.id === currentTheme ? "selected" : ""}" data-theme-id="${t.id}">
+			<div class="monkey-card-title">
+				<span>${t.name}</span>
+				<div class="theme-preview-dots">
+					<span class="theme-dot" style="background: ${t.bg};" title="Nền"></span>
+					<span class="theme-dot" style="background: ${t.main};" title="Màu chính"></span>
+					<span class="theme-dot" style="background: ${t.text};" title="Chữ"></span>
+				</div>
+			</div>
+		</div>
+	`,
+	).join("");
+
+	$$("#theme-cards-grid .monkey-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			if (isPlaying) return;
+			applyTheme(card.dataset.themeId);
+			$("theme-select-popup")?.classList.add("hidden");
+		});
+	});
+}
+
+function renderFontSelector() {
+	const grid = $("font-cards-grid");
+	if (!grid) return;
+	grid.innerHTML = MONKEY_FONTS.map(
+		(f) => `
+		<div class="monkey-card ${f.id === currentFont ? "selected" : ""}" data-font-id="${f.id}">
+			<div class="monkey-card-title">
+				<span>${f.name}</span>
+			</div>
+			<div class="font-preview-text" style="font-family: '${f.name}', monospace, sans-serif;">
+				${f.sample}
+			</div>
+		</div>
+	`,
+	).join("");
+
+	$$("#font-cards-grid .monkey-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			if (isPlaying) return;
+			applyFont(card.dataset.fontId);
+			$("font-select-popup")?.classList.add("hidden");
+		});
+	});
+}
+
 // ==========================================================
 // MONKEYTYPE ENGINE: ĐIỀU KHIỂN CON TRỎ VÀ TRƯỢT DÒNG THỜI GIAN THỰC
 // ==========================================================
@@ -472,7 +711,6 @@ function updateCaretPosition() {
 		return;
 	}
 
-	// Cập nhật trượt dòng trước
 	handleSmoothLineShift(currentWordEl);
 
 	caret.classList.remove("hidden");
@@ -485,15 +723,14 @@ function updateCaretPosition() {
 
 	if (inputVal.length < letterElements.length) {
 		const targetLetter = letterElements[inputVal.length];
-		letterOffsetX = targetLetter.offsetLeft;
+		letterOffsetX = Math.max(0, targetLetter.offsetLeft - 1.5);
 		targetHeight = targetLetter.offsetHeight || targetHeight;
 	} else if (letterElements.length > 0) {
 		const lastLetter = letterElements[letterElements.length - 1];
-		letterOffsetX = lastLetter.offsetLeft + lastLetter.offsetWidth;
+		letterOffsetX = lastLetter.offsetLeft + lastLetter.offsetWidth + 1.5;
 		targetHeight = lastLetter.offsetHeight || targetHeight;
 	}
 
-	// Tính toán toạ độ trực tiếp từ offset DOM nội bộ để loại bỏ hoàn toàn lỗi nhảy 2 dòng
 	const finalLeft = currentWordEl.offsetLeft + letterOffsetX;
 	const finalTop = currentWordEl.offsetTop + currentViewportOffsetY;
 
@@ -516,7 +753,6 @@ function handleSmoothLineShift(currentWordEl) {
 	const currentWordTop = currentWordEl.offsetTop;
 	const diffY = currentWordTop - firstLineOffsetTop;
 
-	// Khi con trỏ chuyển sang dòng 2 hoặc 3 trở đi, trượt nhẹ nhàng lên
 	if (diffY > 38) {
 		currentViewportOffsetY = -(diffY - 6);
 	} else {
@@ -558,33 +794,6 @@ window.resetHighScore = (lang) => {
 	if (isAdmin) socket.emit("admin_reset_highscore", { lang });
 };
 
-function applyTheme(theme) {
-	if (theme === "light") {
-		document.documentElement.setAttribute("data-theme", "light");
-	} else {
-		document.documentElement.removeAttribute("data-theme");
-	}
-	const btn = $("theme-toggle-btn");
-	if (btn) btn.innerText = theme === "light" ? "☀️ Sáng" : "🌙 Tối";
-	localStorage.setItem("racer_theme", theme);
-	setCookie("racer_theme", theme, 365);
-}
-
-function applyStyle(style) {
-	currentStyle = style || "cyberpunk";
-	document.documentElement.setAttribute("data-style", currentStyle);
-
-	const btn = $("style-toggle-btn");
-	if (btn) btn.innerText = styleNames[currentStyle] || "⚡ Cyberpunk";
-
-	localStorage.setItem("racer_style", currentStyle);
-	setCookie("racer_style", currentStyle, 365);
-
-	$$(".style-card").forEach((card) => {
-		card.classList.toggle("selected", card.dataset.style === currentStyle);
-	});
-}
-
 function getComboMultiplier(combo) {
 	if (combo >= 40) return 2.0;
 	if (combo >= 30) return 1.75;
@@ -602,11 +811,11 @@ function updateBossComboUI() {
 	if (multTag) {
 		const mult = getComboMultiplier(bossComboCount);
 		multTag.innerText = `SÁT THƯƠNG: x${mult}`;
-		multTag.style.color = mult > 1.0 ? "var(--accent)" : "var(--correct)";
+		multTag.style.color = mult > 1.0 ? "var(--main-color)" : "var(--text-color)";
 	}
 	if (bsCount) {
 		bsCount.innerText = `${bossBackspaceCount}/10`;
-		bsCount.style.color = bossBackspaceCount >= 7 ? "var(--secondary)" : "var(--text-muted)";
+		bsCount.style.color = bossBackspaceCount >= 7 ? "var(--error-color)" : "var(--sub-color)";
 	}
 }
 
@@ -626,11 +835,11 @@ function clearAllBossSkillEffects() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	const savedTheme = localStorage.getItem("racer_theme") || getCookie("racer_theme") || "dark";
-	applyTheme(savedTheme);
+	applyTheme(currentTheme);
+	applyFont(currentFont);
 
-	const savedStyle = localStorage.getItem("racer_style") || getCookie("racer_style") || "cyberpunk";
-	applyStyle(savedStyle);
+	renderThemeSelector();
+	renderFontSelector();
 
 	myUsername =
 		localStorage.getItem("racer_username") || `bot_${Math.floor(1000 + Math.random() * 9000)}`;
@@ -647,7 +856,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (closeBtn) $(closeBtn.dataset.close)?.classList.add("hidden");
 	});
 
-	// Luôn tự động giữ focus vào ô nhập liệu khi đang chơi
 	$("typing-area")?.addEventListener("click", () => {
 		if (isPlaying && $("type-input") && !$("type-input").disabled) {
 			$("type-input").focus();
@@ -662,21 +870,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	$("theme-toggle-btn")?.addEventListener("click", () => {
-		const isLight = document.documentElement.getAttribute("data-theme") === "light";
-		applyTheme(isLight ? "dark" : "light");
-	});
+	// Xử lý mở Modal chọn Theme và Font (chặn nếu isPlaying)
+	const openThemeModal = () => {
+		if (!isPlaying) $("theme-select-popup")?.classList.remove("hidden");
+	};
+	const openFontModal = () => {
+		if (!isPlaying) $("font-select-popup")?.classList.remove("hidden");
+	};
 
-	$("style-toggle-btn")?.addEventListener("click", () => {
-		$("style-select-popup")?.classList.remove("hidden");
-	});
-
-	$$(".style-card").forEach((card) => {
-		card.addEventListener("click", () => {
-			applyStyle(card.dataset.style);
-			$("style-select-popup")?.classList.add("hidden");
-		});
-	});
+	$("theme-select-btn")?.addEventListener("click", openThemeModal);
+	$("font-select-btn")?.addEventListener("click", openFontModal);
 
 	$("join-btn")?.addEventListener("click", () => {
 		socket.emit("join_lobby", {
@@ -692,10 +895,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		$("icon-select-popup")?.classList.remove("hidden");
 	};
 
-	$("btn-change-icon")?.addEventListener("click", openIconSelect);
 	$("btn-open-icon-select")?.addEventListener("click", openIconSelect);
 
-	// Chọn độ khó cho Ngẫu Hứng
 	$("btn-open-nh-difficulty-select")?.addEventListener("click", () => {
 		$$("#nh-difficulty-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.nhDiff === currentDifficulty);
@@ -714,7 +915,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Chọn độ khó cho Đoán Chữ
 	$("btn-open-dc-difficulty-select")?.addEventListener("click", () => {
 		$$("#dc-difficulty-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.dcDiff === currentDifficulty);
@@ -733,7 +933,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 
-	// Chọn độ khó cho Săn Boss
 	$("btn-open-boss-difficulty-select")?.addEventListener("click", () => {
 		$$("#boss-difficulty-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.bossDiff === currentDifficulty);
@@ -763,6 +962,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const returnHome = () => {
 		socket.emit("leave_lobby");
+		isPlaying = false;
+		updateThemeFontButtonsState();
 		currentDifficulty = "normal";
 		mySelectedIcon = DEFAULT_ICON;
 		clearAllBossSkillEffects();
@@ -781,6 +982,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	$("btn-confirm-kicked")?.addEventListener("click", returnHome);
 
 	$("btn-play-again")?.addEventListener("click", () => {
+		isPlaying = false;
+		updateThemeFontButtonsState();
 		clearAllBossSkillEffects();
 		$("caret")?.classList.add("hidden");
 		["summary-modal", "game-container"].forEach((id) => $(id).classList.add("hidden"));
@@ -1151,7 +1354,7 @@ function showAdminSaveNotice(success, message) {
 		if (iconEl) iconEl.innerText = "✨";
 		if (titleEl) {
 			titleEl.innerText = "LƯU CÀI ĐẶT THÀNH CÔNG";
-			titleEl.style.color = "var(--correct)";
+			titleEl.style.color = "var(--main-color)";
 		}
 		if (descEl)
 			descEl.innerText = message || "Tất cả thông số và tỷ lệ từ vựng trận đấu đã được lưu.";
@@ -1159,7 +1362,7 @@ function showAdminSaveNotice(success, message) {
 		if (iconEl) iconEl.innerText = "❌";
 		if (titleEl) {
 			titleEl.innerText = "LỖI LƯU CÀI ĐẶT";
-			titleEl.style.color = "var(--secondary)";
+			titleEl.style.color = "var(--error-color)";
 		}
 		if (descEl) descEl.innerText = message || "Không thể cập nhật cấu hình!";
 	}
@@ -1357,11 +1560,11 @@ function renderOnlineUsersModal() {
 			(u) => `
 		<tr>
 			<td style="font-weight: 700;">${u.username} ${u.isAdmin ? "👑" : ""}</td>
-			<td style="font-size: 11px; color: var(--text-muted); font-family: monospace;">${u.id}</td>
+			<td style="font-size: 11px; color: var(--sub-color); font-family: monospace;">${u.id}</td>
 			<td><span class="status-tag ${u.isBanned ? "status-surrendered" : "status-online"}">${u.isBanned ? "Đang Ban" : "Online"}</span></td>
 			<td>${
 				u.isAdmin || u.id === socket.id
-					? `<span style="color: var(--text-muted); font-size: 11px; font-weight: bold;">(${u.id === socket.id ? "Bạn" : "Admin"})</span>`
+					? `<span style="color: var(--sub-color); font-size: 11px; font-weight: bold;">(${u.id === socket.id ? "Bạn" : "Admin"})</span>`
 					: u.isBanned
 						? `<button class="btn-small btn-surrender-style" disabled style="opacity: 0.5; cursor: not-allowed;">Đã Ban</button>`
 						: `<button class="btn-ban-action" onclick="socket.emit('admin_ban_user', { targetSocketId: '${u.id}' })">🚫 Ban</button>`
@@ -1378,13 +1581,13 @@ function renderBannedUsersModal() {
 	const now = Date.now();
 	tbody.innerHTML =
 		adminBannedUsers.length === 0
-			? `<tr><td colspan="3" style="color: var(--text-muted); padding: 16px;">Không có ai bị ban</td></tr>`
+			? `<tr><td colspan="3" style="color: var(--sub-color); padding: 16px;">Không có ai bị ban</td></tr>`
 			: adminBannedUsers
 					.map((b) => {
 						const rem = Math.max(0, Math.ceil((b.expiresAt - now) / 1000));
 						return `
 				<tr>
-					<td style="font-weight: 700;">${b.username} <span style="font-size: 11px; color: var(--text-muted);">(${b.id})</span></td>
+					<td style="font-weight: 700;">${b.username} <span style="font-size: 11px; color: var(--sub-color);">(${b.id})</span></td>
 					<td class="banned-timer-text">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</td>
 					<td><button class="btn-unban-action" onclick="socket.emit('admin_unban_user', { targetId: '${b.id}' })">✅ Gỡ Ban</button></td>
 				</tr>
@@ -1548,6 +1751,7 @@ socket.on("update_lobby", (data) => {
 	});
 
 	renderLobbyPlayers();
+	updateThemeFontButtonsState();
 });
 
 socket.on("game_start", (data) => {
@@ -1560,7 +1764,9 @@ socket.on("game_start", (data) => {
 	currentDifficulty = data.difficulty || currentDifficulty;
 	currentWords = data.words || [];
 	wordIndex = correctChars = totalErrors = 0;
-	isPlaying = false;
+	isPlaying = true; // Khóa theme & font ngay khi chuẩn bị đếm ngược vào trận
+	updateThemeFontButtonsState();
+
 	currentViewportOffsetY = 0;
 	firstLineOffsetTop = 0;
 
@@ -1603,14 +1809,14 @@ socket.on("game_start", (data) => {
 		}
 		$("ngau-hung-round-text").innerText = `VÒNG 1/${currentWords.length || 15}`;
 		$("words-display").innerHTML =
-			`<span class="word" style="color: var(--accent);"><span class="letter">Chuẩn bị...</span></span>`;
+			`<span class="word" style="color: var(--main-color);"><span class="letter">Chuẩn bị...</span></span>`;
 		$("caret")?.classList.add("hidden");
 	} else if (isDoanChu) {
 		$("doan-chu-round-text").innerText = "VÒNG 1/10";
 		$("doan-chu-hint-badge").innerText = "💡 GỢI Ý: Chuẩn bị...";
 		$("doan-chu-hidden-count").innerText = "KÝ TỰ ẨN: --";
 		$("words-display").innerHTML =
-			`<span class="word" style="color: var(--accent);"><span class="letter">Chuẩn bị đoán chữ...</span></span>`;
+			`<span class="word" style="color: var(--main-color);"><span class="letter">Chuẩn bị đoán chữ...</span></span>`;
 		$("caret")?.classList.add("hidden");
 	} else if (isBoss && data.boss) {
 		currentBossData = data.boss;
@@ -1654,6 +1860,7 @@ function startCountdown(seconds) {
 		else {
 			clearInterval(cd);
 			isPlaying = true;
+			updateThemeFontButtonsState();
 			startTime = Date.now();
 			resetAFKTimer();
 			$("status-box").innerText = "ĐANG THI ĐẤU";
@@ -1701,6 +1908,7 @@ socket.on("doan_chu_new_round", (d) => {
 	doanChuCurrentRound = d.round;
 	doanChuTotalTiles = d.length;
 	isPlaying = true;
+	updateThemeFontButtonsState();
 	$("caret")?.classList.add("hidden");
 
 	if (d.difficulty) currentDifficulty = d.difficulty;
@@ -1710,7 +1918,6 @@ socket.on("doan_chu_new_round", (d) => {
 	const nonSpaceCount = d.length - (d.spaceIndices ? d.spaceIndices.length : 0);
 	$("doan-chu-hidden-count").innerText = `KÝ TỰ ẨN: ${nonSpaceCount}`;
 
-	// Render các ô Tile bí ẩn
 	const wd = $("words-display");
 	wd.innerHTML = "";
 
@@ -1764,7 +1971,7 @@ socket.on("doan_chu_player_success", (d) => {
 	doanChuHasSubmittedThisRound = true;
 	const input = $("type-input");
 	input.disabled = true;
-	input.placeholder = `🎉 ĐOÁN ĐÚNG! Hạng ${d.rank} (+${d.totalPoints}đ: Hạng +${d.rankPoints}, Ẩn +${d.hiddenBonus})`;
+	input.placeholder = `🎉 ĐOÁN ĐÚNG! Hạng ${d.rank} (+${d.totalPoints}đ)`;
 
 	if (d.targetWord) {
 		for (let i = 0; i < d.targetWord.length; i++) {
@@ -2011,6 +2218,7 @@ socket.on("ngau_hung_new_round", (d) => {
 	ngauHungHasSubmittedThisRound = false;
 	ngauHungCurrentRound = d.round;
 	isPlaying = true;
+	updateThemeFontButtonsState();
 	$("caret")?.classList.add("hidden");
 
 	if (d.difficulty) currentDifficulty = d.difficulty;
@@ -2076,11 +2284,11 @@ socket.on("ngau_hung_intermission", (d) => {
 	let t = d.duration;
 	$("timer").innerText = t;
 	$("words-display").innerHTML =
-		`<span class="word" style="color: var(--accent);"><span class="letter">Vòng kế tiếp sau ${t}s...</span></span>`;
+		`<span class="word" style="color: var(--main-color);"><span class="letter">Vòng kế tiếp sau ${t}s...</span></span>`;
 	const it = setInterval(() => {
 		if (--t > 0)
 			$("words-display").innerHTML =
-				`<span class="word" style="color: var(--accent);"><span class="letter">Vòng kế tiếp sau ${t}s...</span></span>`;
+				`<span class="word" style="color: var(--main-color);"><span class="letter">Vòng kế tiếp sau ${t}s...</span></span>`;
 		else clearInterval(it);
 	}, 1000);
 });
@@ -2099,9 +2307,7 @@ function getRenderedWord(w, idx) {
 	return displayWord;
 }
 
-// ==========================================================
 // RENDER TỪ VỰNG PHÂN TÁCH TỪNG KÝ TỰ (MONKEYTYPE DOM ENGINE)
-// ==========================================================
 function renderWords() {
 	const wd = $("words-display");
 	if (!wd) return;
@@ -2117,7 +2323,6 @@ function renderWords() {
 		})
 		.join("");
 
-	// Cập nhật trạng thái cho các từ đã gõ nếu có
 	for (let i = 0; i < wordIndex; i++) {
 		const wEl = $(`word-${i}`);
 		if (wEl) {
@@ -2128,9 +2333,7 @@ function renderWords() {
 	updateCaretPosition();
 }
 
-// ==========================================================
 // XỬ LÝ GÕ PHÍM & CON TRỎ CAO CẤP
-// ==========================================================
 function handleTypingInput() {
 	if (!isPlaying) return;
 	const input = $("type-input");
@@ -2142,7 +2345,6 @@ function handleTypingInput() {
 		if (ngauHungHasSubmittedThisRound) return (input.value = "");
 		const wordEl = $("ngau-hung-word");
 
-		// Khóa cứng không cho gõ quá độ dài từ mục tiêu, chỉ kích hoạt rung và giữ nguyên focus
 		if (val.length > ngauHungTargetWord.length && !val.endsWith(" ")) {
 			input.value = val.slice(0, ngauHungTargetWord.length);
 			if (wordEl) {
@@ -2190,7 +2392,6 @@ function handleTypingInput() {
 	const target = getRenderedWord(baseTarget, wordIndex);
 	const currentWordEl = $(`word-${wordIndex}`);
 
-	// Khóa cứng không cho gõ quá số ký tự của từ hiện tại - kích hoạt hiệu ứng rung và giữ nguyên focus
 	if (val.length > target.length && !val.endsWith(" ")) {
 		input.value = val.slice(0, target.length);
 		val = input.value;
@@ -2251,7 +2452,6 @@ function handleTypingInput() {
 	} else if (currentWordEl) {
 		const letters = currentWordEl.querySelectorAll(".letter:not(.extra)");
 
-		// Cập nhật trạng thái từng ký tự chính xác theo độ dài cho phép
 		letters.forEach((l, i) => {
 			if (i < val.length) {
 				if (val[i] === target[i]) {
@@ -2282,6 +2482,7 @@ function finishGame() {
 	if (!isPlaying) return;
 	stopAutoTyperBot();
 	isPlaying = false;
+	updateThemeFontButtonsState();
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearAllBossSkillEffects();
@@ -2300,6 +2501,7 @@ function finishGame() {
 function surrenderGame(isAFK = false) {
 	stopAutoTyperBot();
 	isPlaying = false;
+	updateThemeFontButtonsState();
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearInterval(ngauHungRoundTimer);
@@ -2353,7 +2555,7 @@ function renderRaceTracks(players) {
 					<span>${status}</span>
 				</div>
 				<div class="track-line-bg">
-					<div class="track-line-fill" style="width: ${p.progress || 0}%; background: ${isDis ? "#4a4a4a" : p.id === socket.id ? "var(--primary)" : "var(--accent)"};">
+					<div class="track-line-fill" style="width: ${p.progress || 0}%; background: ${isDis ? "#4a4a4a" : p.id === socket.id ? "var(--main-color)" : "var(--sub-color)"};">
 						<div class="runner-icon-badge">${p.icon || DEFAULT_ICON}</div>
 					</div>
 				</div>
@@ -2368,6 +2570,7 @@ socket.on("race_update", queueRenderTracks);
 socket.on("game_over", (d) => {
 	stopAutoTyperBot();
 	isPlaying = false;
+	updateThemeFontButtonsState();
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearInterval(ngauHungRoundTimer);
@@ -2391,18 +2594,18 @@ socket.on("game_over", (d) => {
 		const meta = difficultyMeta[d.difficulty || currentDifficulty] || difficultyMeta.normal;
 		if (d.isBossVictory) {
 			modalTitle.innerText = "🎉 LỤM! CHIẾN THẮNG! 🎉";
-			modalTitle.style.color = "var(--correct)";
+			modalTitle.style.color = "var(--main-color)";
 			bossSubtitle.innerText = `Cả đội đã hợp lực tiêu diệt thành công Hắc Long Ma Vương [${meta.name}]!`;
-			bossSubtitle.style.color = "var(--correct)";
+			bossSubtitle.style.color = "var(--main-color)";
 		} else {
 			modalTitle.innerText = "💀 THẤT BẠI! 💀";
-			modalTitle.style.color = "var(--secondary)";
+			modalTitle.style.color = "var(--error-color)";
 			bossSubtitle.innerText = `Hết giờ! Hắc Long Ma Vương [${meta.name}] đã quét sạch toàn bộ đội hình!`;
-			bossSubtitle.style.color = "var(--secondary)";
+			bossSubtitle.style.color = "var(--error-color)";
 		}
 	} else {
 		modalTitle.innerText = "🏆 BẢNG TỔNG KẾT TRẬN ĐẤU";
-		modalTitle.style.color = "var(--primary)";
+		modalTitle.style.color = "var(--main-color)";
 		bossSubtitle.classList.add("hidden");
 	}
 
@@ -2561,11 +2764,11 @@ function setupBotModal() {
 			<div class="popup-icon-badge">🤖</div>
 			<h3 class="popup-auth-title">THIẾT LẬP AUTO BOT TEST</h3>
 			<div style="margin-bottom: 14px; text-align: left;">
-				<label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">TỐC ĐỘ (WPM):</label>
+				<label style="font-size: 12px; font-weight: bold; color: var(--sub-color);">TỐC ĐỘ (WPM):</label>
 				<input type="number" id="bot-speed-input" value="100" min="10" max="500" class="cyber-input" style="margin-top: 5px; margin-bottom: 0;" />
 			</div>
 			<div style="margin-bottom: 20px; text-align: left;">
-				<label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">SỐ LỖI MONG MUỐN:</label>
+				<label style="font-size: 12px; font-weight: bold; color: var(--sub-color);">SỐ LỖI MONG MUỐN:</label>
 				<input type="number" id="bot-errors-input" value="0" min="0" max="100" class="cyber-input" style="margin-top: 5px; margin-bottom: 0;" />
 			</div>
 			<div class="popup-actions-row">
