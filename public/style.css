@@ -2,15 +2,16 @@
 /* FASTTYPING CHALLENGE - OFFICIAL MONKEYTYPE THEMES & FONTS  */
 /* ========================================================== */
 
-/* 1. ĐỊNH NGHĨA BIẾN MÀU GIAO DIỆN THEO 20 THEMES MONKEYTYPE */
+/* 1. ĐỊNH NGHĨA BIẾN MÀU THEO CHUẨN THIẾT KẾ OFFICIAL MONKEYTYPE */
 :root {
 	--font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	--font-typing: "Lexend", sans-serif;
 	--font-heading: "Lexend", sans-serif;
 
-	/* Mặc định: Serika Dark Theme của Monkeytype */
+	/* Mặc định: Serika Dark (Official Monkeytype Palette) */
 	--bg-color: #323437;
 	--main-color: #e2b714;
+	--caret-color: #e2b714;
 	--sub-color: #646669;
 	--sub-alt-color: #2c2e31;
 	--text-color: #d1d0c5;
@@ -19,30 +20,38 @@
 	--colorful-error-color: #ca4754;
 	--colorful-error-extra-color: #7e2a33;
 
-	--panel-bg: rgba(44, 46, 49, 0.92);
-	--modal-bg: rgba(30, 31, 33, 0.96);
-	--input-bg: #2c2e31;
-	--border-color: rgba(226, 183, 20, 0.25);
+	/* Màu đặc trưng của kỹ năng Smoke Bomb (Xám khói bạc / Neon Yellow) */
+	--smoke-primary: #c8d6e5;
+	--smoke-secondary: #8395a7;
+	--smoke-accent: #e2b714;
+
+	/* UI Layout Token cải tiến theo độ tương phản cao */
+	--panel-bg: var(--sub-alt-color);
+	--modal-bg: rgba(20, 21, 23, 0.94);
+	--input-bg: var(--sub-alt-color);
+	--border-color: rgba(255, 255, 255, 0.1);
+	--border-color-focus: var(--main-color);
 	--border-radius-box: 8px;
 	--border-radius-btn: 6px;
-	--box-shadow-style: 0 8px 24px rgba(0, 0, 0, 0.35);
-	--btn-gradient: linear-gradient(135deg, var(--main-color) 0%, #b8920c 100%);
-	--btn-border: 1px solid var(--main-color);
-	--glow: 0 0 12px rgba(226, 183, 20, 0.35);
+	--box-shadow-style: 0 10px 30px rgba(0, 0, 0, 0.45);
+	--track-bg: rgba(0, 0, 0, 0.35);
 
-	--correct: var(--main-color);
+	/* Tối ưu hiển thị chữ khi gõ: Sub-color rõ ràng không bị mờ đục */
+	--char-upcoming: var(--sub-color);
+	--correct: var(--text-color);
 	--incorrect: var(--error-color);
 	--incorrect-extra: var(--error-extra-color);
-	--char-upcoming: var(--sub-color);
-	--caret-color: var(--main-color);
-	--track-bg: rgba(0, 0, 0, 0.2);
 }
 
-/* --- BỘ SƯU TẬP 20 THEMES CHUẨN MONKEYTYPE --- */
+/* ========================================================== */
+/* BỘ 20 THEMES CHÍNH THỨC TỪ REPOSITORY MONKEYTYPE          */
+/* ========================================================== */
+
 /* 1. Serika Dark */
 [data-theme="serika_dark"] {
 	--bg-color: #323437;
 	--main-color: #e2b714;
+	--caret-color: #e2b714;
 	--sub-color: #646669;
 	--sub-alt-color: #2c2e31;
 	--text-color: #d1d0c5;
@@ -54,8 +63,9 @@
 [data-theme="carbon"] {
 	--bg-color: #313131;
 	--main-color: #f66e0d;
+	--caret-color: #f66e0d;
 	--sub-color: #616161;
-	--sub-alt-color: #2b2b2b;
+	--sub-alt-color: #262626;
 	--text-color: #f5e6c8;
 	--error-color: #e45c5c;
 	--error-extra-color: #933434;
@@ -65,6 +75,7 @@
 [data-theme="dracula"] {
 	--bg-color: #282a36;
 	--main-color: #f1fa8c;
+	--caret-color: #f1fa8c;
 	--sub-color: #6272a4;
 	--sub-alt-color: #21222c;
 	--text-color: #f8f8f2;
@@ -76,8 +87,9 @@
 [data-theme="nord"] {
 	--bg-color: #2e3440;
 	--main-color: #88c0d0;
+	--caret-color: #88c0d0;
 	--sub-color: #4c566a;
-	--sub-alt-color: #272c36;
+	--sub-alt-color: #242933;
 	--text-color: #eceff4;
 	--error-color: #bf616a;
 	--error-extra-color: #793e44;
@@ -87,8 +99,9 @@
 [data-theme="botanical"] {
 	--bg-color: #7b9c98;
 	--main-color: #eaf1f1;
+	--caret-color: #eaf1f1;
 	--sub-color: #495e5b;
-	--sub-alt-color: #6f8f8b;
+	--sub-alt-color: #6c8c88;
 	--text-color: #eaf1f1;
 	--error-color: #c96e6e;
 	--error-extra-color: #924d4d;
@@ -98,8 +111,9 @@
 [data-theme="olivia"] {
 	--bg-color: #1c1b1d;
 	--main-color: #deaf9d;
-	--sub-color: #4f4749;
-	--sub-alt-color: #262427;
+	--caret-color: #deaf9d;
+	--sub-color: #655e60;
+	--sub-alt-color: #242226;
 	--text-color: #f2efed;
 	--error-color: #e45c5c;
 	--error-extra-color: #933434;
@@ -109,9 +123,10 @@
 [data-theme="matrix"] {
 	--bg-color: #000000;
 	--main-color: #15ff00;
-	--sub-color: #006600;
-	--sub-alt-color: #0d1a0d;
-	--text-color: #00cc00;
+	--caret-color: #15ff00;
+	--sub-color: #008000;
+	--sub-alt-color: #0b140b;
+	--text-color: #00ff41;
 	--error-color: #da3333;
 	--error-extra-color: #791e1e;
 }
@@ -120,6 +135,7 @@
 [data-theme="cyberpunk"] {
 	--bg-color: #181c24;
 	--main-color: #00f0ff;
+	--caret-color: #00f0ff;
 	--sub-color: #53647d;
 	--sub-alt-color: #13161d;
 	--text-color: #f0f6fc;
@@ -131,8 +147,9 @@
 [data-theme="bento"] {
 	--bg-color: #2d394d;
 	--main-color: #ff7a90;
-	--sub-color: #4a5974;
-	--sub-alt-color: #242e3e;
+	--caret-color: #ff7a90;
+	--sub-color: #5c6e8e;
+	--sub-alt-color: #202938;
 	--text-color: #fffaf8;
 	--error-color: #ee2a4a;
 	--error-extra-color: #97152c;
@@ -142,8 +159,9 @@
 [data-theme="vaporwave"] {
 	--bg-color: #a4a7de;
 	--main-color: #ff75a0;
-	--sub-color: #67699d;
-	--sub-alt-color: #9497cf;
+	--caret-color: #ff75a0;
+	--sub-color: #616497;
+	--sub-alt-color: #8d90c8;
 	--text-color: #2b2b46;
 	--error-color: #ea3223;
 	--error-extra-color: #931b11;
@@ -153,8 +171,9 @@
 [data-theme="theme_8008"] {
 	--bg-color: #333a45;
 	--main-color: #f44c7f;
+	--caret-color: #f44c7f;
 	--sub-color: #939eae;
-	--sub-alt-color: #2e343e;
+	--sub-alt-color: #282e38;
 	--text-color: #e9ecf0;
 	--error-color: #ff5f5f;
 	--error-extra-color: #a82e2e;
@@ -164,9 +183,10 @@
 [data-theme="milkshake"] {
 	--bg-color: #ffffff;
 	--main-color: #212b43;
-	--sub-color: #626e82;
-	--sub-alt-color: #eceff4;
-	--text-color: #212b43;
+	--caret-color: #212b43;
+	--sub-color: #7b889b;
+	--sub-alt-color: #f0f2f5;
+	--text-color: #131927;
 	--error-color: #e25858;
 	--error-extra-color: #8e2b2b;
 }
@@ -175,9 +195,10 @@
 [data-theme="muted"] {
 	--bg-color: #525252;
 	--main-color: #c4c4c4;
-	--sub-color: #808080;
-	--sub-alt-color: #474747;
-	--text-color: #e0e0e0;
+	--caret-color: #c4c4c4;
+	--sub-color: #8a8a8a;
+	--sub-alt-color: #424242;
+	--text-color: #f0f0f0;
 	--error-color: #d16666;
 	--error-extra-color: #873636;
 }
@@ -186,8 +207,9 @@
 [data-theme="modern_dolch"] {
 	--bg-color: #2d3139;
 	--main-color: #03a89e;
-	--sub-color: #5c6370;
-	--sub-alt-color: #262a30;
+	--caret-color: #03a89e;
+	--sub-color: #636c7a;
+	--sub-alt-color: #22262c;
 	--text-color: #e5e9f0;
 	--error-color: #e06c75;
 	--error-extra-color: #8a373e;
@@ -197,8 +219,9 @@
 [data-theme="laser"] {
 	--bg-color: #221b44;
 	--main-color: #00e8c6;
+	--caret-color: #00e8c6;
 	--sub-color: #b82375;
-	--sub-alt-color: #1a1435;
+	--sub-alt-color: #181332;
 	--text-color: #dbeafe;
 	--error-color: #ff0055;
 	--error-extra-color: #85002c;
@@ -208,9 +231,10 @@
 [data-theme="dualshot"] {
 	--bg-color: #737373;
 	--main-color: #212224;
-	--sub-color: #aaaaaa;
-	--sub-alt-color: #656565;
-	--text-color: #212224;
+	--caret-color: #212224;
+	--sub-color: #a3a3a3;
+	--sub-alt-color: #5e5e5e;
+	--text-color: #ffffff;
 	--error-color: #c93b3b;
 	--error-extra-color: #791f1f;
 }
@@ -219,8 +243,9 @@
 [data-theme="taro"] {
 	--bg-color: #b388eb;
 	--main-color: #ffe1a8;
+	--caret-color: #ffe1a8;
 	--sub-color: #6c4675;
-	--sub-alt-color: #a476df;
+	--sub-alt-color: #9c71d6;
 	--text-color: #1b1b2f;
 	--error-color: #ff5252;
 	--error-extra-color: #881c1c;
@@ -230,9 +255,10 @@
 [data-theme="red_samurai"] {
 	--bg-color: #84202a;
 	--main-color: #c79e54;
-	--sub-color: #551319;
-	--sub-alt-color: #731b24;
-	--text-color: #e2dadb;
+	--caret-color: #c79e54;
+	--sub-color: #5d161d;
+	--sub-alt-color: #6e1a23;
+	--text-color: #f0e6e7;
 	--error-color: #f75555;
 	--error-extra-color: #8b1e1e;
 }
@@ -241,9 +267,10 @@
 [data-theme="magic_girl"] {
 	--bg-color: #ffffff;
 	--main-color: #f5b0cb;
-	--sub-color: #9cdcf0;
-	--sub-alt-color: #f8f1f5;
-	--text-color: #000000;
+	--caret-color: #f5b0cb;
+	--sub-color: #92bed4;
+	--sub-alt-color: #f7f1f4;
+	--text-color: #191b1f;
 	--error-color: #e05c87;
 	--error-extra-color: #9e2a51;
 }
@@ -252,14 +279,17 @@
 [data-theme="metaverse"] {
 	--bg-color: #232323;
 	--main-color: #d82934;
-	--sub-color: #525252;
-	--sub-alt-color: #1a1a1a;
-	--text-color: #e1e1e1;
+	--caret-color: #d82934;
+	--sub-color: #6b6b6b;
+	--sub-alt-color: #191919;
+	--text-color: #f5f5f5;
 	--error-color: #ff3838;
 	--error-extra-color: #881111;
 }
 
-/* --- BỘ SƯU TẬP 20 FONTS CHUẨN MONKEYTYPE --- */
+/* ========================================================== */
+/* BỘ 20 FONTS CHUẨN MONKEYTYPE                              */
+/* ========================================================== */
 [data-font="lexend"] {
 	--font-typing: "Lexend", sans-serif;
 	--font-heading: "Lexend", sans-serif;
@@ -349,13 +379,17 @@
 	--font-heading: "Share Tech Mono", monospace;
 }
 
-/* 2. CƠ SỞ & BỐ CỤC */
+/* ========================================================== */
+/* 2. CƠ SỞ & BỐ CỤC CHUẨN MONKEYTYPE                        */
+/* ========================================================== */
 * {
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
 	font-family: var(--font-ui);
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
 }
 
 body {
@@ -395,7 +429,6 @@ body {
 	border: 1px solid var(--border-color);
 	box-shadow: var(--box-shadow-style);
 	border-radius: var(--border-radius-box);
-	backdrop-filter: blur(10px);
 	position: relative;
 	transition:
 		border-color 0.2s ease,
@@ -536,7 +569,6 @@ body {
 	border-color: var(--main-color);
 	transform: translateY(-1px);
 }
-
 .btn-small:disabled {
 	opacity: 0.45 !important;
 	cursor: not-allowed !important;
@@ -760,7 +792,7 @@ body {
 	font-size: 15px;
 }
 
-/* 6. POPUP, DIALOG & ADMIN CONFIG */
+/* 6. POPUP, DIALOG & THEME/FONT PICKERS */
 .custom-popup {
 	position: fixed;
 	inset: 0;
@@ -927,7 +959,6 @@ body {
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
-/* KHẮC PHỤC CHỮ TỐI TRONG THEME SELECTOR */
 .monkey-card-title {
 	font-family: var(--font-heading);
 	font-size: 14px;
@@ -967,7 +998,7 @@ body {
 	justify-content: center;
 }
 
-/* 7. BẢNG CÀI ĐẶT THÔNG SỐ ADMIN */
+/* 7. BẢNG CÀI ĐẶT THÔNG SỐ ADMIN & CẦN GẠT SWITCH */
 .admin-config-modal-content {
 	display: flex;
 	flex-direction: column;
@@ -1066,6 +1097,73 @@ body {
 	text-align: left;
 	color: var(--main-color);
 	cursor: pointer;
+}
+
+/* STYLING CẦN GẠT CYBER SWITCH */
+.config-toggle-row {
+	background: rgba(0, 0, 0, 0.25);
+	padding: 10px 14px;
+	border-radius: var(--border-radius-btn);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.boss-num-toggle-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.toggle-side-label {
+	font-family: var(--font-heading);
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--sub-color);
+	transition: color 0.2s ease;
+	user-select: none;
+}
+.toggle-side-label.active {
+	color: var(--main-color) !important;
+	text-shadow: 0 0 6px rgba(226, 183, 20, 0.3);
+}
+
+.cyber-switch {
+	position: relative;
+	display: inline-block;
+	width: 48px;
+	height: 24px;
+	flex-shrink: 0;
+}
+.cyber-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+.cyber-switch-slider {
+	position: absolute;
+	cursor: pointer;
+	inset: 0;
+	background-color: var(--input-bg);
+	border: 1px solid var(--border-color);
+	transition: 0.25s;
+	border-radius: 24px;
+}
+.cyber-switch-slider:before {
+	position: absolute;
+	content: "";
+	height: 16px;
+	width: 16px;
+	left: 3px;
+	bottom: 3px;
+	background-color: var(--sub-color);
+	transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+	border-radius: 50%;
+}
+.cyber-switch input:checked + .cyber-switch-slider {
+	background-color: rgba(226, 183, 20, 0.2);
+	border-color: var(--main-color);
+}
+.cyber-switch input:checked + .cyber-switch-slider:before {
+	transform: translateX(24px);
+	background-color: var(--main-color);
+	box-shadow: 0 0 8px var(--main-color);
 }
 
 .admin-diff-detail-box {
@@ -1250,7 +1348,8 @@ body {
 
 .btn-diff-nh,
 .btn-diff-dc,
-.btn-diff-boss {
+.btn-diff-boss,
+.btn-diff-numpad {
 	background: var(--main-color) !important;
 	color: var(--bg-color) !important;
 }
@@ -1553,7 +1652,7 @@ body {
 }
 
 /* ========================================================== */
-/* 11. MONKEYTYPE TYPING VIEWPORT & CARET ENGINE              */
+/* 11. MONKEYTYPE TYPING VIEWPORT & ADVANCED CARET ENGINE     */
 /* ========================================================== */
 #typing-area {
 	width: 100%;
@@ -1596,17 +1695,17 @@ body {
 	color: var(--sub-color);
 }
 
+/* VIEWPORT CHUẨN MONKEYTYPE */
 .words-display-viewport {
 	position: relative;
 	width: 100%;
 	height: 142px;
 	overflow: hidden;
-	background: var(--input-bg);
+	background: transparent;
 	border-radius: var(--border-radius-box);
 	border: 1px solid var(--border-color);
 	margin-bottom: 14px;
 	user-select: none;
-	box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .words-display-viewport::after {
@@ -1614,41 +1713,56 @@ body {
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	box-shadow:
-		inset 0 6px 12px -4px rgba(0, 0, 0, 0.4),
-		inset 0 -6px 12px -4px rgba(0, 0, 0, 0.4);
+	background: linear-gradient(
+		to bottom,
+		var(--sub-alt-color) 0%,
+		transparent 10%,
+		transparent 90%,
+		var(--sub-alt-color) 100%
+	);
 	z-index: 15;
 }
 
-/* CARET CO DÃN MƯỢT MÀ CHUẨN SMOOTH MONKEYTYPE */
+/* CARET CHUẨN MONKEYTYPE */
 .custom-caret {
 	position: absolute;
-	width: 2.5px;
+	width: 3px;
 	height: 32px;
 	background: var(--caret-color);
-	border-radius: 1.5px;
+	border-radius: 2px;
 	pointer-events: none;
-	z-index: 20;
+	z-index: 25;
 	top: 0;
 	left: 0;
 	transform-origin: center center;
-	will-change: transform, left, top;
+	will-change: left, top, height, transform;
+	box-shadow: 0 0 8px var(--caret-color);
 	transition:
-		left 0.1s cubic-bezier(0.25, 1, 0.5, 1),
-		top 0.12s cubic-bezier(0.25, 1, 0.5, 1),
-		height 0.1s ease;
-	animation: caretSmoothPinch 1.1s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+		left 0.09s cubic-bezier(0.25, 1, 0.5, 1),
+		top 0.09s cubic-bezier(0.25, 1, 0.5, 1),
+		height 0.09s ease;
+	animation: caretPinchPulse 1.1s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
-@keyframes caretSmoothPinch {
+.custom-caret.no-transition {
+	transition: none !important;
+}
+
+.custom-caret.typing {
+	animation: none !important;
+	transform: scaleY(1) scaleX(1) !important;
+	opacity: 1 !important;
+}
+
+@keyframes caretPinchPulse {
 	0%,
 	100% {
 		transform: scaleY(1) scaleX(1);
 		opacity: 1;
 	}
 	50% {
-		transform: scaleY(0.22) scaleX(0.85);
-		opacity: 0.65;
+		transform: scaleY(0.4) scaleX(0.9);
+		opacity: 0.7;
 	}
 }
 
@@ -1657,29 +1771,30 @@ body {
 	width: 100%;
 	padding: 14px 18px;
 	font-family: var(--font-typing) !important;
-	font-size: 24px;
+	font-size: 26px;
 	line-height: 1.6;
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
-	gap: 6px 12px;
-	will-change: transform;
-	transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+	gap: 6px 14px;
+	will-change: transform, filter;
+	transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .words-display.numpad-mode-display {
-	display: grid !important;
-	grid-template-columns: repeat(9, minmax(0, 1fr)) !important;
-	gap: 8px 8px !important;
-	padding: 14px 12px !important;
-	justify-items: center !important;
-	align-items: center !important;
+	display: flex !important;
+	flex-wrap: wrap !important;
+	align-content: flex-start !important;
+	justify-content: flex-start !important;
+	gap: 8px 18px !important;
+	padding: 14px 18px !important;
 	width: 100% !important;
 }
 .words-display.numpad-mode-display .word {
-	width: 100% !important;
-	justify-content: center !important;
-	text-align: center !important;
+	width: auto !important;
+	font-size: 27px !important;
+	letter-spacing: 1px !important;
+	font-variant-numeric: tabular-nums;
 }
 
 .word {
@@ -1691,9 +1806,13 @@ body {
 	font-weight: 400;
 	line-height: 1.5;
 	border-bottom: 2px solid transparent;
+	transition:
+		border-bottom-color 0.15s ease,
+		filter 0.3s ease;
 }
+
 .word.error-word {
-	border-bottom-color: var(--error-color);
+	border-bottom: 2px solid var(--error-color) !important;
 }
 .word.shake-overflow {
 	animation: wordOverflowShake 0.25s ease-in-out;
@@ -1716,23 +1835,20 @@ body {
 	display: inline-block;
 	font-family: inherit;
 	color: var(--char-upcoming);
-	opacity: 0.7;
-	transition:
-		color 0.1s ease,
-		opacity 0.1s ease;
+	opacity: 1 !important;
+	margin: 0 0.5px;
+	transition: color 0.1s ease;
 	user-select: none;
 }
+
 .letter.correct {
 	color: var(--correct) !important;
-	opacity: 1 !important;
 }
 .letter.incorrect {
 	color: var(--incorrect) !important;
-	opacity: 1 !important;
 }
 .letter.extra {
 	color: var(--incorrect-extra) !important;
-	opacity: 0.85 !important;
 }
 
 .ngau-hung-mode-display {
@@ -1961,14 +2077,271 @@ body {
 	}
 }
 
-.boss-fog-layer {
+/* ========================================================== */
+/* SMOKE BOMB ENGINE: BOM KHÓI MÙ ĐỘT NGỘT & LÀM MỜ TẬP TRUNG */
+/* (Đã tinh chỉnh giảm 15% độ đục để nhìn xuyên khói rõ hơn)  */
+/* ========================================================== */
+
+.boss-smoke-layer {
 	position: absolute;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.75);
 	pointer-events: none;
-	z-index: 50;
-	backdrop-filter: blur(2.5px);
+	z-index: 22;
+	overflow: hidden;
+	border-radius: var(--border-radius-box);
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		opacity 0.2s ease,
+		visibility 0.2s ease;
 }
+
+.boss-smoke-layer.active {
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+/* 1. Chớp nổ ban đầu của quả bom khói */
+.smoke-bomb-flash {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		circle at 50% 50%,
+		rgba(255, 255, 255, 0.8) 0%,
+		rgba(226, 183, 20, 0.5) 35%,
+		transparent 70%
+	);
+	opacity: 0;
+	mix-blend-mode: screen;
+}
+.boss-smoke-layer.active .smoke-bomb-flash {
+	animation: smokeFlashBurst 0.45s ease-out forwards;
+}
+
+@keyframes smokeFlashBurst {
+	0% {
+		opacity: 0.8;
+		transform: scale(0.6);
+	}
+	40% {
+		opacity: 0.68;
+		transform: scale(1.1);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.4);
+	}
+}
+
+/* 2. Vòng sóng nổ bung hạt khói vật lý */
+.smoke-debris-ring {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 60px;
+	height: 60px;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	border: 3px solid rgba(200, 214, 229, 0.6);
+	box-shadow: 0 0 20px rgba(226, 183, 20, 0.35);
+	opacity: 0;
+}
+.boss-smoke-layer.active .smoke-debris-ring {
+	animation: smokeRingExpand 0.7s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes smokeRingExpand {
+	0% {
+		width: 40px;
+		height: 40px;
+		opacity: 0.85;
+		transform: translate(-50%, -50%) scale(0.5);
+	}
+	100% {
+		width: 450px;
+		height: 450px;
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+/* 3. Bốn đám mây khói hạt xám bạc (Đã giảm ~15% độ đục) */
+.smoke-cloud {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(14px);
+	mix-blend-mode: normal;
+	opacity: 0;
+	will-change: transform, opacity;
+}
+
+.smoke-cloud-1 {
+	top: -15%;
+	left: -10%;
+	width: 70%;
+	height: 120%;
+	background: radial-gradient(
+		circle at 45% 50%,
+		rgba(200, 214, 229, 0.8) 0%,
+		rgba(131, 149, 167, 0.7) 50%,
+		transparent 75%
+	);
+}
+
+.smoke-cloud-2 {
+	bottom: -20%;
+	right: -10%;
+	width: 75%;
+	height: 130%;
+	background: radial-gradient(
+		circle at 55% 50%,
+		rgba(226, 183, 20, 0.38) 0%,
+		rgba(157, 165, 180, 0.78) 45%,
+		transparent 75%
+	);
+}
+
+.smoke-cloud-3 {
+	top: 10%;
+	left: 25%;
+	width: 60%;
+	height: 100%;
+	background: radial-gradient(
+		circle at 50% 50%,
+		rgba(245, 246, 250, 0.75) 0%,
+		rgba(113, 128, 147, 0.7) 55%,
+		transparent 70%
+	);
+}
+
+.smoke-cloud-4 {
+	top: -25%;
+	right: 15%;
+	width: 65%;
+	height: 110%;
+	background: radial-gradient(
+		circle at 50% 45%,
+		rgba(180, 190, 205, 0.74) 0%,
+		rgba(87, 101, 116, 0.68) 55%,
+		transparent 72%
+	);
+}
+
+.boss-smoke-layer.active .smoke-cloud-1 {
+	animation: smokeBillow1 var(--smoke-duration, 4s) cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+.boss-smoke-layer.active .smoke-cloud-2 {
+	animation: smokeBillow2 var(--smoke-duration, 4s) cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+.boss-smoke-layer.active .smoke-cloud-3 {
+	animation: smokeBillow3 var(--smoke-duration, 4s) cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+.boss-smoke-layer.active .smoke-cloud-4 {
+	animation: smokeBillow4 var(--smoke-duration, 4s) cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+
+@keyframes smokeBillow1 {
+	0% {
+		opacity: 0;
+		transform: translate(-30px, 20px) scale(0.6);
+	}
+	8% {
+		opacity: 0.8;
+		transform: translate(0, 0) scale(1.05);
+	}
+	55% {
+		opacity: 0.68;
+		transform: translate(15px, -10px) scale(1.15);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(45px, -25px) scale(1.3);
+	}
+}
+
+@keyframes smokeBillow2 {
+	0% {
+		opacity: 0;
+		transform: translate(30px, -20px) scale(0.65);
+	}
+	10% {
+		opacity: 0.78;
+		transform: translate(0, 0) scale(1.08);
+	}
+	50% {
+		opacity: 0.64;
+		transform: translate(-20px, 10px) scale(1.18);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50px, 25px) scale(1.35);
+	}
+}
+
+@keyframes smokeBillow3 {
+	0% {
+		opacity: 0;
+		transform: scale(0.4) rotate(0deg);
+	}
+	12% {
+		opacity: 0.81;
+		transform: scale(1.1) rotate(15deg);
+	}
+	60% {
+		opacity: 0.6;
+		transform: scale(1.22) rotate(35deg);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.4) rotate(60deg);
+	}
+}
+
+@keyframes smokeBillow4 {
+	0% {
+		opacity: 0;
+		transform: scale(0.5) translate(10px, -15px);
+	}
+	9% {
+		opacity: 0.76;
+		transform: scale(1.04) translate(0, 0);
+	}
+	52% {
+		opacity: 0.61;
+		transform: scale(1.16) translate(-15px, -15px);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.35) translate(-35px, -30px);
+	}
+}
+
+/* 4. Hiệu ứng làm mờ nhòe chữ (Blur) giảm dần (Đã giảm ~15% blur đỉnh từ 9.5px xuống 8px) */
+.words-display.smoke-blurred {
+	animation: smokeBlurFade var(--smoke-duration, 4s) cubic-bezier(0.18, 0.89, 0.32, 1) forwards;
+}
+
+@keyframes smokeBlurFade {
+	0% {
+		filter: blur(0px);
+	}
+	6% {
+		filter: blur(8px) brightness(1.2) contrast(0.75);
+	}
+	25% {
+		filter: blur(6.8px) brightness(1.15) contrast(0.8);
+	}
+	55% {
+		filter: blur(3.8px) brightness(1.07) contrast(0.88);
+	}
+	80% {
+		filter: blur(1.7px) brightness(1.02) contrast(0.96);
+	}
+	100% {
+		filter: blur(0px) brightness(1) contrast(1);
+	}
+}
+
 .boss-reverse-active {
 	transform: scaleX(-1) !important;
 }
@@ -2033,12 +2406,10 @@ body {
 	color: var(--text-color);
 }
 
-/* ========================================================== */
-/* 13. CHAT ENGINE & KHẮC PHỤC CHỮ TỐI Ở MỌI THEME           */
-/* ========================================================== */
+/* 13. CHAT ENGINE & KHUNG TIN NHẮN TƯƠNG PHẢN CAO */
 .global-chat-box {
 	margin-top: 18px;
-	background: rgba(0, 0, 0, 0.35) !important;
+	background: var(--sub-alt-color);
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius-box);
 	padding: 14px;
@@ -2064,29 +2435,27 @@ body {
 	margin-bottom: 10px;
 }
 
-/* Đảm bảo chữ tin nhắn và tên người chat luôn luôn tương phản cao */
 .chat-msg-item {
 	font-size: 13px;
-	background: rgba(0, 0, 0, 0.45) !important;
+	background: rgba(0, 0, 0, 0.25);
 	padding: 6px 10px;
 	border-radius: 4px;
 	border-left: 3px solid var(--main-color);
-	color: #f5f5f5 !important;
+	color: var(--text-color);
 }
 .chat-msg-user {
 	font-weight: bold;
-	color: var(--main-color) !important;
+	color: var(--main-color);
 	margin-right: 6px;
 	font-family: var(--font-heading);
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 .chat-msg-text {
-	color: #e6e6e6 !important;
+	color: var(--text-color);
 	word-break: break-word;
 }
 .chat-msg-time {
 	font-size: 10px;
-	color: #a0a0a0 !important;
+	color: var(--sub-color);
 	margin-left: 6px;
 }
 
@@ -2099,9 +2468,9 @@ body {
 .global-chat-input {
 	flex: 1;
 	min-width: 0;
-	background: rgba(0, 0, 0, 0.4) !important;
+	background: var(--input-bg);
 	border: 1px solid var(--border-color);
-	color: #ffffff !important;
+	color: var(--text-color);
 	padding: 0 14px;
 	border-radius: var(--border-radius-btn);
 	font-size: 13px;
@@ -2109,7 +2478,7 @@ body {
 	height: 40px;
 }
 .global-chat-input::placeholder {
-	color: #8c8c8c !important;
+	color: var(--sub-color);
 }
 .global-chat-send-btn {
 	height: 40px;
@@ -2125,9 +2494,9 @@ body {
 	align-items: center;
 	justify-content: center;
 	font-size: 19px;
-	background: rgba(0, 0, 0, 0.3) !important;
+	background: var(--input-bg);
 	border: 1px solid var(--border-color);
-	color: #ffffff !important;
+	color: var(--text-color);
 	border-radius: var(--border-radius-btn);
 	cursor: pointer;
 	flex-shrink: 0;
@@ -2140,7 +2509,7 @@ body {
 	width: 100%;
 	padding: 8px 12px !important;
 	border-radius: var(--border-radius-box);
-	background: rgba(0, 0, 0, 0.4) !important;
+	background: var(--sub-alt-color);
 }
 .in-game-chat-wrapper {
 	display: flex;
@@ -2156,12 +2525,12 @@ body {
 	font-size: 13px;
 	border-radius: var(--border-radius-btn);
 	outline: none;
-	background: rgba(0, 0, 0, 0.45) !important;
+	background: var(--input-bg);
 	border: 1px solid var(--border-color);
-	color: #ffffff !important;
+	color: var(--text-color);
 }
 .in-game-chat-input::placeholder {
-	color: #8c8c8c !important;
+	color: var(--sub-color);
 }
 .in-game-chat-input:focus {
 	border-color: var(--main-color);
@@ -2185,9 +2554,9 @@ body {
 	max-width: 360px;
 }
 .chat-bubble {
-	background: rgba(25, 26, 28, 0.95) !important;
+	background: var(--sub-alt-color);
 	border: 1px solid var(--main-color);
-	color: #ffffff !important;
+	color: var(--text-color);
 	padding: 10px 14px;
 	border-radius: 8px;
 	font-size: 13.5px;
@@ -2198,12 +2567,12 @@ body {
 }
 .chat-bubble .sender {
 	font-size: 11px;
-	color: var(--main-color) !important;
+	color: var(--main-color);
 	font-weight: 700;
 	font-family: var(--font-heading);
 }
 .chat-bubble .text {
-	color: #f0f0f0 !important;
+	color: var(--text-color);
 }
 
 .chat-emoji-picker {

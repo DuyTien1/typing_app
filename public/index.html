@@ -7,11 +7,11 @@
 
 		<meta
 			name="description"
-			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ và Săn Boss trực tuyến cực nhanh cùng bạn bè theo phong cách Monkeytype."
+			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ và Săn Boss trực tuyến cực nhanh cùng bạn bè."
 		/>
 		<meta
 			name="keywords"
-			content="luyện gõ phím, typing test, monkeytype, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, fast typing challenge, săn boss"
+			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, fast typing challenge, săn boss"
 		/>
 		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
 		<meta name="robots" content="index, follow" />
@@ -29,7 +29,6 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-		<!-- DANH SÁCH 20 FONTS CHUẨN MONKEYTYPE & CODE TYPING -->
 		<link
 			href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400&family=Comfortaa:wght@400;600;700&family=Cousine:ital,wght@0,400;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=Inconsolata:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Major+Mono+Display&family=Montserrat:wght@400;500;600;700&family=Nanum+Gothic+Coding:wght@400;700&family=Nova+Mono&family=Nunito:wght@400;600;700;800&family=Overpass+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Share+Tech+Mono&family=Source+Code+Pro:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Ubuntu+Mono:wght@400;700&family=VT323&display=swap"
 			rel="stylesheet"
@@ -52,7 +51,7 @@
 			<button id="btn-change-name" class="btn-small" title="Thay đổi biệt danh">
 				<span class="btn-icon">✏️</span> ĐỔI TÊN
 			</button>
-			<button id="theme-select-btn" class="btn-small theme-btn" title="Chọn Theme Monkeytype">
+			<button id="theme-select-btn" class="btn-small theme-btn" title="Chọn Theme">
 				🎨 <span id="theme-btn-label">Serika Dark</span>
 			</button>
 			<button id="font-select-btn" class="btn-small font-btn" title="Chọn Font gõ phím">
@@ -88,7 +87,7 @@
 			<div class="cyber-box modal-content home-main-container">
 				<div class="brand-header">
 					<h1 class="glitch-title" data-text="FASTTYPING CHALLENGE">FASTTYPING CHALLENGE</h1>
-					<p class="subtitle">Monkeytype Style Typing & Boss Arena</p>
+					<p class="subtitle">Thử thách gõ phím trực tuyến</p>
 				</div>
 
 				<div class="home-flex-row">
@@ -151,7 +150,7 @@
 
 				<section class="global-chat-box">
 					<div class="chat-header-title">
-						<span>💬 KHUNG SỦA DƠ TRỰC TUYẾN</span>
+						<span>💬 KHUNG SỬA DƠ TRỰC TUYẾN</span>
 						<button id="btn-clear-chat" class="btn-small btn-surrender-style admin-only hidden">
 							XÓA CHAT
 						</button>
@@ -171,15 +170,12 @@
 			</div>
 		</main>
 
-		<!-- POPUP CHỌN THEME (20 THEMES MONKEYTYPE) -->
 		<div id="theme-select-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large monkey-modal-content">
 				<div class="monkey-modal-header">
-					<div class="monkey-header-badge">20 MONKEYTYPE THEMES</div>
+					<div class="monkey-header-badge">20 THEMES</div>
 					<h3 class="monkey-popup-title">🎨 CHỌN THEME MÀU SẮC</h3>
-					<p class="monkey-popup-subtitle">
-						Bộ sưu tập 20 bảng màu tương phản cao, dịu mắt chuẩn Monkeytype
-					</p>
+					<p class="monkey-popup-subtitle">Bộ sưu tập 20 bảng màu độ tương phản cao, dịu mắt</p>
 				</div>
 				<div class="monkey-grid" id="theme-cards-grid"></div>
 				<div class="monkey-modal-footer">
@@ -190,11 +186,10 @@
 			</div>
 		</div>
 
-		<!-- POPUP CHỌN FONT (20 FONTS MONKEYTYPE) -->
 		<div id="font-select-popup" class="custom-popup hidden">
 			<div class="popup-content modal-large monkey-modal-content">
 				<div class="monkey-modal-header">
-					<div class="monkey-header-badge">20 MONKEYTYPE FONTS</div>
+					<div class="monkey-header-badge">FONTS</div>
 					<h3 class="monkey-popup-title">🔤 CHỌN FONT GÕ CHỮ</h3>
 					<p class="monkey-popup-subtitle">
 						Bộ sưu tập 20 kiểu chữ lập trình & sans-serif tối ưu cho tốc độ phản xạ
@@ -434,9 +429,7 @@
 								</div>
 
 								<hr class="config-divider" />
-								<div class="skill-config-header">
-									🎲 TỶ LỆ XUẤT HIỆN LOẠI TỪ & ĐỘ KHÓ TỪ VỰNG (%)
-								</div>
+								<div class="skill-config-header">🎲 TỶ LỆ XUẤT HIỆN LOẠI TỪ & CẤU HÌNH SỐ (%)</div>
 
 								<div class="config-sub-grid">
 									<div class="config-field-row">
@@ -452,9 +445,29 @@
 										<input type="number" id="cfg-boss-ratio-en" min="0" max="100" />
 									</div>
 									<div class="config-field-row">
-										<label>Tỷ lệ Số / Zipcode (%):</label>
+										<label>Tỷ lệ Phần Số (%):</label>
 										<input type="number" id="cfg-boss-ratio-num" min="0" max="100" />
 									</div>
+								</div>
+
+								<!-- CẦN GẠT CHỌN KIỂU SỐ (NUMBER / FULLSIZE) -->
+								<div class="config-field-row config-toggle-row" style="margin-top: 10px">
+									<label>Kiểu sinh Số trong Săn Boss:</label>
+									<div class="boss-num-toggle-wrapper">
+										<span id="cfg-boss-num-label-number" class="toggle-side-label active"
+											>CHỈ SỐ (0-9)</span
+										>
+										<label class="cyber-switch">
+											<input type="checkbox" id="cfg-boss-num-mode-switch" />
+											<span class="cyber-switch-slider"></span>
+										</label>
+										<span id="cfg-boss-num-label-fullsize" class="toggle-side-label"
+											>FULLSIZE (58008)</span
+										>
+									</div>
+								</div>
+
+								<div class="config-sub-grid" style="margin-top: 10px">
 									<div class="config-field-row">
 										<label>Tỷ lệ từ KHÓ TV CÓ DẤU (%):</label>
 										<input type="number" id="cfg-boss-hard-vi-dau" min="0" max="100" />
@@ -541,18 +554,18 @@
 									<div class="skill-config-card">
 										<div class="skill-card-top">
 											<label class="skill-checkbox-label">
-												<input type="checkbox" id="cfg-skill-enable-fog" />
-												<span>🌫️ Màn Sương Mù Đen (Dark Fog)</span>
+												<input type="checkbox" id="cfg-skill-enable-smoke" />
+												<span>💣💨 Bom Khói Mù (Smoke Bomb)</span>
 											</label>
 										</div>
 										<div class="skill-card-body">
 											<div class="config-field-row">
 												<label>Tỷ lệ xuất hiện (%):</label>
-												<input type="number" id="cfg-skill-weight-fog" min="0" max="100" />
+												<input type="number" id="cfg-skill-weight-smoke" min="0" max="100" />
 											</div>
 											<div class="config-field-row">
-												<label>Thời gian tồn tại (giây):</label>
-												<input type="number" id="cfg-diff-fog-dur" min="2" max="30" />
+												<label>Thời gian khói tan (giây):</label>
+												<input type="number" id="cfg-diff-smoke-dur" min="2" max="10" step="0.5" />
 											</div>
 										</div>
 									</div>
@@ -735,6 +748,12 @@
 
 					<div class="lobby-nav-actions">
 						<button
+							id="btn-open-numpad-mode-select"
+							class="cyber-btn lobby-nav-btn btn-diff-numpad hidden"
+						>
+							🖩 KIỂU CHƠI
+						</button>
+						<button
 							id="btn-open-nh-difficulty-select"
 							class="cyber-btn lobby-nav-btn btn-diff-nh hidden"
 						>
@@ -780,7 +799,7 @@
 				</button>
 
 				<div class="global-chat-box" style="margin-top: 20px">
-					<div class="chat-header-title">💬 KHUNG SỦA DƠ PHÒNG CHỜ</div>
+					<div class="chat-header-title">💬 KHUNG SỬA DƠ PHÒNG CHỜ</div>
 					<div class="global-chat-messages"></div>
 					<div class="global-chat-input-wrapper">
 						<input
@@ -792,6 +811,42 @@
 						<button type="button" class="chat-emoji-btn" title="Chọn icon">😀</button>
 						<button class="global-chat-send-btn cyber-btn">GỬI</button>
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- POPUP 0: CHỌN KIỂU CHƠI CHO NUMPAD -->
+		<div id="numpad-mode-popup" class="custom-popup hidden">
+			<div class="popup-content modal-large">
+				<h3 class="popup-section-title" style="color: var(--main-color)">
+					🔢 CHỌN KIỂU CHƠI NUMPAD
+				</h3>
+				<div class="diff-picker-grid" style="grid-template-columns: repeat(2, 1fr)">
+					<div class="diff-card" data-numpad-diff="fullsize">
+						<div class="diff-icon">🖩</div>
+						<div class="diff-name" style="color: #e2b714">FULLSIZE (58008)</div>
+						<div class="diff-desc">
+							Bao gồm đầy đủ số nguyên, số thập phân, các toán tử (+, -, *, /) và các easter eggs
+							kinh điển của máy tính cầm tay.
+						</div>
+					</div>
+					<div class="diff-card selected" data-numpad-diff="number">
+						<div class="diff-icon">🔢</div>
+						<div class="diff-name" style="color: #00f0ff">CHỈ SỐ (NUMBER)</div>
+						<div class="diff-desc">
+							Thuần số tự nhiên từ 0 đến 9, không chứa ký hiệu toán học hay dấu chấm. Phù hợp cho
+							luyện nhập số liệu cơ bản.
+						</div>
+					</div>
+				</div>
+				<div style="margin-top: 20px">
+					<button
+						class="cyber-btn btn-secondary-style"
+						data-close="numpad-mode-popup"
+						style="width: auto; margin: 0 auto"
+					>
+						ĐÓNG
+					</button>
 				</div>
 			</div>
 		</div>
@@ -1018,7 +1073,7 @@
 				</div>
 
 				<div id="boss-skill-alert" class="boss-skill-alert hidden">
-					⚠️ BOSS ĐANG GẬM NHẤM BÓNG TỐI!
+					⚠️ BOSS ĐANG TÍCH TỤ NĂNG LƯỢNG!
 				</div>
 			</div>
 
@@ -1030,10 +1085,7 @@
 				<div id="race-tracks-container"></div>
 			</div>
 
-			<!-- KHU VỰC GÕ CHỮ & CON TRỎ CAO CẤP KIỂU MONKEYTYPE -->
 			<div id="typing-area" class="cyber-box">
-				<div id="boss-fog-layer" class="boss-fog-layer hidden"></div>
-
 				<!-- KHU VỰC TRẠNG THÁI NGẪU HỨNG -->
 				<div id="ngau-hung-status" class="ngau-hung-badge-wrapper hidden">
 					<span id="ngau-hung-round-text" class="ngau-hung-round-text">VÒNG 1/15</span>
@@ -1046,10 +1098,20 @@
 					<span id="doan-chu-hidden-count" class="doan-chu-hidden-count">KÝ TỰ ẨN: --</span>
 				</div>
 
-				<!-- WORDS DISPLAY VIEWPORT VỚI CON TRỎ MONKEYTYPE -->
 				<div id="words-display-viewport" class="words-display-viewport">
-					<div id="caret" class="custom-caret hidden"></div>
-					<div id="words-display" class="words-display"></div>
+					<!-- HỆ THỐNG HIỆU ỨNG BOM KHÓI MÙ (SMOKE BOMB) VẬT LÝ -->
+					<div id="boss-smoke-layer" class="boss-smoke-layer hidden">
+						<div class="smoke-bomb-flash"></div>
+						<div class="smoke-cloud smoke-cloud-1"></div>
+						<div class="smoke-cloud smoke-cloud-2"></div>
+						<div class="smoke-cloud smoke-cloud-3"></div>
+						<div class="smoke-cloud smoke-cloud-4"></div>
+						<div class="smoke-debris-ring"></div>
+					</div>
+
+					<div id="words-display" class="words-display">
+						<div id="caret" class="custom-caret hidden"></div>
+					</div>
 				</div>
 
 				<input
@@ -1116,7 +1178,7 @@
 		</div>
 
 		<footer class="footer-copyright">
-			<span class="footer-dot"></span> © 2026 Nguyễn Duy Tiến (niTe) - FastTyping Monkeytype Engine
+			<span class="footer-dot"></span> © 2026 Nguyễn Duy Tiến (niTe)
 		</footer>
 		<script src="app.js"></script>
 	</body>

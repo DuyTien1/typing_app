@@ -22,9 +22,6 @@ function eraseCookie(n) {
 	document.cookie = `${n}=; max-age=0; path=/`;
 }
 
-// ==========================================================
-// DANH SÁCH 20 THEMES & 20 FONTS CHUẨN MONKEYTYPE
-// ==========================================================
 const MONKEY_THEMES = [
 	{
 		id: "serika_dark",
@@ -34,7 +31,14 @@ const MONKEY_THEMES = [
 		sub: "#646669",
 		text: "#d1d0c5",
 	},
-	{ id: "carbon", name: "Carbon", bg: "#313131", main: "#f66e0d", sub: "#616161", text: "#f5e6c8" },
+	{
+		id: "carbon",
+		name: "Carbon",
+		bg: "#313131",
+		main: "#f66e0d",
+		sub: "#616161",
+		text: "#f5e6c8",
+	},
 	{
 		id: "dracula",
 		name: "Dracula",
@@ -43,7 +47,14 @@ const MONKEY_THEMES = [
 		sub: "#6272a4",
 		text: "#f8f8f2",
 	},
-	{ id: "nord", name: "Nord", bg: "#2e3440", main: "#88c0d0", sub: "#4c566a", text: "#eceff4" },
+	{
+		id: "nord",
+		name: "Nord",
+		bg: "#2e3440",
+		main: "#88c0d0",
+		sub: "#4c566a",
+		text: "#eceff4",
+	},
 	{
 		id: "botanical",
 		name: "Botanical",
@@ -52,8 +63,22 @@ const MONKEY_THEMES = [
 		sub: "#495e5b",
 		text: "#eaf1f1",
 	},
-	{ id: "olivia", name: "Olivia", bg: "#1c1b1d", main: "#deaf9d", sub: "#4f4749", text: "#f2efed" },
-	{ id: "matrix", name: "Matrix", bg: "#000000", main: "#15ff00", sub: "#006600", text: "#00cc00" },
+	{
+		id: "olivia",
+		name: "Olivia",
+		bg: "#1c1b1d",
+		main: "#deaf9d",
+		sub: "#655e60",
+		text: "#f2efed",
+	},
+	{
+		id: "matrix",
+		name: "Matrix",
+		bg: "#000000",
+		main: "#15ff00",
+		sub: "#008000",
+		text: "#00ff41",
+	},
 	{
 		id: "cyberpunk",
 		name: "Cyberpunk",
@@ -62,13 +87,20 @@ const MONKEY_THEMES = [
 		sub: "#53647d",
 		text: "#f0f6fc",
 	},
-	{ id: "bento", name: "Bento", bg: "#2d394d", main: "#ff7a90", sub: "#4a5974", text: "#fffaf8" },
+	{
+		id: "bento",
+		name: "Bento",
+		bg: "#2d394d",
+		main: "#ff7a90",
+		sub: "#5c6e8e",
+		text: "#fffaf8",
+	},
 	{
 		id: "vaporwave",
 		name: "Vaporwave",
 		bg: "#a4a7de",
 		main: "#ff75a0",
-		sub: "#67699d",
+		sub: "#616497",
 		text: "#2b2b46",
 	},
 	{
@@ -84,51 +116,72 @@ const MONKEY_THEMES = [
 		name: "Milkshake",
 		bg: "#ffffff",
 		main: "#212b43",
-		sub: "#626e82",
-		text: "#212b43",
+		sub: "#7b889b",
+		text: "#131927",
 	},
-	{ id: "muted", name: "Muted", bg: "#525252", main: "#c4c4c4", sub: "#808080", text: "#e0e0e0" },
+	{
+		id: "muted",
+		name: "Muted",
+		bg: "#525252",
+		main: "#c4c4c4",
+		sub: "#8a8a8a",
+		text: "#f0f0f0",
+	},
 	{
 		id: "modern_dolch",
 		name: "Modern Dolch",
 		bg: "#2d3139",
 		main: "#03a89e",
-		sub: "#5c6370",
+		sub: "#636c7a",
 		text: "#e5e9f0",
 	},
-	{ id: "laser", name: "Laser", bg: "#221b44", main: "#00e8c6", sub: "#b82375", text: "#dbeafe" },
+	{
+		id: "laser",
+		name: "Laser",
+		bg: "#221b44",
+		main: "#00e8c6",
+		sub: "#b82375",
+		text: "#dbeafe",
+	},
 	{
 		id: "dualshot",
 		name: "Dualshot",
 		bg: "#737373",
 		main: "#212224",
-		sub: "#aaaaaa",
-		text: "#212224",
+		sub: "#a3a3a3",
+		text: "#ffffff",
 	},
-	{ id: "taro", name: "Taro", bg: "#b388eb", main: "#ffe1a8", sub: "#6c4675", text: "#1b1b2f" },
+	{
+		id: "taro",
+		name: "Taro",
+		bg: "#b388eb",
+		main: "#ffe1a8",
+		sub: "#6c4675",
+		text: "#1b1b2f",
+	},
 	{
 		id: "red_samurai",
 		name: "Red Samurai",
 		bg: "#84202a",
 		main: "#c79e54",
-		sub: "#551319",
-		text: "#e2dadb",
+		sub: "#5d161d",
+		text: "#f0e6e7",
 	},
 	{
 		id: "magic_girl",
 		name: "Magic Girl",
 		bg: "#ffffff",
 		main: "#f5b0cb",
-		sub: "#9cdcf0",
-		text: "#000000",
+		sub: "#92bed4",
+		text: "#191b1f",
 	},
 	{
 		id: "metaverse",
 		name: "Metaverse",
 		bg: "#232323",
 		main: "#d82934",
-		sub: "#525252",
-		text: "#e1e1e1",
+		sub: "#6b6b6b",
+		text: "#f5f5f5",
 	},
 ];
 
@@ -155,7 +208,6 @@ const MONKEY_FONTS = [
 	{ id: "plus_jakarta", name: "Plus Jakarta Sans", sample: "Refined geometric sans" },
 ];
 
-// Khôi phục Theme và Font đã lưu
 const savedTheme =
 	localStorage.getItem("monkey_theme") || getCookie("monkey_theme") || "serika_dark";
 const savedFont = localStorage.getItem("monkey_font") || getCookie("monkey_font") || "lexend";
@@ -168,7 +220,6 @@ let currentLanguage = "vi_dau",
 	myUsername = "bot_1000",
 	mySelectedIcon = DEFAULT_ICON;
 
-// Áp dụng Theme và Font vào DOM gốc
 function applyTheme(themeId) {
 	if (isPlaying) return;
 
@@ -204,14 +255,12 @@ function applyFont(fontId) {
 		card.classList.toggle("selected", card.dataset.fontId === currentFont);
 	});
 
-	if (isPlaying) updateCaretPosition();
+	if (isPlaying) updateCaretPosition(true);
 }
 
-// Cập nhật trạng thái hiển thị của các nút đổi theme/font (khóa hoàn toàn khi đang trong trận đấu)
 function updateThemeFontButtonsState() {
 	const themeBtn = $("theme-select-btn");
 	const fontBtn = $("font-select-btn");
-
 	const disabled = isPlaying;
 
 	[themeBtn, fontBtn].forEach((btn) => {
@@ -220,7 +269,7 @@ function updateThemeFontButtonsState() {
 			btn.title = disabled
 				? "Không thể đổi Theme/Font khi đang trong trận đấu"
 				: btn.id === "theme-select-btn"
-					? "Chọn Theme Monkeytype"
+					? "Chọn Theme"
 					: "Chọn Font gõ phím";
 		}
 	});
@@ -234,7 +283,14 @@ function updateThemeFontButtonsState() {
 // Cấu hình Client nhận từ Server
 let clientGameConfig = {
 	normalRace: { duration: 300, wordCount: 150 },
-	numpad: { duration: 90, wordCount: 500 },
+	numpad: {
+		duration: 90,
+		wordCount: 500,
+		difficulties: {
+			fullsize: { id: "fullsize", name: "Fullsize", icon: "🖩", color: "#e2b714" },
+			number: { id: "number", name: "Number", icon: "🔢", color: "#00f0ff" },
+		},
+	},
 	ngauHung: {
 		difficulties: {
 			normal: {
@@ -245,13 +301,6 @@ let clientGameConfig = {
 				roundDuration: 7,
 				intermissionDuration: 3,
 				totalRounds: 15,
-				ratioViDau: 25,
-				ratioViNoDau: 25,
-				ratioEn: 40,
-				ratioNum: 10,
-				hardViDauRate: 35,
-				hardViNoDauRate: 35,
-				hardEnRate: 35,
 			},
 			legendary: {
 				id: "legendary",
@@ -261,13 +310,6 @@ let clientGameConfig = {
 				roundDuration: 3.5,
 				intermissionDuration: 1.5,
 				totalRounds: 25,
-				ratioViDau: 25,
-				ratioViNoDau: 25,
-				ratioEn: 25,
-				ratioNum: 25,
-				hardViDauRate: 85,
-				hardViNoDauRate: 85,
-				hardEnRate: 85,
 			},
 		},
 	},
@@ -283,9 +325,6 @@ let clientGameConfig = {
 				intermissionDuration: 3,
 				totalRounds: 10,
 				showHint: true,
-				ratioViDau: 50,
-				ratioViNoDau: 25,
-				ratioEn: 25,
 			},
 			hard: {
 				id: "hard",
@@ -297,9 +336,6 @@ let clientGameConfig = {
 				intermissionDuration: 2.5,
 				totalRounds: 12,
 				showHint: true,
-				ratioViDau: 40,
-				ratioViNoDau: 30,
-				ratioEn: 30,
 			},
 			legendary: {
 				id: "legendary",
@@ -311,9 +347,6 @@ let clientGameConfig = {
 				intermissionDuration: 2,
 				totalRounds: 15,
 				showHint: false,
-				ratioViDau: 34,
-				ratioViNoDau: 33,
-				ratioEn: 33,
 			},
 		},
 	},
@@ -329,35 +362,8 @@ let clientGameConfig = {
 				baseHp: 450,
 				hpPerPlayer: 400,
 				selfDestructTarget: 450,
-				skillInterval: 16,
-				shieldBasePerPlayer: 30,
-				shieldDuration: 8,
-				stunDuration: 4,
-				shakeDuration: 5,
-				fogDuration: 5,
-				reverseDuration: 5,
-				capslockDuration: 5,
-				ratioViDau: 20,
-				ratioViNoDau: 40,
-				ratioEn: 30,
-				ratioNum: 10,
-				hardViDauRate: 20,
-				hardViNoDauRate: 20,
-				hardEnRate: 20,
-				enabledSkills: {
-					shield: true,
-					capslock: false,
-					shake: true,
-					fog: false,
-					reverse: false,
-				},
-				skillWeights: {
-					shield: 60,
-					capslock: 0,
-					shake: 40,
-					fog: 0,
-					reverse: 0,
-				},
+				smokeDuration: 4,
+				numMode: "number",
 			},
 			normal: {
 				id: "normal",
@@ -368,35 +374,8 @@ let clientGameConfig = {
 				baseHp: 550,
 				hpPerPlayer: 500,
 				selfDestructTarget: 450,
-				skillInterval: 14,
-				shieldBasePerPlayer: 40,
-				shieldDuration: 6,
-				stunDuration: 3,
-				shakeDuration: 5,
-				fogDuration: 5,
-				reverseDuration: 5,
-				capslockDuration: 6,
-				ratioViDau: 25,
-				ratioViNoDau: 35,
-				ratioEn: 30,
-				ratioNum: 10,
-				hardViDauRate: 35,
-				hardViNoDauRate: 35,
-				hardEnRate: 35,
-				enabledSkills: {
-					shield: true,
-					capslock: true,
-					shake: true,
-					fog: true,
-					reverse: false,
-				},
-				skillWeights: {
-					shield: 35,
-					capslock: 25,
-					shake: 20,
-					fog: 20,
-					reverse: 0,
-				},
+				smokeDuration: 4,
+				numMode: "number",
 			},
 			hard: {
 				id: "hard",
@@ -407,35 +386,8 @@ let clientGameConfig = {
 				baseHp: 650,
 				hpPerPlayer: 600,
 				selfDestructTarget: 500,
-				skillInterval: 12,
-				shieldBasePerPlayer: 50,
-				shieldDuration: 5,
-				stunDuration: 2.5,
-				shakeDuration: 6,
-				fogDuration: 6,
-				reverseDuration: 5,
-				capslockDuration: 7,
-				ratioViDau: 30,
-				ratioViNoDau: 30,
-				ratioEn: 25,
-				ratioNum: 15,
-				hardViDauRate: 50,
-				hardViNoDauRate: 50,
-				hardEnRate: 50,
-				enabledSkills: {
-					shield: true,
-					capslock: true,
-					shake: true,
-					fog: true,
-					reverse: true,
-				},
-				skillWeights: {
-					shield: 25,
-					capslock: 20,
-					shake: 20,
-					fog: 20,
-					reverse: 15,
-				},
+				smokeDuration: 4.5,
+				numMode: "number",
 			},
 			hell: {
 				id: "hell",
@@ -446,41 +398,13 @@ let clientGameConfig = {
 				baseHp: 750,
 				hpPerPlayer: 700,
 				selfDestructTarget: 550,
-				skillInterval: 10,
-				shieldBasePerPlayer: 60,
-				shieldDuration: 5,
-				stunDuration: 2,
-				shakeDuration: 7,
-				fogDuration: 7,
-				reverseDuration: 6,
-				capslockDuration: 8,
-				ratioViDau: 30,
-				ratioViNoDau: 25,
-				ratioEn: 25,
-				ratioNum: 20,
-				hardViDauRate: 80,
-				hardViNoDauRate: 80,
-				hardEnRate: 80,
-				enabledSkills: {
-					shield: true,
-					capslock: true,
-					shake: true,
-					fog: true,
-					reverse: true,
-				},
-				skillWeights: {
-					shield: 20,
-					capslock: 20,
-					shake: 20,
-					fog: 20,
-					reverse: 20,
-				},
+				smokeDuration: 5,
+				numMode: "fullsize",
 			},
 		},
 	},
 };
 
-// Cấu hình tạm thời trong Admin Modal
 let tempAdminDifficulties = JSON.parse(JSON.stringify(clientGameConfig.sanBoss.difficulties));
 let selectedConfigDiffKey = "normal";
 
@@ -517,6 +441,7 @@ let bossComboCount = 0;
 let bossFractionalDamageBuffer = 0.0;
 let bossBackspaceCount = 0;
 let isBossCapsLockActive = false;
+let smokeClearTimeout = null;
 
 // Admin & Bot state
 let isAdmin = false,
@@ -533,9 +458,11 @@ let bannedModalTimer = null,
 let isRenderTracksPending = false;
 let latestPlayersData = null;
 
-// Biến điều khiển chuyển dòng mượt mà (Monkeytype Smooth Line Shift)
+// Biến điều khiển con trỏ và chuyển dòng mượt mà
 let currentViewportOffsetY = 0;
 let firstLineOffsetTop = 0;
+let lastCaretWordTop = null;
+let caretTypingTimeout = null;
 
 const chatEmojis = [
 	"😀",
@@ -591,7 +518,7 @@ const modeNames = {
 	vi_dau: "🇻🇳 Tiếng Việt",
 	vi_nodau: "🔤 Không Dấu",
 	en: "🔠 English",
-	numpad: "🔢 Numpad",
+	numpad: "🔢 Numpad (58008)",
 	ngau_hung: "🎲 Ngẫu Hứng",
 	doan_chu: "🧩 Đoán Chữ",
 	san_boss: "🐉 Săn Boss",
@@ -603,6 +530,8 @@ const difficultyMeta = {
 	hard: { name: "KHÓ", color: "#ff7700", icon: "🔴" },
 	hell: { name: "ĐỊA NGỤC", color: "#ff0055", icon: "💀" },
 	legendary: { name: "HUYỀN THOẠI", color: "#ff0055", icon: "👑" },
+	fullsize: { name: "FULLSIZE (58008)", color: "#e2b714", icon: "🖩" },
+	number: { name: "CHỈ SỐ", color: "#00f0ff", icon: "🔢" },
 };
 
 let serverHighScores = {
@@ -620,11 +549,11 @@ function initBotWorker() {
 		const blob = new Blob(
 			[
 				`
-			let t = null;
-			self.onmessage = (e) => {
-				if (e.data.action === 'start') { clearInterval(t); t = setInterval(() => self.postMessage('tick'), e.data.interval); }
-				else if (e.data.action === 'stop') { clearInterval(t); t = null; }
-			};
+		let t = null;
+		self.onmessage = (e) => {
+			if (e.data.action === 'start') { clearInterval(t); t = setInterval(() => self.postMessage('tick'), e.data.interval); }
+			else if (e.data.action === 'stop') { clearInterval(t); t = null; }
+		};
 		`,
 			],
 			{ type: "application/javascript" },
@@ -633,7 +562,6 @@ function initBotWorker() {
 	}
 }
 
-// RENDER DANH SÁCH 20 THEMES VÀ 20 FONTS
 function renderThemeSelector() {
 	const grid = $("theme-cards-grid");
 	if (!grid) return;
@@ -686,16 +614,22 @@ function renderFontSelector() {
 	});
 }
 
-// ==========================================================
-// MONKEYTYPE ENGINE: ĐIỀU KHIỂN CON TRỎ VÀ TRƯỢT DÒNG THỜI GIAN THỰC
-// ==========================================================
-function updateCaretPosition() {
+function triggerCaretTypingState() {
 	const caret = $("caret");
-	const viewport = $("words-display-viewport");
+	if (!caret) return;
+	caret.classList.add("typing");
+	clearTimeout(caretTypingTimeout);
+	caretTypingTimeout = setTimeout(() => {
+		caret.classList.remove("typing");
+	}, 450);
+}
+
+function updateCaretPosition(instant = false) {
+	const caret = $("caret");
 	const display = $("words-display");
+
 	if (
 		!caret ||
-		!viewport ||
 		!display ||
 		!isPlaying ||
 		currentLanguage === "doan_chu" ||
@@ -713,37 +647,61 @@ function updateCaretPosition() {
 
 	handleSmoothLineShift(currentWordEl);
 
-	caret.classList.remove("hidden");
+	const isLineJump = lastCaretWordTop !== null && lastCaretWordTop !== currentWordEl.offsetTop;
+	lastCaretWordTop = currentWordEl.offsetTop;
+
+	const shouldBeInstant = instant || isLineJump;
+	if (shouldBeInstant) {
+		caret.classList.add("no-transition");
+	}
 
 	const inputVal = $("type-input")?.value || "";
 	const letterElements = currentWordEl.querySelectorAll(".letter:not(.extra)");
 
-	let letterOffsetX = 0;
-	let targetHeight = currentWordEl.offsetHeight || 32;
+	const displayRect = display.getBoundingClientRect();
+	const wordRect = currentWordEl.getBoundingClientRect();
+
+	let targetX = 0;
+	let targetHeight = wordRect.height || 32;
+	const CARET_GAP = 2;
 
 	if (inputVal.length < letterElements.length) {
 		const targetLetter = letterElements[inputVal.length];
-		letterOffsetX = Math.max(0, targetLetter.offsetLeft - 1.5);
-		targetHeight = targetLetter.offsetHeight || targetHeight;
+		const letterRect = targetLetter.getBoundingClientRect();
+		targetX = letterRect.left - displayRect.left - CARET_GAP;
+		targetHeight = letterRect.height || targetHeight;
 	} else if (letterElements.length > 0) {
 		const lastLetter = letterElements[letterElements.length - 1];
-		letterOffsetX = lastLetter.offsetLeft + lastLetter.offsetWidth + 1.5;
-		targetHeight = lastLetter.offsetHeight || targetHeight;
+		const lastLetterRect = lastLetter.getBoundingClientRect();
+		targetX = lastLetterRect.right - displayRect.left + CARET_GAP;
+		targetHeight = lastLetterRect.height || targetHeight;
+	} else {
+		targetX = wordRect.left - displayRect.left - CARET_GAP;
 	}
 
-	const finalLeft = currentWordEl.offsetLeft + letterOffsetX;
-	const finalTop = currentWordEl.offsetTop + currentViewportOffsetY;
+	const targetY = wordRect.top - displayRect.top;
 
-	caret.style.left = `${finalLeft}px`;
-	caret.style.top = `${finalTop}px`;
-	caret.style.height = `${Math.max(22, targetHeight)}px`;
+	caret.style.left = `${Math.round(targetX)}px`;
+	caret.style.top = `${Math.round(targetY)}px`;
+	caret.style.height = `${Math.round(Math.max(24, targetHeight))}px`;
+
+	caret.classList.remove("hidden");
+
+	if (shouldBeInstant) {
+		void caret.offsetWidth;
+		requestAnimationFrame(() => {
+			caret.classList.remove("no-transition");
+		});
+	}
 }
 
 function handleSmoothLineShift(currentWordEl) {
 	const display = $("words-display");
 	if (!display || !currentWordEl) return;
 
-	const firstWord = display.firstElementChild;
+	const firstWord = display.firstElementChild?.classList.contains("custom-caret")
+		? display.children[1]
+		: display.firstElementChild;
 	if (!firstWord) return;
 
 	if (firstLineOffsetTop === 0 || wordIndex === 0) {
@@ -829,7 +787,19 @@ function resetBossCombo(reason = "") {
 function clearAllBossSkillEffects() {
 	$("game-container")?.classList.remove("boss-shake-active");
 	$("words-display")?.classList.remove("boss-reverse-active");
-	$("boss-fog-layer")?.classList.add("hidden");
+
+	const smokeLayer = $("boss-smoke-layer");
+	if (smokeLayer) {
+		smokeLayer.classList.remove("active");
+		smokeLayer.classList.add("hidden");
+	}
+	const wordsDisplay = $("words-display");
+	if (wordsDisplay) {
+		wordsDisplay.classList.remove("smoke-blurred");
+		wordsDisplay.style.removeProperty("--smoke-duration");
+	}
+	clearTimeout(smokeClearTimeout);
+
 	$("boss-skill-alert")?.classList.add("hidden");
 	$("boss-arena-box")?.classList.remove("boss-stunned");
 }
@@ -867,10 +837,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			$$(".mode-card").forEach((c) => c.classList.remove("selected"));
 			card.classList.add("selected");
 			currentLanguage = card.dataset.lang;
+			if (currentLanguage === "numpad") {
+				currentDifficulty = "number";
+			} else {
+				currentDifficulty = "normal";
+			}
 		});
 	});
 
-	// Xử lý mở Modal chọn Theme và Font (chặn nếu isPlaying)
 	const openThemeModal = () => {
 		if (!isPlaying) $("theme-select-popup")?.classList.remove("hidden");
 	};
@@ -896,6 +870,25 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	$("btn-open-icon-select")?.addEventListener("click", openIconSelect);
+
+	// SỰ KIỆN CHỌN KIỂU CHƠI NUMPAD
+	$("btn-open-numpad-mode-select")?.addEventListener("click", () => {
+		$$("#numpad-mode-popup .diff-card").forEach((c) => {
+			c.classList.toggle("selected", c.dataset.numpadDiff === currentDifficulty);
+		});
+		$("numpad-mode-popup").classList.remove("hidden");
+	});
+
+	$$("#numpad-mode-popup .diff-card").forEach((card) => {
+		card.addEventListener("click", () => {
+			const diff = card.dataset.numpadDiff;
+			currentDifficulty = diff;
+			$$("#numpad-mode-popup .diff-card").forEach((c) => c.classList.remove("selected"));
+			card.classList.add("selected");
+			socket.emit("select_difficulty", { difficulty: diff });
+			$("numpad-mode-popup").classList.add("hidden");
+		});
+	});
 
 	$("btn-open-nh-difficulty-select")?.addEventListener("click", () => {
 		$$("#nh-difficulty-popup .diff-card").forEach((c) => {
@@ -1022,13 +1015,21 @@ document.addEventListener("DOMContentLoaded", () => {
 	typeInput?.addEventListener("input", handleTypingInput);
 	typeInput?.addEventListener("keydown", (e) => {
 		resetAFKTimer();
+		triggerCaretTypingState();
 
 		if (currentLanguage === "doan_chu" && e.key === "Enter") {
 			handleDoanChuSubmit();
 			return;
 		}
 
-		if (e.key === "Backspace" || e.key === "-" || e.code === "NumpadMinus") {
+		if (currentLanguage === "numpad" && (e.key === "Enter" || e.code === "NumpadEnter")) {
+			e.preventDefault();
+			typeInput.value += " ";
+			typeInput.dispatchEvent(new Event("input", { bubbles: true }));
+			return;
+		}
+
+		if (e.key === "Backspace") {
 			if (currentLanguage === "san_boss" && isPlaying) {
 				bossBackspaceCount++;
 				if (bossBackspaceCount >= 10) {
@@ -1037,17 +1038,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					updateBossComboUI();
 				}
 			}
-
-			if (e.key === "-" || e.code === "NumpadMinus") {
-				e.preventDefault();
-				typeInput.value = typeInput.value.slice(0, -1);
-				typeInput.dispatchEvent(new Event("input", { bubbles: true }));
-			}
 		}
 	});
 
 	window.addEventListener("resize", () => {
-		if (isPlaying) updateCaretPosition();
+		if (isPlaying) updateCaretPosition(true);
 	});
 
 	setupChatHandling();
@@ -1111,6 +1106,12 @@ function saveActiveDiffInputsToState() {
 				? 0
 				: parseInt($("cfg-boss-ratio-num").value);
 
+		// Lưu trạng thái cần gạt numMode của Săn Boss
+		const isFullsize = $("cfg-boss-num-mode-switch")
+			? $("cfg-boss-num-mode-switch").checked
+			: false;
+		diff.numMode = isFullsize ? "fullsize" : "number";
+
 		if ($("cfg-boss-hard-vi-dau"))
 			diff.hardViDauRate = isNaN(parseInt($("cfg-boss-hard-vi-dau").value))
 				? 0
@@ -1133,7 +1134,8 @@ function saveActiveDiffInputsToState() {
 		if ($("cfg-diff-capslock-dur"))
 			diff.capslockDuration = parseInt($("cfg-diff-capslock-dur").value) || 6;
 		if ($("cfg-diff-shake-dur")) diff.shakeDuration = parseInt($("cfg-diff-shake-dur").value) || 5;
-		if ($("cfg-diff-fog-dur")) diff.fogDuration = parseInt($("cfg-diff-fog-dur").value) || 5;
+		if ($("cfg-diff-smoke-dur"))
+			diff.smokeDuration = parseFloat($("cfg-diff-smoke-dur").value) || 4;
 		if ($("cfg-diff-reverse-dur"))
 			diff.reverseDuration = parseInt($("cfg-diff-reverse-dur").value) || 5;
 
@@ -1146,7 +1148,9 @@ function saveActiveDiffInputsToState() {
 		diff.enabledSkills.shake = $("cfg-skill-enable-shake")
 			? $("cfg-skill-enable-shake").checked
 			: true;
-		diff.enabledSkills.fog = $("cfg-skill-enable-fog") ? $("cfg-skill-enable-fog").checked : false;
+		diff.enabledSkills.smoke = $("cfg-skill-enable-smoke")
+			? $("cfg-skill-enable-smoke").checked
+			: true;
 		diff.enabledSkills.reverse = $("cfg-skill-enable-reverse")
 			? $("cfg-skill-enable-reverse").checked
 			: false;
@@ -1157,8 +1161,8 @@ function saveActiveDiffInputsToState() {
 			diff.skillWeights.capslock = parseInt($("cfg-skill-weight-capslock").value) || 0;
 		if ($("cfg-skill-weight-shake"))
 			diff.skillWeights.shake = parseInt($("cfg-skill-weight-shake").value) || 0;
-		if ($("cfg-skill-weight-fog"))
-			diff.skillWeights.fog = parseInt($("cfg-skill-weight-fog").value) || 0;
+		if ($("cfg-skill-weight-smoke"))
+			diff.skillWeights.smoke = parseInt($("cfg-skill-weight-smoke").value) || 0;
 		if ($("cfg-skill-weight-reverse"))
 			diff.skillWeights.reverse = parseInt($("cfg-skill-weight-reverse").value) || 0;
 	}
@@ -1225,6 +1229,13 @@ function saveActiveDiffInputsToState() {
 	}
 }
 
+function updateBossToggleLabelsUI(isFullsize) {
+	const labelNumber = $("cfg-boss-num-label-number");
+	const labelFullsize = $("cfg-boss-num-label-fullsize");
+	if (labelNumber) labelNumber.classList.toggle("active", !isFullsize);
+	if (labelFullsize) labelFullsize.classList.toggle("active", isFullsize);
+}
+
 function updateSelectedDiffInputsFromState() {
 	const diff = tempAdminDifficulties[selectedConfigDiffKey];
 	if (diff) {
@@ -1243,7 +1254,12 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-boss-ratio-vi-dau")) $("cfg-boss-ratio-vi-dau").value = diff.ratioViDau ?? 25;
 		if ($("cfg-boss-ratio-vi-nodau")) $("cfg-boss-ratio-vi-nodau").value = diff.ratioViNoDau ?? 35;
 		if ($("cfg-boss-ratio-en")) $("cfg-boss-ratio-en").value = diff.ratioEn ?? 30;
-		if ($("cfg-boss-ratio-num")) $("cfg-boss-ratio-num").value = diff.ratioNum ?? 10;
+		if ($("cfg-boss-ratio-num")) $("cfg-boss-ratio-num").value = diff.ratioNum ?? 35;
+
+		// Cập nhật cần gạt Kiểu sinh số
+		const isFullsize = diff.numMode === "fullsize";
+		if ($("cfg-boss-num-mode-switch")) $("cfg-boss-num-mode-switch").checked = isFullsize;
+		updateBossToggleLabelsUI(isFullsize);
 
 		if ($("cfg-boss-hard-vi-dau")) $("cfg-boss-hard-vi-dau").value = diff.hardViDauRate ?? 35;
 		if ($("cfg-boss-hard-vi-nodau")) $("cfg-boss-hard-vi-nodau").value = diff.hardViNoDauRate ?? 35;
@@ -1256,7 +1272,7 @@ function updateSelectedDiffInputsFromState() {
 
 		if ($("cfg-diff-capslock-dur")) $("cfg-diff-capslock-dur").value = diff.capslockDuration || 6;
 		if ($("cfg-diff-shake-dur")) $("cfg-diff-shake-dur").value = diff.shakeDuration || 5;
-		if ($("cfg-diff-fog-dur")) $("cfg-diff-fog-dur").value = diff.fogDuration || 5;
+		if ($("cfg-diff-smoke-dur")) $("cfg-diff-smoke-dur").value = diff.smokeDuration || 4;
 		if ($("cfg-diff-reverse-dur")) $("cfg-diff-reverse-dur").value = diff.reverseDuration || 5;
 
 		const sk = diff.enabledSkills || {};
@@ -1264,14 +1280,14 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-skill-enable-capslock"))
 			$("cfg-skill-enable-capslock").checked = sk.capslock ?? false;
 		if ($("cfg-skill-enable-shake")) $("cfg-skill-enable-shake").checked = sk.shake ?? true;
-		if ($("cfg-skill-enable-fog")) $("cfg-skill-enable-fog").checked = sk.fog ?? false;
+		if ($("cfg-skill-enable-smoke")) $("cfg-skill-enable-smoke").checked = sk.smoke ?? true;
 		if ($("cfg-skill-enable-reverse")) $("cfg-skill-enable-reverse").checked = sk.reverse ?? false;
 
 		const sw = diff.skillWeights || {};
 		if ($("cfg-skill-weight-shield")) $("cfg-skill-weight-shield").value = sw.shield ?? 35;
 		if ($("cfg-skill-weight-capslock")) $("cfg-skill-weight-capslock").value = sw.capslock ?? 25;
 		if ($("cfg-skill-weight-shake")) $("cfg-skill-weight-shake").value = sw.shake ?? 20;
-		if ($("cfg-skill-weight-fog")) $("cfg-skill-weight-fog").value = sw.fog ?? 20;
+		if ($("cfg-skill-weight-smoke")) $("cfg-skill-weight-smoke").value = sw.smoke ?? 20;
 		if ($("cfg-skill-weight-reverse")) $("cfg-skill-weight-reverse").value = sw.reverse ?? 0;
 	}
 
@@ -1308,11 +1324,20 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-dc-round-dur")) $("cfg-dc-round-dur").value = dc.roundDuration;
 		if ($("cfg-dc-reveal-interval")) $("cfg-dc-reveal-interval").value = dc.revealInterval;
 		if ($("cfg-dc-inter-dur")) $("cfg-dc-inter-dur").value = dc.intermissionDuration;
-		if ($("cfg-dc-total-rounds")) $("cfg-dc-total-rounds").value = dc.totalRounds;
+		if ($("cfg-dc-total-rounds")) dc.totalRounds = parseInt($("cfg-dc-total-rounds").value) || 10;
 
-		if ($("cfg-dc-ratio-vi-dau")) $("cfg-dc-ratio-vi-dau").value = dc.ratioViDau ?? 50;
-		if ($("cfg-dc-ratio-vi-nodau")) $("cfg-dc-ratio-vi-nodau").value = dc.ratioViNoDau ?? 25;
-		if ($("cfg-dc-ratio-en")) $("cfg-dc-ratio-en").value = dc.ratioEn ?? 25;
+		if ($("cfg-dc-ratio-vi-dau"))
+			dc.ratioViDau = isNaN(parseInt($("cfg-dc-ratio-vi-dau").value))
+				? 0
+				: parseInt($("cfg-dc-ratio-vi-dau").value);
+		if ($("cfg-dc-ratio-vi-nodau"))
+			dc.ratioViNoDau = isNaN(parseInt($("cfg-dc-ratio-vi-nodau").value))
+				? 0
+				: parseInt($("cfg-dc-ratio-vi-nodau").value);
+		if ($("cfg-dc-ratio-en"))
+			dc.ratioEn = isNaN(parseInt($("cfg-dc-ratio-en").value))
+				? 0
+				: parseInt($("cfg-dc-ratio-en").value);
 	}
 }
 
@@ -1422,6 +1447,12 @@ function setupAdminEvents() {
 		updateSelectedDiffInputsFromState();
 	});
 
+	// Lắng nghe sự kiện gạt cần đổi kiểu số Number / Fullsize
+	$("cfg-boss-num-mode-switch")?.addEventListener("change", (e) => {
+		updateBossToggleLabelsUI(e.target.checked);
+		saveActiveDiffInputsToState();
+	});
+
 	const diffInputIds = [
 		"cfg-diff-duration",
 		"cfg-diff-base-hp",
@@ -1440,17 +1471,17 @@ function setupAdminEvents() {
 		"cfg-diff-stun-dur",
 		"cfg-diff-capslock-dur",
 		"cfg-diff-shake-dur",
-		"cfg-diff-fog-dur",
+		"cfg-diff-smoke-dur",
 		"cfg-diff-reverse-dur",
 		"cfg-skill-enable-shield",
 		"cfg-skill-enable-capslock",
 		"cfg-skill-enable-shake",
-		"cfg-skill-enable-fog",
+		"cfg-skill-enable-smoke",
 		"cfg-skill-enable-reverse",
 		"cfg-skill-weight-shield",
 		"cfg-skill-weight-capslock",
 		"cfg-skill-weight-shake",
-		"cfg-skill-weight-fog",
+		"cfg-skill-weight-smoke",
 		"cfg-skill-weight-reverse",
 		"cfg-nh-round-dur",
 		"cfg-nh-inter-dur",
@@ -1586,12 +1617,12 @@ function renderBannedUsersModal() {
 					.map((b) => {
 						const rem = Math.max(0, Math.ceil((b.expiresAt - now) / 1000));
 						return `
-				<tr>
-					<td style="font-weight: 700;">${b.username} <span style="font-size: 11px; color: var(--sub-color);">(${b.id})</span></td>
-					<td class="banned-timer-text">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</td>
-					<td><button class="btn-unban-action" onclick="socket.emit('admin_unban_user', { targetId: '${b.id}' })">✅ Gỡ Ban</button></td>
-				</tr>
-			`;
+			<tr>
+				<td style="font-weight: 700;">${b.username} <span style="font-size: 11px; color: var(--sub-color);">(${b.id})</span></td>
+				<td class="banned-timer-text">${Math.floor(rem / 60)}m ${(rem % 60).toString().padStart(2, "0")}s</td>
+				<td><button class="btn-unban-action" onclick="socket.emit('admin_unban_user', { targetId: '${b.id}' })">✅ Gỡ Ban</button></td>
+			</tr>
+		`;
 					})
 					.join("");
 }
@@ -1719,27 +1750,34 @@ socket.on("update_lobby", (data) => {
 	const isNgauHung = currentLang === "ngau_hung";
 	const isDoanChu = currentLang === "doan_chu";
 	const isSanBoss = currentLang === "san_boss";
+	const isNumpad = currentLang === "numpad";
 
 	$("lobby-count").innerText = `${currentLobbyPlayers.length}/10`;
 	$("lobby-mode-display").innerText = `CHẾ ĐỘ: ${modeNames[currentLang]}`;
 
+	$("btn-open-numpad-mode-select")?.classList.toggle("hidden", !isNumpad);
 	$("btn-open-nh-difficulty-select")?.classList.toggle("hidden", !isNgauHung);
 	$("btn-open-dc-difficulty-select")?.classList.toggle("hidden", !isDoanChu);
 	$("btn-open-boss-difficulty-select")?.classList.toggle("hidden", !isSanBoss);
 
 	const diffTag = $("lobby-difficulty-tag");
 	if (diffTag) {
-		const isDiffMode = isNgauHung || isDoanChu || isSanBoss;
+		const isDiffMode = isNgauHung || isDoanChu || isSanBoss || isNumpad;
 		diffTag.classList.toggle("hidden", !isDiffMode);
 		if (isDiffMode) {
-			const meta = difficultyMeta[currentDifficulty] || difficultyMeta.normal;
-			diffTag.innerText = `ĐỘ KHÓ: ${meta.name}`;
+			const meta =
+				difficultyMeta[currentDifficulty] ||
+				(isNumpad ? difficultyMeta.number : difficultyMeta.normal);
+			diffTag.innerText = isNumpad ? `KIỂU: ${meta.name}` : `ĐỘ KHÓ: ${meta.name}`;
 			diffTag.setAttribute("data-diff", currentDifficulty);
 			diffTag.style.borderColor = meta.color;
 			diffTag.style.color = meta.color;
 		}
 	}
 
+	$$("#numpad-mode-popup .diff-card").forEach((c) => {
+		c.classList.toggle("selected", c.dataset.numpadDiff === currentDifficulty);
+	});
 	$$("#nh-difficulty-popup .diff-card").forEach((c) => {
 		c.classList.toggle("selected", c.dataset.nhDiff === currentDifficulty);
 	});
@@ -1764,11 +1802,12 @@ socket.on("game_start", (data) => {
 	currentDifficulty = data.difficulty || currentDifficulty;
 	currentWords = data.words || [];
 	wordIndex = correctChars = totalErrors = 0;
-	isPlaying = true; // Khóa theme & font ngay khi chuẩn bị đếm ngược vào trận
+	isPlaying = true;
 	updateThemeFontButtonsState();
 
 	currentViewportOffsetY = 0;
 	firstLineOffsetTop = 0;
+	lastCaretWordTop = null;
 
 	bossComboCount = 0;
 	bossFractionalDamageBuffer = 0.0;
@@ -1878,10 +1917,15 @@ function startCountdown(seconds) {
 				$("type-input").placeholder =
 					currentLanguage === "san_boss"
 						? "Gõ thật nhanh để xả sát thương lên Boss..."
-						: "Gõ chữ vào đây...";
+						: currentLanguage === "numpad"
+							? "Nhập số rồi bấm Space hoặc Enter..."
+							: "Gõ chữ vào đây...";
 				$("type-input").focus();
 
-				updateCaretPosition();
+				requestAnimationFrame(() => {
+					updateCaretPosition(true);
+				});
+
 				startRaceTimer(duration);
 			}
 		}
@@ -2173,8 +2217,8 @@ socket.on("boss_skill_warning", (d) => {
 	const skillDesc =
 		d.skill === "shake"
 			? "🌋 BOSS CHUẨN BỊ XÀI MÁY RUNG (TREMOR)!"
-			: d.skill === "fog"
-				? "🌫️ BOSS CHUẨN BỊ HÀ HƠI SƯƠNG TỐI (DARK FOG)!"
+			: d.skill === "smoke"
+				? "💣💨 BOSS CHUẨN BỊ NÉM BOM KHÓI MÙ (SMOKE BOMB)!"
 				: d.skill === "reverse"
 					? "🌀 BOSS CHUẨN BỊ ĐẢO CHỮ GƯƠNG (MIRROR)!"
 					: d.skill === "shield"
@@ -2189,24 +2233,48 @@ socket.on("boss_skill_warning", (d) => {
 socket.on("boss_skill_cast", (d) => {
 	const gameContainer = $("game-container");
 	const wordsDisplay = $("words-display");
-	const fogLayer = $("boss-fog-layer");
+	const smokeLayer = $("boss-smoke-layer");
 	const alertBox = $("boss-skill-alert");
 
 	if (alertBox) {
-		alertBox.innerText = `🔥 BOSS ĐANG KÍCH HOẠT KỸ NĂNG: ${d.skill.toUpperCase()}!`;
+		const skillName =
+			d.skill === "smoke" ? "💣💨 BOM KHÓI MÙ (DENSE SMOKE BOMB)" : d.skill.toUpperCase();
+		alertBox.innerText = `🔥 BOSS ĐANG KÍCH HOẠT KỸ NĂNG: ${skillName}!`;
 		alertBox.classList.remove("hidden");
 	}
 
 	if (d.skill === "shake" && gameContainer) gameContainer.classList.add("boss-shake-active");
 	if (d.skill === "reverse" && wordsDisplay) wordsDisplay.classList.add("boss-reverse-active");
-	if (d.skill === "fog" && fogLayer) fogLayer.classList.remove("hidden");
+
+	// KỸ NĂNG MỚI: SMOKE BOMB (BOM KHÓI MÙ)
+	if (d.skill === "smoke" && smokeLayer && wordsDisplay) {
+		const dur = d.duration || 4;
+		smokeLayer.style.setProperty("--smoke-duration", `${dur}s`);
+		wordsDisplay.style.setProperty("--smoke-duration", `${dur}s`);
+
+		// Reset animation để kích hoạt vụ nổ mới
+		smokeLayer.classList.remove("hidden", "active");
+		wordsDisplay.classList.remove("smoke-blurred");
+		void smokeLayer.offsetWidth;
+		void wordsDisplay.offsetWidth;
+
+		smokeLayer.classList.remove("hidden");
+		smokeLayer.classList.add("active");
+		wordsDisplay.classList.add("smoke-blurred");
+
+		clearTimeout(smokeClearTimeout);
+		smokeClearTimeout = setTimeout(() => {
+			smokeLayer.classList.remove("active");
+			smokeLayer.classList.add("hidden");
+			wordsDisplay.classList.remove("smoke-blurred");
+		}, dur * 1000);
+	}
 
 	setTimeout(
 		() => {
 			if (d.skill === "shake" && gameContainer) gameContainer.classList.remove("boss-shake-active");
 			if (d.skill === "reverse" && wordsDisplay)
 				wordsDisplay.classList.remove("boss-reverse-active");
-			if (d.skill === "fog" && fogLayer) fogLayer.classList.add("hidden");
 			if (alertBox) alertBox.classList.add("hidden");
 		},
 		(d.duration || 5) * 1000,
@@ -2307,21 +2375,22 @@ function getRenderedWord(w, idx) {
 	return displayWord;
 }
 
-// RENDER TỪ VỰNG PHÂN TÁCH TỪNG KÝ TỰ (MONKEYTYPE DOM ENGINE)
 function renderWords() {
 	const wd = $("words-display");
 	if (!wd) return;
 
-	wd.innerHTML = currentWords
-		.map((w, idx) => {
-			const wordText = getRenderedWord(w, idx);
-			const lettersHtml = wordText
-				.split("")
-				.map((char) => `<span class="letter">${char}</span>`)
-				.join("");
-			return `<div class="word" id="word-${idx}">${lettersHtml}</div>`;
-		})
-		.join("");
+	wd.innerHTML =
+		`<div id="caret" class="custom-caret hidden"></div>` +
+		currentWords
+			.map((w, idx) => {
+				const wordText = getRenderedWord(w, idx);
+				const lettersHtml = wordText
+					.split("")
+					.map((char) => `<span class="letter">${char}</span>`)
+					.join("");
+				return `<div class="word" id="word-${idx}">${lettersHtml}</div>`;
+			})
+			.join("");
 
 	for (let i = 0; i < wordIndex; i++) {
 		const wEl = $(`word-${i}`);
@@ -2330,14 +2399,17 @@ function renderWords() {
 		}
 	}
 
-	updateCaretPosition();
+	requestAnimationFrame(() => {
+		updateCaretPosition(true);
+	});
 }
 
-// XỬ LÝ GÕ PHÍM & CON TRỎ CAO CẤP
 function handleTypingInput() {
 	if (!isPlaying) return;
 	const input = $("type-input");
 	let val = input.value;
+
+	triggerCaretTypingState();
 
 	if (currentLanguage === "doan_chu") return;
 
@@ -2392,6 +2464,10 @@ function handleTypingInput() {
 	const target = getRenderedWord(baseTarget, wordIndex);
 	const currentWordEl = $(`word-${wordIndex}`);
 
+	if (currentWordEl && currentWordEl.classList.contains("error-word") && val.length > 0) {
+		currentWordEl.classList.remove("error-word");
+	}
+
 	if (val.length > target.length && !val.endsWith(" ")) {
 		input.value = val.slice(0, target.length);
 		val = input.value;
@@ -2404,11 +2480,12 @@ function handleTypingInput() {
 
 	if (val.endsWith(" ")) {
 		const typedWord = val.slice(0, -1);
-		input.value = "";
 
 		if (typedWord === target) {
+			input.value = "";
 			const wordLength = target.length + 1;
 			correctChars += wordLength;
+
 			if (currentWordEl) {
 				currentWordEl.classList.remove("error-word");
 				currentWordEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter correct"));
@@ -2439,14 +2516,19 @@ function handleTypingInput() {
 			updateCaretPosition();
 		} else {
 			totalErrors++;
+			input.value = "";
+			input.focus();
+
 			if (currentWordEl) {
 				currentWordEl.classList.add("error-word");
+				currentWordEl.querySelectorAll(".letter").forEach((l) => (l.className = "letter"));
 			}
 
 			if (currentLanguage === "san_boss") {
 				resetBossCombo("Gõ sai từ");
 				socket.emit("deal_boss_damage", { damage: 0, errors: totalErrors });
 			}
+
 			updateCaretPosition();
 		}
 	} else if (currentWordEl) {

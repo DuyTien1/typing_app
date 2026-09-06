@@ -24,6 +24,20 @@ const GAME_CONFIG = {
 	numpad: {
 		duration: 90,
 		wordCount: 500,
+		difficulties: {
+			fullsize: {
+				id: "fullsize",
+				name: "Fullsize",
+				icon: "🖩",
+				color: "#e2b714",
+			},
+			number: {
+				id: "number",
+				name: "Number",
+				icon: "🔢",
+				color: "#00f0ff",
+			},
+		},
 	},
 	ngauHung: {
 		difficulties: {
@@ -124,13 +138,14 @@ const GAME_CONFIG = {
 				shieldDuration: 5,
 				stunDuration: 3,
 				shakeDuration: 5,
-				fogDuration: 5,
+				smokeDuration: 4,
 				reverseDuration: 5,
 				capslockDuration: 5,
 				ratioViDau: 0,
 				ratioViNoDau: 0,
 				ratioEn: 0,
 				ratioNum: 100,
+				numMode: "number", // "number" (0-9) hoặc "fullsize" (58008, float, toán tử)
 				hardViDauRate: 0,
 				hardViNoDauRate: 0,
 				hardEnRate: 0,
@@ -138,14 +153,14 @@ const GAME_CONFIG = {
 					shield: true,
 					capslock: false,
 					shake: true,
-					fog: true,
+					smoke: true,
 					reverse: false,
 				},
 				skillWeights: {
 					shield: 50,
 					capslock: 0,
 					shake: 25,
-					fog: 25,
+					smoke: 25,
 					reverse: 0,
 				},
 			},
@@ -163,13 +178,14 @@ const GAME_CONFIG = {
 				shieldDuration: 6,
 				stunDuration: 3,
 				shakeDuration: 5,
-				fogDuration: 5,
+				smokeDuration: 4,
 				reverseDuration: 5,
 				capslockDuration: 6,
 				ratioViDau: 0,
 				ratioViNoDau: 35,
 				ratioEn: 30,
 				ratioNum: 35,
+				numMode: "number",
 				hardViDauRate: 0,
 				hardViNoDauRate: 35,
 				hardEnRate: 35,
@@ -177,14 +193,14 @@ const GAME_CONFIG = {
 					shield: true,
 					capslock: false,
 					shake: true,
-					fog: true,
+					smoke: true,
 					reverse: false,
 				},
 				skillWeights: {
 					shield: 40,
 					capslock: 0,
 					shake: 30,
-					fog: 30,
+					smoke: 30,
 					reverse: 0,
 				},
 			},
@@ -202,13 +218,14 @@ const GAME_CONFIG = {
 				shieldDuration: 5,
 				stunDuration: 2.5,
 				shakeDuration: 6,
-				fogDuration: 6,
+				smokeDuration: 4.5,
 				reverseDuration: 5,
 				capslockDuration: 7,
 				ratioViDau: 0,
 				ratioViNoDau: 40,
 				ratioEn: 40,
 				ratioNum: 20,
+				numMode: "number",
 				hardViDauRate: 0,
 				hardViNoDauRate: 65,
 				hardEnRate: 65,
@@ -216,14 +233,14 @@ const GAME_CONFIG = {
 					shield: true,
 					capslock: false,
 					shake: true,
-					fog: true,
+					smoke: true,
 					reverse: true,
 				},
 				skillWeights: {
 					shield: 30,
 					capslock: 0,
 					shake: 20,
-					fog: 20,
+					smoke: 30,
 					reverse: 20,
 				},
 			},
@@ -241,13 +258,14 @@ const GAME_CONFIG = {
 				shieldDuration: 5,
 				stunDuration: 2,
 				shakeDuration: 7,
-				fogDuration: 7,
+				smokeDuration: 5,
 				reverseDuration: 6,
 				capslockDuration: 5,
 				ratioViDau: 0,
 				ratioViNoDau: 40,
 				ratioEn: 40,
 				ratioNum: 20,
+				numMode: "fullsize",
 				hardViDauRate: 0,
 				hardViNoDauRate: 85,
 				hardEnRate: 85,
@@ -255,14 +273,14 @@ const GAME_CONFIG = {
 					shield: true,
 					capslock: true,
 					shake: true,
-					fog: true,
+					smoke: true,
 					reverse: true,
 				},
 				skillWeights: {
 					shield: 20,
 					capslock: 20,
 					shake: 20,
-					fog: 20,
+					smoke: 20,
 					reverse: 20,
 				},
 			},
@@ -1474,7 +1492,6 @@ BIG_WORD_BANKS.vi_nodau = {
 	hard: BIG_WORD_BANKS.vi_dau.hard.map(removeVietnameseTones),
 };
 
-// 1.1 NGÂN HÀNG TỪ VỰNG DÀNH RIÊNG CHO CHẾ ĐỘ ĐOÁN CHỮ (CÓ GỢI Ý CHỦ ĐỀ)
 const MYSTERY_WORD_BANKS = {
 	vi_dau: [
 		{ word: "mặt trời", hint: "Thiên văn học" },
@@ -1608,6 +1625,58 @@ function getRandomWordFromBank(bankEasy, bankHard, hardRatePercent) {
 	return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// BỘ SINH DỮ LIỆU NUMPAD VỚI 2 PHÂN LOẠI (FULLSIZE VÀ NUMBER)
+function generate58008Word(subMode = "fullsize") {
+	// CHẾ ĐỘ "NUMBER": CHỈ XUẤT HIỆN SỐ THUẦN TÚY (0-9)
+	if (subMode === "number") {
+		const lengths = [1, 2, 2, 3, 3, 4, 4, 5, 6];
+		const len = lengths[Math.floor(Math.random() * lengths.length)];
+		let numStr = "";
+		for (let i = 0; i < len; i++) {
+			numStr += Math.floor(Math.random() * 10).toString();
+		}
+		if (numStr.length > 1 && numStr.startsWith("0")) {
+			numStr = (Math.floor(Math.random() * 9) + 1).toString() + numStr.slice(1);
+		}
+		return numStr;
+	}
+
+	// CHẾ ĐỘ "FULLSIZE": ĐẦY ĐỦ PHÉP TÍNH, SỐ THẬP PHÂN VÀ EASTER EGGS
+	const rand = Math.random();
+
+	// 10% xuất hiện các phép toán máy tính (+, -, *, /)
+	if (rand < 0.1) {
+		const operators = ["+", "-", "*", "/"];
+		return operators[Math.floor(Math.random() * operators.length)];
+	}
+
+	// 5% xuất hiện easter eggs kinh điển
+	if (rand < 0.15) {
+		const easterEggs = ["58008", "80085", "07734", "376007", "71077345", "5318008"];
+		return easterEggs[Math.floor(Math.random() * easterEggs.length)];
+	}
+
+	// 25% xuất hiện các số thập phân
+	if (rand < 0.4) {
+		const intPart = Math.floor(Math.random() * 999);
+		const decPart = Math.floor(Math.random() * 99);
+		return `${intPart}.${decPart < 10 ? "0" + decPart : decPart}`;
+	}
+
+	// 60% số nguyên có độ dài ngẫu nhiên từ 1 đến 6 chữ số
+	const lengths = [1, 2, 2, 3, 3, 4, 4, 5, 6];
+	const len = lengths[Math.floor(Math.random() * lengths.length)];
+	let numStr = "";
+	for (let i = 0; i < len; i++) {
+		numStr += Math.floor(Math.random() * 10).toString();
+	}
+
+	if (numStr.length > 1 && numStr.startsWith("0")) {
+		numStr = (Math.floor(Math.random() * 9) + 1).toString() + numStr.slice(1);
+	}
+	return numStr;
+}
+
 function generateDoanChuWords(difficulty = "normal", count) {
 	const diffConfig =
 		GAME_CONFIG.doanChu.difficulties[difficulty] || GAME_CONFIG.doanChu.difficulties.normal;
@@ -1662,6 +1731,14 @@ function generateWords(lang, count, difficulty = "normal") {
 			typeof diffConfig.hardViNoDauRate === "number" ? diffConfig.hardViNoDauRate : 35;
 		const hardEnRate = typeof diffConfig.hardEnRate === "number" ? diffConfig.hardEnRate : 35;
 
+		// Kiểu sinh số cho Săn Boss: "number" (0-9) hoặc "fullsize"
+		const bossNumMode =
+			lang === "san_boss"
+				? diffConfig.numMode === "fullsize"
+					? "fullsize"
+					: "number"
+				: "fullsize";
+
 		return Array.from({ length: total }, () => {
 			const rand = Math.random() * sumRatio;
 
@@ -1680,16 +1757,16 @@ function generateWords(lang, count, difficulty = "normal") {
 			} else if (ratioEn > 0 && rand < ratioViDau + ratioViNoDau + ratioEn) {
 				return getRandomWordFromBank(BIG_WORD_BANKS.en.easy, BIG_WORD_BANKS.en.hard, hardEnRate);
 			} else {
-				return Math.floor(10000 + Math.random() * 90000).toString();
+				return generate58008Word(bossNumMode);
 			}
 		});
 	}
 
+	// CHẾ ĐỘ NUMPAD HỖ TRỢ ĐỘ KHÓ: FULLSIZE HOẶC NUMBER
 	if (lang === "numpad") {
 		const total = count || GAME_CONFIG.numpad.wordCount;
-		return Array.from({ length: total }, () =>
-			Math.floor(10000 + Math.random() * 90000).toString(),
-		);
+		const subMode = difficulty === "number" ? "number" : "fullsize";
+		return Array.from({ length: total }, () => generate58008Word(subMode));
 	}
 
 	const bank = BIG_WORD_BANKS[lang] || BIG_WORD_BANKS.vi_dau;
@@ -1889,16 +1966,23 @@ function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 					? GAME_CONFIG.doanChu.difficulties[preferredDifficulty]?.totalRounds || 10
 					: 15;
 
+		const numpadDiff =
+			lang === "numpad"
+				? preferredDifficulty === "fullsize"
+					? "fullsize"
+					: "number"
+				: preferredDifficulty;
+
 		room = {
 			id: `room_${lang}_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
 			lang,
-			difficulty: preferredDifficulty,
+			difficulty: numpadDiff,
 			state: "waiting",
 			players: [],
 			words:
 				lang === "doan_chu"
 					? generateDoanChuWords(preferredDifficulty, totalRounds)
-					: generateWords(lang, null, preferredDifficulty),
+					: generateWords(lang, null, numpadDiff),
 			matchInterval: null,
 			matchTimeout: null,
 			startTime: null,
@@ -1908,12 +1992,10 @@ function getOrCreateRoom(lang, preferredDifficulty = "normal") {
 			roundActive: false,
 			roundTimer: null,
 			roundIntermissionTimer: null,
-			// Đoán chữ state
 			unrevealedIndices: [],
 			mysteryTargetWord: "",
 			mysteryHint: "",
 			revealTimer: null,
-			// Boss state
 			boss: null,
 			bossSkillTimer: null,
 		};
@@ -1959,13 +2041,11 @@ function startDoanChuRound(room) {
 	room.roundWinners = [];
 	room.roundActive = true;
 
-	// Tạo danh sách chỉ số ký tự chưa lật (loại trừ khoảng trắng)
 	room.unrevealedIndices = [];
 	for (let i = 0; i < targetWord.length; i++) {
 		if (targetWord[i] !== " ") room.unrevealedIndices.push(i);
 	}
 
-	// Gửi thông tin vòng đấu cho client (KHÔNG gửi targetWord để chống hack F12)
 	io.to(room.id).emit("doan_chu_new_round", {
 		round: room.currentRound,
 		totalRounds: room.totalRounds,
@@ -1979,7 +2059,6 @@ function startDoanChuRound(room) {
 		difficulty: room.difficulty,
 	});
 
-	// Bắt đầu chu kỳ lật mở từng ký tự
 	if (room.revealTimer) clearInterval(room.revealTimer);
 	room.revealTimer = setInterval(() => {
 		if (!room.roundActive || room.state !== "playing") return clearInterval(room.revealTimer);
@@ -2249,8 +2328,9 @@ function executeBossSkill(room, skill) {
 		}, dur * 1000);
 	} else if (skill === "shake") {
 		io.to(room.id).emit("boss_skill_cast", { skill: "shake", duration: boss.shakeDuration || 5 });
-	} else if (skill === "fog") {
-		io.to(room.id).emit("boss_skill_cast", { skill: "fog", duration: boss.fogDuration || 5 });
+	} else if (skill === "smoke") {
+		// KỸ NĂNG MỚI: BOM KHÓI MÙ (SMOKE BOMB)
+		io.to(room.id).emit("boss_skill_cast", { skill: "smoke", duration: boss.smokeDuration || 4 });
 	} else if (skill === "reverse") {
 		io.to(room.id).emit("boss_skill_cast", {
 			skill: "reverse",
@@ -2355,7 +2435,8 @@ io.on("connection", (socket) => {
 				io.to(currentRoom.id).emit("update_lobby", {
 					players: currentRoom.players,
 					language: currentRoom.lang,
-					difficulty: currentRoom.difficulty || "normal",
+					difficulty:
+						currentRoom.difficulty || (currentRoom.lang === "numpad" ? "number" : "normal"),
 				});
 			}
 		}
@@ -2487,7 +2568,8 @@ io.on("connection", (socket) => {
 				io.to(currentRoom.id).emit("update_lobby", {
 					players: currentRoom.players,
 					language: currentRoom.lang,
-					difficulty: currentRoom.difficulty || "normal",
+					difficulty:
+						currentRoom.difficulty || (currentRoom.lang === "numpad" ? "number" : "normal"),
 				});
 			} else if (currentRoom.state === "playing") {
 				io.to(currentRoom.id).emit("race_update", currentRoom.players);
@@ -2532,7 +2614,7 @@ io.on("connection", (socket) => {
 		}
 		leaveCurrentLobby();
 		const lang = data.language || "vi_dau";
-		const preferredDiff = data.difficulty || "normal";
+		const preferredDiff = data.difficulty || (lang === "numpad" ? "number" : "normal");
 
 		currentRoom = getOrCreateRoom(lang, preferredDiff);
 		player = {
@@ -2555,7 +2637,7 @@ io.on("connection", (socket) => {
 		io.to(currentRoom.id).emit("update_lobby", {
 			players: currentRoom.players,
 			language: currentRoom.lang,
-			difficulty: currentRoom.difficulty || "normal",
+			difficulty: currentRoom.difficulty || (currentRoom.lang === "numpad" ? "number" : "normal"),
 		});
 	});
 
@@ -2565,16 +2647,26 @@ io.on("connection", (socket) => {
 			io.to(currentRoom.id).emit("update_lobby", {
 				players: currentRoom.players,
 				language: currentRoom.lang,
-				difficulty: currentRoom.difficulty || "normal",
+				difficulty: currentRoom.difficulty || (currentRoom.lang === "numpad" ? "number" : "normal"),
 			});
 		}
 	});
 
 	socket.on("select_difficulty", (data) => {
 		if (!currentRoom || currentRoom.state !== "waiting") return;
-		const diff = data.difficulty || "normal";
+		const diff = data.difficulty || (currentRoom.lang === "numpad" ? "number" : "normal");
 
-		if (currentRoom.lang === "ngau_hung") {
+		if (currentRoom.lang === "numpad") {
+			const numDiff = diff === "fullsize" ? "fullsize" : "number";
+			currentRoom.difficulty = numDiff;
+			currentRoom.words = generateWords("numpad", null, numDiff);
+
+			io.to(currentRoom.id).emit("update_lobby", {
+				players: currentRoom.players,
+				language: currentRoom.lang,
+				difficulty: currentRoom.difficulty,
+			});
+		} else if (currentRoom.lang === "ngau_hung") {
 			if (GAME_CONFIG.ngauHung.difficulties[diff]) {
 				currentRoom.difficulty = diff;
 				const nhDiff = GAME_CONFIG.ngauHung.difficulties[diff];
@@ -2617,7 +2709,9 @@ io.on("connection", (socket) => {
 			currentRoom.state = "playing";
 			currentRoom.startTime = Date.now();
 
-			if (currentRoom.lang === "san_boss") {
+			if (currentRoom.lang === "numpad") {
+				currentRoom.words = generateWords("numpad", null, currentRoom.difficulty || "number");
+			} else if (currentRoom.lang === "san_boss") {
 				const pCount = Math.max(1, currentRoom.players.length);
 				const diffConfig =
 					GAME_CONFIG.sanBoss.difficulties[currentRoom.difficulty] ||
@@ -2646,16 +2740,16 @@ io.on("connection", (socket) => {
 					shieldDuration: diffConfig.shieldDuration,
 					stunDuration: diffConfig.stunDuration,
 					shakeDuration: diffConfig.shakeDuration,
-					fogDuration: diffConfig.fogDuration,
+					smokeDuration: diffConfig.smokeDuration || 4,
 					reverseDuration: diffConfig.reverseDuration,
 					capslockDuration: diffConfig.capslockDuration,
 					skillInterval: diffConfig.skillInterval,
 					enabledSkills: diffConfig.enabledSkills
 						? { ...diffConfig.enabledSkills }
-						: { shield: true, capslock: true, shake: true, fog: true, reverse: false },
+						: { shield: true, capslock: true, shake: true, smoke: true, reverse: false },
 					skillWeights: diffConfig.skillWeights
 						? { ...diffConfig.skillWeights }
-						: { shield: 35, capslock: 25, shake: 20, fog: 20, reverse: 0 },
+						: { shield: 35, capslock: 25, shake: 20, smoke: 20, reverse: 0 },
 					selfDestructTarget: diffConfig.selfDestructTarget,
 				};
 
@@ -2689,7 +2783,7 @@ io.on("connection", (socket) => {
 				players: currentRoom.players,
 				countdown: 3,
 				language: currentRoom.lang,
-				difficulty: currentRoom.difficulty || "normal",
+				difficulty: currentRoom.difficulty || (currentRoom.lang === "numpad" ? "number" : "normal"),
 				boss: currentRoom.boss,
 			});
 
@@ -2748,7 +2842,7 @@ io.on("connection", (socket) => {
 					currentRoom.boss.isStunned = true;
 					clearTimeout(currentRoom.boss.shieldTimer);
 
-					io.to(currentRoom.id).emit("boss_shield_broken", {
+					io.to(room.id).emit("boss_shield_broken", {
 						stunDuration: currentRoom.boss.stunDuration,
 						message: `⚡ GIÁP ĐÃ VỠ! Boss bị Choáng ${currentRoom.boss.stunDuration}s (Nhận x1.5 Sát thương)!`,
 					});
@@ -2826,7 +2920,6 @@ io.on("connection", (socket) => {
 		}
 	});
 
-	// XỬ LÝ ĐOÁN CHỮ (MYSTERY GUESS SUBMISSION)
 	socket.on("doan_chu_submit_guess", (data) => {
 		if (
 			!currentRoom ||
@@ -2844,7 +2937,6 @@ io.on("connection", (socket) => {
 			currentRoom.roundWinners.push(socket.id);
 			const rank = currentRoom.roundWinners.length;
 
-			// Tính điểm: Điểm hạng (5, 3, 1) + Điểm bonus cho mỗi ký tự chưa mở
 			const rankPoints = rank === 1 ? 5 : rank === 2 ? 3 : rank === 3 ? 1 : 0;
 			const hiddenBonus = currentRoom.unrevealedIndices ? currentRoom.unrevealedIndices.length : 0;
 			const totalPoints = rankPoints + hiddenBonus;
