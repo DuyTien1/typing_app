@@ -680,7 +680,6 @@ function handleSmoothLineShift(currentWordEl) {
 	const currentWordTop = currentWordEl.offsetTop;
 	const diffY = currentWordTop - firstLineOffsetTop;
 
-	// Điều chỉnh ngưỡng chuyển dòng phù hợp với chữ to hơn
 	if (diffY > 44) {
 		currentViewportOffsetY = -(diffY - 8);
 	} else {
@@ -696,7 +695,7 @@ function loadHighScores() {
 	tbody.innerHTML = "";
 
 	Object.keys(modeNames).forEach((mode) => {
-		if (mode === "outplay") return; // Outplay là chế độ cá nhân
+		if (mode === "outplay") return;
 		const data = serverHighScores[mode];
 		const tr = document.createElement("tr");
 		const scoreDisplay =
@@ -775,20 +774,25 @@ function clearAllBossSkillEffects() {
 	$("boss-arena-box")?.classList.remove("boss-stunned");
 }
 
-// ==========================================================
+// ==========================================
 // OUTPLAY YOURSELF (SOLO GHOST REPLAY & CHART ENGINE)
-// ==========================================================
+// ==========================================
 function setupOutplayToolbarEvents() {
 	$("outplay-select-mode")?.addEventListener("change", (e) => {
 		OutplaySession.mode = e.target.value;
 		initOutplayRound(false);
 	});
 
-	// KHI THAY ĐỔI THỜI GIAN: KHÔNG LOAD LẠI WORDS-DISPLAY
+	// KHI THAY ĐỔI THỜI GIAN: GIỮ NGUYÊN TEXT VÀ TỰ ĐỘNG FOCUS LẠI VÀO Ô GÕ PHÍM
 	$("outplay-select-duration")?.addEventListener("change", (e) => {
 		OutplaySession.duration = parseInt(e.target.value) || 30;
 		if (!OutplaySession.hasStartedTyping) {
 			$("timer").innerText = OutplaySession.duration;
+		}
+		// Đảm bảo không bị mất focus vào ô nhập liệu
+		const input = $("type-input");
+		if (input && !input.disabled) {
+			input.focus();
 		}
 	});
 
@@ -798,6 +802,7 @@ function setupOutplayToolbarEvents() {
 		if (customWrap) {
 			customWrap.classList.toggle("hidden", OutplaySession.ghostMode !== "custom");
 		}
+		$("type-input")?.focus();
 	});
 
 	$("outplay-custom-wpm-input")?.addEventListener("input", (e) => {
@@ -915,7 +920,10 @@ socket.on("outplay_words_ready", (data) => {
 	if (!OutplaySession.isActive) return;
 	currentWords = data.words || [];
 	renderWords();
-	requestAnimationFrame(() => updateCaretPosition(true));
+	requestAnimationFrame(() => {
+		updateCaretPosition(true);
+		$("type-input")?.focus();
+	});
 });
 
 function triggerOutplayFirstKeystroke() {
@@ -1575,7 +1583,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// BẮT PHÍM TẮT TOÀN CỤC: ESC ĐẦU HÀNG Ở MỌI CHẾ ĐỘ & TAB CHƠI LẠI
 	// ==========================================================
 	window.addEventListener("keydown", (e) => {
-		// PHÍM ESC: MỞ HOẶC ĐÓNG POPUP XÁC NHẬN ĐẦU HÀNG Ở MỌI CHẾ ĐỘ
 		if (e.key === "Escape") {
 			const surrenderModal = $("surrender-modal");
 			if (isPlaying && surrenderModal) {
@@ -3164,7 +3171,6 @@ function surrenderGame(isAFK = false) {
 		clearInterval(OutplaySession.liveSecondInterval);
 		stopGhostCaret();
 
-		// Tốc độ trước đó (lastRun) được gán là 0
 		OutplaySession.lastRun = {
 			netWpm: 0,
 			rawWpm: 0,
@@ -3175,7 +3181,6 @@ function surrenderGame(isAFK = false) {
 			keystrokeTrace: [],
 		};
 
-		// Tải lại màn chơi mới ngay lập tức
 		initOutplayRound(false);
 		return;
 	}
