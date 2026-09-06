@@ -1731,7 +1731,6 @@ function generateWords(lang, count, difficulty = "normal") {
 			typeof diffConfig.hardViNoDauRate === "number" ? diffConfig.hardViNoDauRate : 35;
 		const hardEnRate = typeof diffConfig.hardEnRate === "number" ? diffConfig.hardEnRate : 35;
 
-		// Kiểu sinh số cho Săn Boss: "number" (0-9) hoặc "fullsize"
 		const bossNumMode =
 			lang === "san_boss"
 				? diffConfig.numMode === "fullsize"
@@ -1942,7 +1941,7 @@ function broadcastAdminData() {
 	});
 }
 
-// 5. PHÒNG ĐẤU ENGINE
+// 5. PHÒNG ĐẤU ENGINE (MULTIPLAYER)
 const rooms = {
 	en: [],
 	vi_nodau: [],
@@ -2329,7 +2328,6 @@ function executeBossSkill(room, skill) {
 	} else if (skill === "shake") {
 		io.to(room.id).emit("boss_skill_cast", { skill: "shake", duration: boss.shakeDuration || 5 });
 	} else if (skill === "smoke") {
-		// KỸ NĂNG MỚI: BOM KHÓI MÙ (SMOKE BOMB)
 		io.to(room.id).emit("boss_skill_cast", { skill: "smoke", duration: boss.smokeDuration || 4 });
 	} else if (skill === "reverse") {
 		io.to(room.id).emit("boss_skill_cast", {
@@ -2442,6 +2440,29 @@ io.on("connection", (socket) => {
 		}
 		currentRoom = player = null;
 	}
+
+	// ==========================================================
+	// SỰ KIỆN CẤP PHÁT TỪ CHO CHẾ ĐỘ CHƠI ĐƠN "OUTPLAY YOURSELF"
+	// ==========================================================
+	socket.on("get_outplay_words", (data) => {
+		const mode = data.mode || "vi_dau";
+		const count = data.wordCount || 350;
+		let words = [];
+
+		if (mode === "numpad_number") {
+			words = generateWords("numpad", count, "number");
+		} else if (mode === "numpad_fullsize") {
+			words = generateWords("numpad", count, "fullsize");
+		} else if (mode === "vi_nodau") {
+			words = generateWords("vi_nodau", count);
+		} else if (mode === "en") {
+			words = generateWords("en", count);
+		} else {
+			words = generateWords("vi_dau", count);
+		}
+
+		socket.emit("outplay_words_ready", { words });
+	});
 
 	socket.on("admin_login", ({ password }) => {
 		const success = password === ADMIN_PASSWORD;

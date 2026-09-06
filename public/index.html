@@ -7,21 +7,21 @@
 
 		<meta
 			name="description"
-			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ và Săn Boss trực tuyến cực nhanh cùng bạn bè."
+			content="Thử thách luyện gõ 10 ngón, NumPad, Ngẫu Hứng, Đoán Chữ, Săn Boss và chế độ Outplay Yourself một mình đối đầu với bóng ma quá khứ."
 		/>
 		<meta
 			name="keywords"
-			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, fast typing challenge, săn boss"
+			content="luyện gõ phím, typing test, gõ 10 ngón, numpad test, đua gõ phím, đoán chữ, mystery word, outplay yourself, ghost caret, fast typing challenge, săn boss"
 		/>
 		<meta name="author" content="Nguyễn Duy Tiến (niTe)" />
 		<meta name="robots" content="index, follow" />
 		<meta name="theme-color" content="#e2b714" />
 
 		<meta property="og:type" content="website" />
-		<meta property="og:title" content="FASTTYPING CHALLENGE - Đua Gõ Phím & Săn Boss Trực Tuyến" />
+		<meta property="og:title" content="FASTTYPING CHALLENGE - Đua Gõ Phím & Outplay Yourself" />
 		<meta
 			property="og:description"
-			content="Tham gia phòng đua gõ chữ tiếng Việt, Đoán Chữ Bí Ẩn, Numpad và chế độ Co-op Săn Boss đỉnh cao cùng hàng trăm người chơi khác!"
+			content="Tham gia phòng đua gõ chữ tiếng Việt, Đoán Chữ, Săn Boss và chế độ Outplay Yourself solo đỉnh cao!"
 		/>
 		<meta property="og:image" content="/preview.png" />
 		<link rel="icon" type="image/x-icon" href="https://a.favicon.im/hey.com" />
@@ -121,6 +121,11 @@
 							<div class="mode-card" data-lang="san_boss">
 								<div class="icon">🐉</div>
 								<div class="title">Săn Boss</div>
+							</div>
+							<!-- CHẾ ĐỘ CHƠI ĐƠN: OUTPLAY YOURSELF -->
+							<div class="mode-card mode-card-outplay" data-lang="outplay">
+								<div class="icon">👻</div>
+								<div class="title">Outplay Yourself</div>
 							</div>
 						</div>
 					</section>
@@ -993,19 +998,23 @@
 			</div>
 		</div>
 
-		<!-- MODAL XÁC NHẬN ĐẦU HÀNG -->
+		<!-- MODAL XÁC NHẬN ĐẦU HÀNG (HỖ TRỢ ESC VÀ 2 BUTTON NẰM NGANG NHAU) -->
 		<div id="surrender-modal" class="custom-popup hidden">
 			<div class="popup-content surrender-popup-content">
 				<div class="popup-icon-badge danger">🏳️</div>
 				<h3 class="surrender-title">XÁC NHẬN ĐẦU HÀNG</h3>
-				<p class="surrender-desc">
-					Bạn có chắc chắn muốn bỏ cuộc và nhường phần thắng cho đối thủ?
+				<p id="surrender-modal-desc" class="surrender-desc">
+					Bạn có chắc chắn muốn bỏ cuộc lượt chơi này?
 				</p>
 				<div class="surrender-actions-parallel">
 					<button id="btn-confirm-surrender" class="cyber-btn surrender-btn-danger">
 						🏳️ ĐẦU HÀNG
 					</button>
-					<button class="cyber-btn surrender-btn-cancel" data-close="surrender-modal">
+					<button
+						id="btn-cancel-surrender"
+						class="cyber-btn surrender-btn-cancel"
+						data-close="surrender-modal"
+					>
 						⚔️ TIẾP TỤC CHIẾN
 					</button>
 				</div>
@@ -1014,11 +1023,72 @@
 
 		<!-- BÀN CHƠI CHÍNH -->
 		<div id="game-container" class="screen hidden">
+			<!-- THANH ĐIỀU KHIỂN TRỰC TIẾP OUTPLAY YOURSELF (3 DROPDOWNS + CUSTOM WPM) -->
+			<div id="outplay-hud-toolbar" class="cyber-box outplay-hud-bar hidden">
+				<div class="outplay-hud-left">
+					<span class="outplay-badge-label">👻 OUTPLAY YOURSELF</span>
+				</div>
+				<div class="outplay-hud-controls">
+					<!-- DROPDOWN 1: KIỂU CHƠI / NGÔN NGỮ -->
+					<div class="outplay-control-group">
+						<span class="outplay-group-label">KIỂU:</span>
+						<select id="outplay-select-mode" class="outplay-select">
+							<option value="vi_dau" selected>🇻🇳 Tiếng Việt</option>
+							<option value="vi_nodau">🔤 Không Dấu</option>
+							<option value="en">🔠 English</option>
+							<option value="numpad_number">🔢 Numpad (Chỉ Số)</option>
+							<option value="numpad_fullsize">🖩 Numpad (Fullsize)</option>
+						</select>
+					</div>
+
+					<!-- DROPDOWN 2: THỜI GIAN THI ĐẤU -->
+					<div class="outplay-control-group">
+						<span class="outplay-group-label">THỜI GIAN:</span>
+						<select id="outplay-select-duration" class="outplay-select">
+							<option value="30" selected>⏱️ 30s</option>
+							<option value="60">⏱️ 60s</option>
+							<option value="90">⏱️ 90s</option>
+						</select>
+					</div>
+
+					<!-- DROPDOWN 3: TỐC ĐỘ CON TRỎ QUÁ KHỨ (GHOST CARET) -->
+					<div class="outplay-control-group">
+						<span class="outplay-group-label">BÓNG MA:</span>
+						<select id="outplay-select-ghost-mode" class="outplay-select">
+							<option value="last" selected>🔄 Tốc độ gần nhất</option>
+							<option value="pb">👑 Tốc độ cao nhất</option>
+							<option value="custom">🎯 Tốc độ cố định</option>
+						</select>
+					</div>
+
+					<!-- Ô NHẬP TỐC ĐỘ CỐ ĐỊNH (KHI CHỌN MỤC CUSTOM) -->
+					<div id="outplay-custom-wpm-wrapper" class="outplay-control-group hidden">
+						<input
+							type="number"
+							id="outplay-custom-wpm-input"
+							class="outplay-wpm-input"
+							value="100"
+							min="20"
+							max="300"
+							step="5"
+							title="Nhập WPM mong muốn của con trỏ quá khứ"
+						/>
+						<span class="outplay-wpm-unit">WPM</span>
+					</div>
+				</div>
+			</div>
+
 			<header class="cyber-box game-hud-header">
 				<div class="logo-hud">⚡ FASTTYPING</div>
 				<div id="status-box" class="game-status-indicator">ĐANG THI ĐẤU</div>
 				<div class="game-header-actions">
-					<button id="btn-surrender" class="btn-small btn-surrender-style">🏳️ ĐẦU HÀNG</button>
+					<button
+						id="btn-surrender"
+						class="btn-small btn-surrender-style"
+						title="Nhấn phím Esc để đầu hàng nhanh"
+					>
+						🏳️ ĐẦU HÀNG (Esc)
+					</button>
 					<div id="timer-box" class="game-timer-badge">⏱️ <span id="timer">--</span>s</div>
 				</div>
 			</header>
@@ -1110,7 +1180,10 @@
 					</div>
 
 					<div id="words-display" class="words-display">
+						<!-- CON TRỎ LIVE CỦA NGƯỜI CHƠI -->
 						<div id="caret" class="custom-caret hidden"></div>
+						<!-- CON TRỎ QUÁ KHỨ (GHOST CARET) CHẾ ĐỘ OUTPLAY YOURSELF -->
+						<div id="ghost-caret" class="ghost-caret hidden"></div>
 					</div>
 				</div>
 
@@ -1158,21 +1231,73 @@
 					🏆 BẢNG TỔNG KẾT TRẬN ĐẤU
 				</h2>
 				<p id="boss-result-subtitle" class="boss-result-subtitle hidden"></p>
-				<table id="summary-table">
-					<thead id="summary-thead">
-						<tr>
-							<th>HẠNG</th>
-							<th>TÊN</th>
-							<th>KÝ TỰ ĐÚNG</th>
-							<th>TỐC ĐỘ</th>
-							<th>LỖI</th>
-						</tr>
-					</thead>
-					<tbody id="summary-tbody"></tbody>
-				</table>
-				<div class="summary-actions-row">
-					<button id="btn-play-again" class="cyber-btn btn-play-again-style">🔄 CHƠI TIẾP</button>
-					<button id="btn-home" class="cyber-btn btn-secondary-style">🏠 TRANG CHỦ</button>
+
+				<!-- BẢNG TỔNG KẾT CHO CÁC CHẾ ĐỘ MULTIPLAYER -->
+				<div id="multiplayer-summary-view">
+					<table id="summary-table">
+						<thead id="summary-thead">
+							<tr>
+								<th>HẠNG</th>
+								<th>TÊN</th>
+								<th>KÝ TỰ ĐÚNG</th>
+								<th>TỐC ĐỘ</th>
+								<th>LỖI</th>
+							</tr>
+						</thead>
+						<tbody id="summary-tbody"></tbody>
+					</table>
+					<div class="summary-actions-row">
+						<button id="btn-play-again" class="cyber-btn btn-play-again-style">🔄 CHƠI TIẾP</button>
+						<button id="btn-home" class="cyber-btn btn-secondary-style">🏠 TRANG CHỦ</button>
+					</div>
+				</div>
+
+				<!-- BẢNG TỔNG KẾT BIỂU ĐỒ CHUYÊN SÂU CHẾ ĐỘ OUTPLAY YOURSELF (MONKEYTYPE STYLE) -->
+				<div id="outplay-summary-view" class="outplay-summary-container hidden">
+					<div class="outplay-stats-overview">
+						<div class="outplay-stat-card">
+							<span class="stat-label">WPM THỰC TẾ</span>
+							<span id="outplay-res-wpm" class="stat-value main">0</span>
+						</div>
+						<div class="outplay-stat-card">
+							<span class="stat-label">RAW WPM</span>
+							<span id="outplay-res-raw" class="stat-value">0</span>
+						</div>
+						<div class="outplay-stat-card">
+							<span class="stat-label">ĐỘ CHÍNH XÁC</span>
+							<span id="outplay-res-acc" class="stat-value">100%</span>
+						</div>
+						<div class="outplay-stat-card">
+							<span class="stat-label">LỖI ĐÃ PHẠM</span>
+							<span id="outplay-res-errors" class="stat-value error">0</span>
+						</div>
+						<div class="outplay-stat-card">
+							<span class="stat-label">KỶ LỤC PHIÊN (PB)</span>
+							<span id="outplay-res-pb" class="stat-value pb">0 WPM</span>
+						</div>
+					</div>
+
+					<div class="outplay-chart-wrapper">
+						<div class="chart-legend-row">
+							<span class="legend-item"><span class="legend-dot main"></span> Net WPM</span>
+							<span class="legend-item"><span class="legend-dot raw"></span> Raw WPM</span>
+							<span class="legend-item"><span class="legend-dot error"></span> ❌ Lỗi Gõ Sai</span>
+							<span class="legend-item"><span class="legend-dot ghost"></span> 👻 Ghost Pace</span>
+						</div>
+						<canvas id="outplay-chart-canvas" width="820" height="240"></canvas>
+					</div>
+
+					<div class="summary-actions-row outplay-actions-row">
+						<button id="btn-outplay-replay" class="cyber-btn btn-primary-style">
+							🔄 CHƠI TIẾP (LƯU TỐC ĐỘ)
+						</button>
+						<button id="btn-outplay-reset" class="cyber-btn btn-surrender-style">
+							🗑️ RESET TỐC ĐỘ
+						</button>
+						<button id="btn-outplay-home" class="cyber-btn btn-secondary-style">
+							🏠 TRANG CHỦ
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

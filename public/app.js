@@ -31,14 +31,7 @@ const MONKEY_THEMES = [
 		sub: "#646669",
 		text: "#d1d0c5",
 	},
-	{
-		id: "carbon",
-		name: "Carbon",
-		bg: "#313131",
-		main: "#f66e0d",
-		sub: "#616161",
-		text: "#f5e6c8",
-	},
+	{ id: "carbon", name: "Carbon", bg: "#313131", main: "#f66e0d", sub: "#616161", text: "#f5e6c8" },
 	{
 		id: "dracula",
 		name: "Dracula",
@@ -47,14 +40,7 @@ const MONKEY_THEMES = [
 		sub: "#6272a4",
 		text: "#f8f8f2",
 	},
-	{
-		id: "nord",
-		name: "Nord",
-		bg: "#2e3440",
-		main: "#88c0d0",
-		sub: "#4c566a",
-		text: "#eceff4",
-	},
+	{ id: "nord", name: "Nord", bg: "#2e3440", main: "#88c0d0", sub: "#4c566a", text: "#eceff4" },
 	{
 		id: "botanical",
 		name: "Botanical",
@@ -63,22 +49,8 @@ const MONKEY_THEMES = [
 		sub: "#495e5b",
 		text: "#eaf1f1",
 	},
-	{
-		id: "olivia",
-		name: "Olivia",
-		bg: "#1c1b1d",
-		main: "#deaf9d",
-		sub: "#655e60",
-		text: "#f2efed",
-	},
-	{
-		id: "matrix",
-		name: "Matrix",
-		bg: "#000000",
-		main: "#15ff00",
-		sub: "#008000",
-		text: "#00ff41",
-	},
+	{ id: "olivia", name: "Olivia", bg: "#1c1b1d", main: "#deaf9d", sub: "#655e60", text: "#f2efed" },
+	{ id: "matrix", name: "Matrix", bg: "#000000", main: "#15ff00", sub: "#008000", text: "#00ff41" },
 	{
 		id: "cyberpunk",
 		name: "Cyberpunk",
@@ -87,14 +59,7 @@ const MONKEY_THEMES = [
 		sub: "#53647d",
 		text: "#f0f6fc",
 	},
-	{
-		id: "bento",
-		name: "Bento",
-		bg: "#2d394d",
-		main: "#ff7a90",
-		sub: "#5c6e8e",
-		text: "#fffaf8",
-	},
+	{ id: "bento", name: "Bento", bg: "#2d394d", main: "#ff7a90", sub: "#5c6e8e", text: "#fffaf8" },
 	{
 		id: "vaporwave",
 		name: "Vaporwave",
@@ -119,14 +84,7 @@ const MONKEY_THEMES = [
 		sub: "#7b889b",
 		text: "#131927",
 	},
-	{
-		id: "muted",
-		name: "Muted",
-		bg: "#525252",
-		main: "#c4c4c4",
-		sub: "#8a8a8a",
-		text: "#f0f0f0",
-	},
+	{ id: "muted", name: "Muted", bg: "#525252", main: "#c4c4c4", sub: "#8a8a8a", text: "#f0f0f0" },
 	{
 		id: "modern_dolch",
 		name: "Modern Dolch",
@@ -135,14 +93,7 @@ const MONKEY_THEMES = [
 		sub: "#636c7a",
 		text: "#e5e9f0",
 	},
-	{
-		id: "laser",
-		name: "Laser",
-		bg: "#221b44",
-		main: "#00e8c6",
-		sub: "#b82375",
-		text: "#dbeafe",
-	},
+	{ id: "laser", name: "Laser", bg: "#221b44", main: "#00e8c6", sub: "#b82375", text: "#dbeafe" },
 	{
 		id: "dualshot",
 		name: "Dualshot",
@@ -151,14 +102,7 @@ const MONKEY_THEMES = [
 		sub: "#a3a3a3",
 		text: "#ffffff",
 	},
-	{
-		id: "taro",
-		name: "Taro",
-		bg: "#b388eb",
-		main: "#ffe1a8",
-		sub: "#6c4675",
-		text: "#1b1b2f",
-	},
+	{ id: "taro", name: "Taro", bg: "#b388eb", main: "#ffe1a8", sub: "#6c4675", text: "#1b1b2f" },
 	{
 		id: "red_samurai",
 		name: "Red Samurai",
@@ -418,11 +362,37 @@ let currentWords = [],
 	wordIndex = 0,
 	correctChars = 0,
 	totalErrors = 0,
+	rawCharsCount = 0,
 	isPlaying = false;
 let startTime = null,
 	timerInterval = null,
 	afkTimer = null;
 let currentLobbyPlayers = [];
+
+// ==========================================
+// OUTPLAY YOURSELF (SOLO GHOST ENGINE) STATE
+// ==========================================
+const OutplaySession = {
+	isActive: false,
+	mode: "vi_dau",
+	duration: 30,
+	ghostMode: "last", // 'last' | 'pb' | 'custom'
+	customWpm: 100,
+	hasStartedTyping: false,
+	lastRun: null, // { netWpm, rawWpm, accuracy, errors, timeline: [], errorMarkers: [] }
+	sessionPB: null,
+	currentRun: {
+		netWpm: 0,
+		rawWpm: 0,
+		accuracy: 100,
+		errors: 0,
+		timeline: [], // [{ second, netWpm, rawWpm, ghostWpm }]
+		errorMarkers: [], // [second1, second2...]
+		keystrokeTrace: [], // [{ timeMs, charIndex }]
+	},
+	ghostRafId: null,
+	liveSecondInterval: null,
+};
 
 // Chế độ Ngẫu Hứng & Đoán Chữ & Săn Boss
 let ngauHungTargetWord = "",
@@ -522,6 +492,7 @@ const modeNames = {
 	ngau_hung: "🎲 Ngẫu Hứng",
 	doan_chu: "🧩 Đoán Chữ",
 	san_boss: "🐉 Săn Boss",
+	outplay: "👻 Outplay Yourself",
 };
 
 const difficultyMeta = {
@@ -662,7 +633,7 @@ function updateCaretPosition(instant = false) {
 	const wordRect = currentWordEl.getBoundingClientRect();
 
 	let targetX = 0;
-	let targetHeight = wordRect.height || 32;
+	let targetHeight = wordRect.height || 36;
 	const CARET_GAP = 2;
 
 	if (inputVal.length < letterElements.length) {
@@ -683,7 +654,7 @@ function updateCaretPosition(instant = false) {
 
 	caret.style.left = `${Math.round(targetX)}px`;
 	caret.style.top = `${Math.round(targetY)}px`;
-	caret.style.height = `${Math.round(Math.max(24, targetHeight))}px`;
+	caret.style.height = `${Math.round(Math.max(26, targetHeight))}px`;
 
 	caret.classList.remove("hidden");
 
@@ -699,9 +670,7 @@ function handleSmoothLineShift(currentWordEl) {
 	const display = $("words-display");
 	if (!display || !currentWordEl) return;
 
-	const firstWord = display.firstElementChild?.classList.contains("custom-caret")
-		? display.children[1]
-		: display.firstElementChild;
+	const firstWord = display.querySelector(".word");
 	if (!firstWord) return;
 
 	if (firstLineOffsetTop === 0 || wordIndex === 0) {
@@ -711,8 +680,9 @@ function handleSmoothLineShift(currentWordEl) {
 	const currentWordTop = currentWordEl.offsetTop;
 	const diffY = currentWordTop - firstLineOffsetTop;
 
-	if (diffY > 38) {
-		currentViewportOffsetY = -(diffY - 6);
+	// Điều chỉnh ngưỡng chuyển dòng phù hợp với chữ to hơn
+	if (diffY > 44) {
+		currentViewportOffsetY = -(diffY - 8);
 	} else {
 		currentViewportOffsetY = 0;
 	}
@@ -726,6 +696,7 @@ function loadHighScores() {
 	tbody.innerHTML = "";
 
 	Object.keys(modeNames).forEach((mode) => {
+		if (mode === "outplay") return; // Outplay là chế độ cá nhân
 		const data = serverHighScores[mode];
 		const tr = document.createElement("tr");
 		const scoreDisplay =
@@ -804,6 +775,515 @@ function clearAllBossSkillEffects() {
 	$("boss-arena-box")?.classList.remove("boss-stunned");
 }
 
+// ==========================================================
+// OUTPLAY YOURSELF (SOLO GHOST REPLAY & CHART ENGINE)
+// ==========================================================
+function setupOutplayToolbarEvents() {
+	$("outplay-select-mode")?.addEventListener("change", (e) => {
+		OutplaySession.mode = e.target.value;
+		initOutplayRound(false);
+	});
+
+	// KHI THAY ĐỔI THỜI GIAN: KHÔNG LOAD LẠI WORDS-DISPLAY
+	$("outplay-select-duration")?.addEventListener("change", (e) => {
+		OutplaySession.duration = parseInt(e.target.value) || 30;
+		if (!OutplaySession.hasStartedTyping) {
+			$("timer").innerText = OutplaySession.duration;
+		}
+	});
+
+	$("outplay-select-ghost-mode")?.addEventListener("change", (e) => {
+		OutplaySession.ghostMode = e.target.value;
+		const customWrap = $("outplay-custom-wpm-wrapper");
+		if (customWrap) {
+			customWrap.classList.toggle("hidden", OutplaySession.ghostMode !== "custom");
+		}
+	});
+
+	$("outplay-custom-wpm-input")?.addEventListener("input", (e) => {
+		OutplaySession.customWpm = Math.max(20, Math.min(300, parseInt(e.target.value) || 100));
+	});
+
+	$("btn-outplay-replay")?.addEventListener("click", () => {
+		commitOutplayRunToSession();
+		$("summary-modal")?.classList.add("hidden");
+		$("game-container")?.classList.remove("hidden");
+		initOutplayRound(false);
+	});
+
+	$("btn-outplay-reset")?.addEventListener("click", () => {
+		OutplaySession.lastRun = null;
+		OutplaySession.sessionPB = null;
+		$("summary-modal")?.classList.add("hidden");
+		$("game-container")?.classList.remove("hidden");
+		initOutplayRound(false);
+	});
+
+	$("btn-outplay-home")?.addEventListener("click", () => {
+		OutplaySession.isActive = false;
+		OutplaySession.lastRun = null;
+		OutplaySession.sessionPB = null;
+		stopGhostCaret();
+		clearInterval(OutplaySession.liveSecondInterval);
+
+		["game-container", "summary-modal"].forEach((id) => $(id)?.classList.add("hidden"));
+		$("login-modal")?.classList.remove("hidden");
+		updateThemeFontButtonsState();
+	});
+}
+
+function startOutplaySoloDirect() {
+	OutplaySession.isActive = true;
+	currentLanguage = "outplay";
+
+	["login-modal", "lobby-screen", "summary-modal"].forEach((id) => $(id)?.classList.add("hidden"));
+	["game-container"].forEach((id) => $(id)?.classList.remove("hidden"));
+
+	$("chat-container")?.classList.add("hidden");
+	$("leaderboard")?.classList.add("hidden");
+	$("boss-arena-box")?.classList.add("hidden");
+	$("ngau-hung-status")?.classList.add("hidden");
+	$("doan-chu-status")?.classList.add("hidden");
+	$("outplay-hud-toolbar")?.classList.remove("hidden");
+
+	if ($("outplay-select-mode")) $("outplay-select-mode").value = OutplaySession.mode;
+	if ($("outplay-select-duration"))
+		$("outplay-select-duration").value = OutplaySession.duration.toString();
+	if ($("outplay-select-ghost-mode"))
+		$("outplay-select-ghost-mode").value = OutplaySession.ghostMode;
+	if ($("outplay-custom-wpm-input"))
+		$("outplay-custom-wpm-input").value = OutplaySession.customWpm.toString();
+	$("outplay-custom-wpm-wrapper")?.classList.toggle(
+		"hidden",
+		OutplaySession.ghostMode !== "custom",
+	);
+
+	initOutplayRound(false);
+}
+
+function initOutplayRound(keepWords = false) {
+	stopGhostCaret();
+	clearInterval(timerInterval);
+	clearInterval(OutplaySession.liveSecondInterval);
+	clearAllBossSkillEffects();
+
+	isPlaying = true;
+	OutplaySession.hasStartedTyping = false;
+	wordIndex = correctChars = totalErrors = rawCharsCount = 0;
+	currentViewportOffsetY = 0;
+	firstLineOffsetTop = 0;
+	lastCaretWordTop = null;
+
+	OutplaySession.currentRun = {
+		netWpm: 0,
+		rawWpm: 0,
+		accuracy: 100,
+		errors: 0,
+		timeline: [],
+		errorMarkers: [],
+		keystrokeTrace: [],
+	};
+
+	$("timer").innerText = OutplaySession.duration;
+	$("status-box").innerText = "GÕ KÝ TỰ ĐẦU TIÊN ĐỂ BẮT ĐẦU";
+
+	const isNumpad = OutplaySession.mode.startsWith("numpad");
+	$("words-display").className = `words-display ${isNumpad ? "numpad-mode-display" : ""}`;
+	$("words-display").style.transform = "translate3d(0, 0, 0)";
+
+	const input = $("type-input");
+	input.value = "";
+	input.disabled = false;
+	input.placeholder = "Bắt đầu gõ để kích hoạt đồng hồ...";
+	input.focus();
+
+	if (!keepWords) {
+		socket.emit("get_outplay_words", {
+			mode: OutplaySession.mode,
+			wordCount: 350,
+		});
+	} else {
+		renderWords();
+		requestAnimationFrame(() => updateCaretPosition(true));
+	}
+
+	$("ghost-caret")?.classList.add("hidden");
+	$("caret")?.classList.add("hidden");
+}
+
+socket.on("outplay_words_ready", (data) => {
+	if (!OutplaySession.isActive) return;
+	currentWords = data.words || [];
+	renderWords();
+	requestAnimationFrame(() => updateCaretPosition(true));
+});
+
+function triggerOutplayFirstKeystroke() {
+	if (OutplaySession.hasStartedTyping) return;
+	OutplaySession.hasStartedTyping = true;
+	startTime = Date.now();
+	$("status-box").innerText = "ĐANG THI ĐẤU (SOLO)";
+
+	startOutplayCountdowns();
+	startGhostCaretRunner();
+}
+
+function startOutplayCountdowns() {
+	let timeLeft = OutplaySession.duration;
+	let secondsElapsed = 0;
+
+	clearInterval(timerInterval);
+	clearInterval(OutplaySession.liveSecondInterval);
+
+	timerInterval = setInterval(() => {
+		timeLeft--;
+		$("timer").innerText = Math.max(0, timeLeft);
+
+		if (timeLeft <= 0) {
+			clearInterval(timerInterval);
+			clearInterval(OutplaySession.liveSecondInterval);
+			finishOutplayGame();
+		}
+	}, 1000);
+
+	OutplaySession.liveSecondInterval = setInterval(() => {
+		secondsElapsed++;
+		const minutes = secondsElapsed / 60;
+		const netWpm = Math.max(0, Math.round(correctChars / 5 / minutes));
+		const rawWpm = Math.max(0, Math.round(rawCharsCount / 5 / minutes));
+
+		let ghostWpm = 0;
+		if (OutplaySession.ghostMode === "custom") {
+			ghostWpm = OutplaySession.customWpm;
+		} else if (OutplaySession.ghostMode === "pb" && OutplaySession.sessionPB) {
+			ghostWpm = OutplaySession.sessionPB.netWpm;
+		} else if (OutplaySession.ghostMode === "last" && OutplaySession.lastRun) {
+			ghostWpm = OutplaySession.lastRun.netWpm;
+		}
+
+		OutplaySession.currentRun.timeline.push({
+			second: secondsElapsed,
+			netWpm,
+			rawWpm,
+			ghostWpm,
+		});
+	}, 1000);
+}
+
+function startGhostCaretRunner() {
+	const ghostCaret = $("ghost-caret");
+	if (!ghostCaret) return;
+
+	let referenceTrace = null;
+	let constantPaceCharsPerMs = 0;
+
+	if (OutplaySession.ghostMode === "custom") {
+		constantPaceCharsPerMs = (OutplaySession.customWpm * 5) / 60000;
+	} else if (OutplaySession.ghostMode === "pb" && OutplaySession.sessionPB) {
+		referenceTrace = OutplaySession.sessionPB.keystrokeTrace;
+	} else if (OutplaySession.ghostMode === "last" && OutplaySession.lastRun) {
+		referenceTrace = OutplaySession.lastRun.keystrokeTrace;
+	}
+
+	if (OutplaySession.ghostMode !== "custom" && (!referenceTrace || referenceTrace.length === 0)) {
+		ghostCaret.classList.add("hidden");
+		return;
+	}
+
+	ghostCaret.classList.remove("hidden");
+	const ghostStartTime = performance.now();
+
+	function ghostFrame(now) {
+		if (!isPlaying || !OutplaySession.isActive || !OutplaySession.hasStartedTyping) {
+			ghostCaret.classList.add("hidden");
+			return;
+		}
+
+		const elapsedMs = now - ghostStartTime;
+		let targetCharIdx = 0;
+
+		if (OutplaySession.ghostMode === "custom") {
+			targetCharIdx = Math.floor(elapsedMs * constantPaceCharsPerMs);
+		} else if (referenceTrace) {
+			for (let i = referenceTrace.length - 1; i >= 0; i--) {
+				if (elapsedMs >= referenceTrace[i].timeMs) {
+					targetCharIdx = referenceTrace[i].charIndex;
+					break;
+				}
+			}
+		}
+
+		positionGhostCaretAtGlobalChar(targetCharIdx);
+		OutplaySession.ghostRafId = requestAnimationFrame(ghostFrame);
+	}
+
+	OutplaySession.ghostRafId = requestAnimationFrame(ghostFrame);
+}
+
+function stopGhostCaret() {
+	if (OutplaySession.ghostRafId) {
+		cancelAnimationFrame(OutplaySession.ghostRafId);
+		OutplaySession.ghostRafId = null;
+	}
+	$("ghost-caret")?.classList.add("hidden");
+}
+
+function positionGhostCaretAtGlobalChar(globalCharIndex) {
+	const ghostCaret = $("ghost-caret");
+	const display = $("words-display");
+	if (!ghostCaret || !display) return;
+
+	let accumulated = 0;
+	let targetWordEl = null;
+	let targetLetterOffset = 0;
+
+	for (let i = 0; i < currentWords.length; i++) {
+		const wLen = currentWords[i].length + 1;
+		if (globalCharIndex < accumulated + wLen) {
+			targetWordEl = $(`word-${i}`);
+			targetLetterOffset = globalCharIndex - accumulated;
+			break;
+		}
+		accumulated += wLen;
+	}
+
+	if (!targetWordEl) return;
+
+	const displayRect = display.getBoundingClientRect();
+	const wordRect = targetWordEl.getBoundingClientRect();
+	const letters = targetWordEl.querySelectorAll(".letter");
+
+	let posX = 0;
+	if (targetLetterOffset < letters.length) {
+		const letterRect = letters[targetLetterOffset].getBoundingClientRect();
+		posX = letterRect.left - displayRect.left;
+	} else {
+		posX = wordRect.right - displayRect.left;
+	}
+	const posY = wordRect.top - displayRect.top;
+
+	ghostCaret.style.left = `${Math.round(posX)}px`;
+	ghostCaret.style.top = `${Math.round(posY)}px`;
+	ghostCaret.style.height = `${Math.round(wordRect.height || 36)}px`;
+}
+
+function commitOutplayRunToSession() {
+	if (!OutplaySession.currentRun) return;
+
+	const runData = { ...OutplaySession.currentRun };
+	OutplaySession.lastRun = runData;
+
+	if (!OutplaySession.sessionPB || runData.netWpm > OutplaySession.sessionPB.netWpm) {
+		OutplaySession.sessionPB = runData;
+	}
+}
+
+function finishOutplayGame() {
+	isPlaying = false;
+	updateThemeFontButtonsState();
+	stopGhostCaret();
+	clearInterval(timerInterval);
+	clearInterval(OutplaySession.liveSecondInterval);
+	$("caret")?.classList.add("hidden");
+	$("type-input").disabled = true;
+	$("status-box").innerText = "HOÀN THÀNH";
+
+	const totalSecs = OutplaySession.duration;
+	const minutes = totalSecs / 60;
+	const netWpm = Math.max(0, Math.round(correctChars / 5 / minutes));
+	const rawWpm = Math.max(0, Math.round(rawCharsCount / 5 / minutes));
+	const accuracy =
+		rawCharsCount > 0 ? Math.max(0, Math.round((correctChars / rawCharsCount) * 100)) : 100;
+
+	OutplaySession.currentRun.netWpm = netWpm;
+	OutplaySession.currentRun.rawWpm = rawWpm;
+	OutplaySession.currentRun.accuracy = accuracy;
+	OutplaySession.currentRun.errors = totalErrors;
+
+	showOutplaySummaryView();
+}
+
+function showOutplaySummaryView() {
+	$("game-container")?.classList.add("hidden");
+	$("summary-modal")?.classList.remove("hidden");
+
+	$("multiplayer-summary-view")?.classList.add("hidden");
+	$("outplay-summary-view")?.classList.remove("hidden");
+
+	const res = OutplaySession.currentRun;
+	if ($("outplay-res-wpm")) $("outplay-res-wpm").innerText = res.netWpm;
+	if ($("outplay-res-raw")) $("outplay-res-raw").innerText = res.rawWpm;
+	if ($("outplay-res-acc")) $("outplay-res-acc").innerText = `${res.accuracy}%`;
+	if ($("outplay-res-errors")) $("outplay-res-errors").innerText = res.errors;
+
+	const currentPbWpm = OutplaySession.sessionPB
+		? Math.max(OutplaySession.sessionPB.netWpm, res.netWpm)
+		: res.netWpm;
+	if ($("outplay-res-pb")) $("outplay-res-pb").innerText = `${currentPbWpm} WPM`;
+
+	$("summary-modal-title").innerText = "⚡ PHÂN TÍCH HIỆU SUẤT GÕ PHÍM";
+
+	requestAnimationFrame(() => renderOutplayCanvasChart());
+}
+
+function renderOutplayCanvasChart() {
+	const canvas = $("outplay-chart-canvas");
+	if (!canvas) return;
+
+	const ctx = canvas.getContext("2d");
+	const dpr = window.devicePixelRatio || 1;
+	const rect = canvas.getBoundingClientRect();
+
+	canvas.width = rect.width * dpr;
+	canvas.height = rect.height * dpr;
+	ctx.scale(dpr, dpr);
+
+	const width = rect.width;
+	const height = rect.height;
+	ctx.clearRect(0, 0, width, height);
+
+	const timeline = OutplaySession.currentRun.timeline || [];
+	const errorMarkers = OutplaySession.currentRun.errorMarkers || [];
+	const totalSeconds = OutplaySession.duration;
+
+	let maxWpm = 60;
+	timeline.forEach((t) => {
+		if (t.netWpm > maxWpm) maxWpm = t.netWpm;
+		if (t.rawWpm > maxWpm) maxWpm = t.rawWpm;
+		if (t.ghostWpm > maxWpm) maxWpm = t.ghostWpm;
+	});
+	maxWpm = Math.ceil((maxWpm + 15) / 20) * 20;
+
+	const padLeft = 45;
+	const padRight = 25;
+	const padTop = 20;
+	const padBottom = 30;
+	const plotW = width - padLeft - padRight;
+	const plotH = height - padTop - padBottom;
+
+	// 1. Lưới ngang
+	ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+	ctx.lineWidth = 1;
+	ctx.fillStyle = "rgba(150, 150, 150, 0.7)";
+	ctx.font = "10px Lexend, sans-serif";
+	ctx.textAlign = "right";
+	ctx.textBaseline = "middle";
+
+	const gridSteps = 4;
+	for (let i = 0; i <= gridSteps; i++) {
+		const val = Math.round((maxWpm / gridSteps) * i);
+		const y = padTop + plotH - (val / maxWpm) * plotH;
+		ctx.beginPath();
+		ctx.moveTo(padLeft, y);
+		ctx.lineTo(width - padRight, y);
+		ctx.stroke();
+		ctx.fillText(val.toString(), padLeft - 8, y);
+	}
+
+	// 2. Trục X
+	ctx.textAlign = "center";
+	ctx.textBaseline = "top";
+	const timeSteps = totalSeconds <= 30 ? 5 : totalSeconds <= 60 ? 10 : 15;
+	for (let s = 0; s <= totalSeconds; s += timeSteps) {
+		const x = padLeft + (s / totalSeconds) * plotW;
+		ctx.fillText(`${s}s`, x, height - padBottom + 8);
+	}
+
+	const getX = (sec) => padLeft + (sec / totalSeconds) * plotW;
+	const getY = (wpm) => padTop + plotH - (Math.min(maxWpm, wpm) / maxWpm) * plotH;
+
+	// 3. Ghost Pace
+	if (timeline.some((t) => t.ghostWpm > 0)) {
+		ctx.save();
+		ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+		ctx.lineWidth = 2;
+		ctx.setLineDash([4, 4]);
+		ctx.beginPath();
+		timeline.forEach((t, idx) => {
+			const x = getX(t.second);
+			const y = getY(t.ghostWpm);
+			if (idx === 0) ctx.moveTo(x, y);
+			else ctx.lineTo(x, y);
+		});
+		ctx.stroke();
+		ctx.restore();
+	}
+
+	// 4. Raw WPM
+	const subColor =
+		getComputedStyle(document.documentElement).getPropertyValue("--sub-color").trim() || "#646669";
+	ctx.strokeStyle = subColor;
+	ctx.lineWidth = 1.5;
+	ctx.beginPath();
+	timeline.forEach((t, idx) => {
+		const x = getX(t.second);
+		const y = getY(t.rawWpm);
+		if (idx === 0) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	});
+	ctx.stroke();
+
+	// 5. Net WPM
+	const mainColor =
+		getComputedStyle(document.documentElement).getPropertyValue("--main-color").trim() || "#e2b714";
+	ctx.strokeStyle = mainColor;
+	ctx.lineWidth = 2.8;
+	ctx.lineJoin = "round";
+	ctx.beginPath();
+	timeline.forEach((t, idx) => {
+		const x = getX(t.second);
+		const y = getY(t.netWpm);
+		if (idx === 0) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	});
+	ctx.stroke();
+
+	if (timeline.length > 0) {
+		ctx.save();
+		const grad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
+		grad.addColorStop(0, "rgba(226, 183, 20, 0.2)");
+		grad.addColorStop(1, "rgba(226, 183, 20, 0)");
+		ctx.fillStyle = grad;
+		ctx.beginPath();
+		ctx.moveTo(getX(timeline[0].second), getY(timeline[0].netWpm));
+		timeline.forEach((t) => ctx.lineTo(getX(t.second), getY(t.netWpm)));
+		ctx.lineTo(getX(timeline[timeline.length - 1].second), padTop + plotH);
+		ctx.lineTo(getX(timeline[0].second), padTop + plotH);
+		ctx.closePath();
+		ctx.fill();
+		ctx.restore();
+	}
+
+	// 6. Error Markers ❌
+	const errColor =
+		getComputedStyle(document.documentElement).getPropertyValue("--error-color").trim() ||
+		"#ca4754";
+	ctx.fillStyle = errColor;
+	ctx.font = "bold 13px Inter, sans-serif";
+	ctx.textAlign = "center";
+	ctx.textBaseline = "middle";
+
+	errorMarkers.forEach((sec) => {
+		const x = getX(sec);
+		const point = timeline.find((t) => t.second === sec);
+		const y = point ? getY(point.netWpm) : padTop + plotH / 2;
+
+		ctx.beginPath();
+		ctx.arc(x, y - 10, 8, 0, Math.PI * 2);
+		ctx.fillStyle = "rgba(202, 71, 84, 0.2)";
+		ctx.fill();
+		ctx.strokeStyle = errColor;
+		ctx.lineWidth = 1.2;
+		ctx.stroke();
+
+		ctx.fillStyle = errColor;
+		ctx.fillText("✕", x, y - 10);
+	});
+}
+
+// ==========================================
+// KHỞI TẠO VÀ LẮNG NGHE SỰ KIỆN GIAO DIỆN
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
 	applyTheme(currentTheme);
 	applyFont(currentFont);
@@ -820,10 +1300,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	initBotWorker();
 	setupEmojiPicker();
 	setupBotModal();
+	setupOutplayToolbarEvents();
 
 	document.addEventListener("click", (e) => {
 		const closeBtn = e.target.closest("[data-close]");
-		if (closeBtn) $(closeBtn.dataset.close)?.classList.add("hidden");
+		if (closeBtn) {
+			$(closeBtn.dataset.close)?.classList.add("hidden");
+			if (closeBtn.dataset.close === "surrender-modal" && isPlaying) {
+				$("type-input")?.focus();
+			}
+		}
 	});
 
 	$("typing-area")?.addEventListener("click", () => {
@@ -842,6 +1328,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			} else {
 				currentDifficulty = "normal";
 			}
+
+			const joinBtnText = $("join-btn")?.querySelector(".btn-text");
+			if (joinBtnText) {
+				joinBtnText.innerText =
+					currentLanguage === "outplay" ? "👻 BẮT ĐẦU SOLO NGAY" : "🚀 VÀO PHÒNG CHỜ";
+			}
 		});
 	});
 
@@ -856,6 +1348,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	$("font-select-btn")?.addEventListener("click", openFontModal);
 
 	$("join-btn")?.addEventListener("click", () => {
+		if (currentLanguage === "outplay") {
+			startOutplaySoloDirect();
+			return;
+		}
+
 		socket.emit("join_lobby", {
 			username: myUsername,
 			language: currentLanguage,
@@ -871,7 +1368,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	$("btn-open-icon-select")?.addEventListener("click", openIconSelect);
 
-	// SỰ KIỆN CHỌN KIỂU CHƠI NUMPAD
 	$("btn-open-numpad-mode-select")?.addEventListener("click", () => {
 		$$("#numpad-mode-popup .diff-card").forEach((c) => {
 			c.classList.toggle("selected", c.dataset.numpadDiff === currentDifficulty);
@@ -945,22 +1441,41 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	$("start-game-now-btn")?.addEventListener("click", () => socket.emit("force_start_game"));
+
+	// NÚT ĐẦU HÀNG TRÊN HEADER
 	$("btn-surrender")?.addEventListener("click", () => {
-		if (isPlaying) $("surrender-modal").classList.remove("hidden");
+		if (isPlaying) {
+			$("surrender-modal-desc").innerText = OutplaySession.isActive
+				? "Bạn muốn làm lại màn chơi này? Tốc độ ván vừa qua sẽ được đặt về 0."
+				: "Bạn có chắc chắn muốn bỏ cuộc và nhường phần thắng cho đối thủ?";
+			$("surrender-modal").classList.remove("hidden");
+		}
 	});
+
 	$("btn-confirm-surrender")?.addEventListener("click", () => {
 		$("surrender-modal").classList.add("hidden");
 		surrenderGame();
 	});
 
+	$("btn-cancel-surrender")?.addEventListener("click", () => {
+		$("surrender-modal").classList.add("hidden");
+		if (isPlaying) $("type-input")?.focus();
+	});
+
 	const returnHome = () => {
 		socket.emit("leave_lobby");
 		isPlaying = false;
+		OutplaySession.isActive = false;
+		stopGhostCaret();
+		clearInterval(OutplaySession.liveSecondInterval);
+
 		updateThemeFontButtonsState();
 		currentDifficulty = "normal";
 		mySelectedIcon = DEFAULT_ICON;
 		clearAllBossSkillEffects();
 		$("caret")?.classList.add("hidden");
+		$("ghost-caret")?.classList.add("hidden");
+
 		if ($("user-icon-status")) $("user-icon-status").innerText = mySelectedIcon;
 		["lobby-screen", "game-container", "summary-modal"].forEach((id) =>
 			$(id).classList.add("hidden"),
@@ -979,6 +1494,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateThemeFontButtonsState();
 		clearAllBossSkillEffects();
 		$("caret")?.classList.add("hidden");
+		$("ghost-caret")?.classList.add("hidden");
 		["summary-modal", "game-container"].forEach((id) => $(id).classList.add("hidden"));
 		$("lobby-screen").classList.remove("hidden");
 		socket.emit("join_lobby", {
@@ -1017,12 +1533,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		resetAFKTimer();
 		triggerCaretTypingState();
 
+		if (OutplaySession.isActive && !OutplaySession.hasStartedTyping) {
+			triggerOutplayFirstKeystroke();
+		}
+
 		if (currentLanguage === "doan_chu" && e.key === "Enter") {
 			handleDoanChuSubmit();
 			return;
 		}
 
-		if (currentLanguage === "numpad" && (e.key === "Enter" || e.code === "NumpadEnter")) {
+		const isCurrentNumpad =
+			currentLanguage === "numpad" ||
+			(OutplaySession.isActive && OutplaySession.mode.startsWith("numpad"));
+		if (isCurrentNumpad && (e.key === "Enter" || e.code === "NumpadEnter")) {
 			e.preventDefault();
 			typeInput.value += " ";
 			typeInput.dispatchEvent(new Event("input", { bubbles: true }));
@@ -1048,13 +1571,40 @@ document.addEventListener("DOMContentLoaded", () => {
 	setupChatHandling();
 	setupAdminEvents();
 
+	// ==========================================================
+	// BẮT PHÍM TẮT TOÀN CỤC: ESC ĐẦU HÀNG Ở MỌI CHẾ ĐỘ & TAB CHƠI LẠI
+	// ==========================================================
 	window.addEventListener("keydown", (e) => {
+		// PHÍM ESC: MỞ HOẶC ĐÓNG POPUP XÁC NHẬN ĐẦU HÀNG Ở MỌI CHẾ ĐỘ
+		if (e.key === "Escape") {
+			const surrenderModal = $("surrender-modal");
+			if (isPlaying && surrenderModal) {
+				e.preventDefault();
+				if (surrenderModal.classList.contains("hidden")) {
+					$("surrender-modal-desc").innerText = OutplaySession.isActive
+						? "Bạn muốn làm lại màn chơi này? Tốc độ ván vừa qua sẽ được đặt về 0."
+						: "Bạn có chắc chắn muốn bỏ cuộc và nhường phần thắng cho đối thủ?";
+					surrenderModal.classList.remove("hidden");
+				} else {
+					surrenderModal.classList.add("hidden");
+					$("type-input")?.focus();
+				}
+				return;
+			}
+		}
+
 		if (e.key === "F4" && isAdmin) {
 			e.preventDefault();
 			$("bot-config-popup")?.classList.remove("hidden");
 		} else if (e.key === "F8" && autoTyperActive) {
 			e.preventDefault();
 			stopAutoTyperBot();
+		} else if (e.key === "Tab" && OutplaySession.isActive) {
+			e.preventDefault();
+			commitOutplayRunToSession();
+			$("summary-modal")?.classList.add("hidden");
+			$("game-container")?.classList.remove("hidden");
+			initOutplayRound(false);
 		}
 	});
 });
@@ -1106,7 +1656,6 @@ function saveActiveDiffInputsToState() {
 				? 0
 				: parseInt($("cfg-boss-ratio-num").value);
 
-		// Lưu trạng thái cần gạt numMode của Săn Boss
 		const isFullsize = $("cfg-boss-num-mode-switch")
 			? $("cfg-boss-num-mode-switch").checked
 			: false;
@@ -1256,7 +1805,6 @@ function updateSelectedDiffInputsFromState() {
 		if ($("cfg-boss-ratio-en")) $("cfg-boss-ratio-en").value = diff.ratioEn ?? 30;
 		if ($("cfg-boss-ratio-num")) $("cfg-boss-ratio-num").value = diff.ratioNum ?? 35;
 
-		// Cập nhật cần gạt Kiểu sinh số
 		const isFullsize = diff.numMode === "fullsize";
 		if ($("cfg-boss-num-mode-switch")) $("cfg-boss-num-mode-switch").checked = isFullsize;
 		updateBossToggleLabelsUI(isFullsize);
@@ -1447,7 +1995,6 @@ function setupAdminEvents() {
 		updateSelectedDiffInputsFromState();
 	});
 
-	// Lắng nghe sự kiện gạt cần đổi kiểu số Number / Fullsize
 	$("cfg-boss-num-mode-switch")?.addEventListener("change", (e) => {
 		updateBossToggleLabelsUI(e.target.checked);
 		saveActiveDiffInputsToState();
@@ -1688,7 +2235,7 @@ socket.on("clear_global_chat", () =>
 );
 
 // ==========================================
-// GAMEPLAY & BOSS RAID ENGINE
+// GAMEPLAY MULTIPLAYER ENGINE
 // ==========================================
 function renderLobbyPlayers() {
 	const grid = $("lobby-players-grid");
@@ -1793,15 +2340,20 @@ socket.on("update_lobby", (data) => {
 });
 
 socket.on("game_start", (data) => {
+	OutplaySession.isActive = false;
 	["lobby-screen", "summary-modal"].forEach((id) => $(id).classList.add("hidden"));
-	["game-container", "chat-container"].forEach((id) => $(id).classList.remove("hidden"));
+	["game-container", "chat-container", "leaderboard"].forEach((id) =>
+		$(id).classList.remove("hidden"),
+	);
+	$("outplay-hud-toolbar")?.classList.add("hidden");
+	$("ghost-caret")?.classList.add("hidden");
 
 	clearAllBossSkillEffects();
 
 	currentLanguage = data.language || currentLanguage;
 	currentDifficulty = data.difficulty || currentDifficulty;
 	currentWords = data.words || [];
-	wordIndex = correctChars = totalErrors = 0;
+	wordIndex = correctChars = totalErrors = rawCharsCount = 0;
 	isPlaying = true;
 	updateThemeFontButtonsState();
 
@@ -2246,13 +2798,11 @@ socket.on("boss_skill_cast", (d) => {
 	if (d.skill === "shake" && gameContainer) gameContainer.classList.add("boss-shake-active");
 	if (d.skill === "reverse" && wordsDisplay) wordsDisplay.classList.add("boss-reverse-active");
 
-	// KỸ NĂNG MỚI: SMOKE BOMB (BOM KHÓI MÙ)
 	if (d.skill === "smoke" && smokeLayer && wordsDisplay) {
 		const dur = d.duration || 4;
 		smokeLayer.style.setProperty("--smoke-duration", `${dur}s`);
 		wordsDisplay.style.setProperty("--smoke-duration", `${dur}s`);
 
-		// Reset animation để kích hoạt vụ nổ mới
 		smokeLayer.classList.remove("hidden", "active");
 		wordsDisplay.classList.remove("smoke-blurred");
 		void smokeLayer.offsetWidth;
@@ -2381,6 +2931,7 @@ function renderWords() {
 
 	wd.innerHTML =
 		`<div id="caret" class="custom-caret hidden"></div>` +
+		`<div id="ghost-caret" class="ghost-caret hidden"></div>` +
 		currentWords
 			.map((w, idx) => {
 				const wordText = getRenderedWord(w, idx);
@@ -2485,6 +3036,14 @@ function handleTypingInput() {
 			input.value = "";
 			const wordLength = target.length + 1;
 			correctChars += wordLength;
+			rawCharsCount += wordLength;
+
+			if (OutplaySession.isActive && OutplaySession.hasStartedTyping) {
+				OutplaySession.currentRun.keystrokeTrace.push({
+					timeMs: Date.now() - startTime,
+					charIndex: correctChars,
+				});
+			}
 
 			if (currentWordEl) {
 				currentWordEl.classList.remove("error-word");
@@ -2511,13 +3070,23 @@ function handleTypingInput() {
 				socket.emit("deal_boss_damage", { damage: finalIntegerDamage, errors: totalErrors });
 			}
 
-			if (wordIndex >= currentWords.length) return finishGame();
+			if (wordIndex >= currentWords.length) {
+				return OutplaySession.isActive ? finishOutplayGame() : finishGame();
+			}
 
 			updateCaretPosition();
 		} else {
 			totalErrors++;
+			rawCharsCount += val.length;
 			input.value = "";
 			input.focus();
+
+			if (OutplaySession.isActive && OutplaySession.hasStartedTyping) {
+				const currentSec = Math.max(1, Math.round((Date.now() - startTime) / 1000));
+				if (!OutplaySession.currentRun.errorMarkers.includes(currentSec)) {
+					OutplaySession.currentRun.errorMarkers.push(currentSec);
+				}
+			}
 
 			if (currentWordEl) {
 				currentWordEl.classList.add("error-word");
@@ -2549,7 +3118,7 @@ function handleTypingInput() {
 		updateCaretPosition();
 	}
 
-	if (currentLanguage !== "san_boss") {
+	if (currentLanguage !== "san_boss" && !OutplaySession.isActive) {
 		const elapsed = Math.max(1, (Date.now() - startTime) / 1000);
 		socket.emit("update_progress", {
 			progress: Math.min(100, Math.round((wordIndex / currentWords.length) * 100)),
@@ -2582,21 +3151,44 @@ function finishGame() {
 
 function surrenderGame(isAFK = false) {
 	stopAutoTyperBot();
-	isPlaying = false;
-	updateThemeFontButtonsState();
 	clearTimeout(afkTimer);
 	clearInterval(timerInterval);
 	clearInterval(ngauHungRoundTimer);
 	clearInterval(doanChuRoundTimer);
 	clearAllBossSkillEffects();
 	$("caret")?.classList.add("hidden");
+	$("ghost-caret")?.classList.add("hidden");
+
+	// NẾU LÀ CHẾ ĐỘ OUTPLAY: ĐẦU HÀNG COI NHƯ CHƠI LẠI, TỐC ĐỘ TRƯỚC ĐÓ ĐƯỢC CHO LÀ 0
+	if (OutplaySession.isActive) {
+		clearInterval(OutplaySession.liveSecondInterval);
+		stopGhostCaret();
+
+		// Tốc độ trước đó (lastRun) được gán là 0
+		OutplaySession.lastRun = {
+			netWpm: 0,
+			rawWpm: 0,
+			accuracy: 0,
+			errors: 0,
+			timeline: [],
+			errorMarkers: [],
+			keystrokeTrace: [],
+		};
+
+		// Tải lại màn chơi mới ngay lập tức
+		initOutplayRound(false);
+		return;
+	}
+
+	isPlaying = false;
+	updateThemeFontButtonsState();
 	$("type-input").disabled = true;
 	$("status-box").innerText = isAFK ? "AFK" : "ĐÃ ĐẦU HÀNG";
 	socket.emit("surrender", { isAFK });
 }
 
 function resetAFKTimer() {
-	if (!isPlaying) return;
+	if (!isPlaying || OutplaySession.isActive) return;
 	clearTimeout(afkTimer);
 	afkTimer = setTimeout(() => {
 		if (isPlaying) surrenderGame(true);
@@ -2650,6 +3242,8 @@ function renderRaceTracks(players) {
 socket.on("race_update", queueRenderTracks);
 
 socket.on("game_over", (d) => {
+	if (OutplaySession.isActive) return;
+
 	stopAutoTyperBot();
 	isPlaying = false;
 	updateThemeFontButtonsState();
@@ -2663,6 +3257,8 @@ socket.on("game_over", (d) => {
 	$("game-container").classList.add("hidden");
 	$("chat-container").classList.add("hidden");
 	$("summary-modal").classList.remove("hidden");
+	$("multiplayer-summary-view")?.classList.remove("hidden");
+	$("outplay-summary-view")?.classList.add("hidden");
 
 	const isNH = (d.language || currentLanguage) === "ngau_hung";
 	const isDC = (d.language || currentLanguage) === "doan_chu";
