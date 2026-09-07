@@ -20,7 +20,7 @@
 	--colorful-error-color: #ca4754;
 	--colorful-error-extra-color: #7e2a33;
 
-	/* Màu đặc trưng của kỹ năng Smoke Bomb (Xám khói bạc / Neon Yellow) */
+	/* Màu đặc trưng của kỹ năng Smoke Bomb */
 	--smoke-primary: #c8d6e5;
 	--smoke-secondary: #8395a7;
 	--smoke-accent: #e2b714;
@@ -36,7 +36,7 @@
 	--box-shadow-style: 0 10px 30px rgba(0, 0, 0, 0.45);
 	--track-bg: rgba(0, 0, 0, 0.35);
 
-	/* Tối ưu hiển thị chữ khi gõ: Sub-color rõ ràng không bị mờ đục */
+	/* Tối ưu hiển thị chữ khi gõ */
 	--char-upcoming: var(--sub-color);
 	--correct: var(--text-color);
 	--incorrect: var(--error-color);
@@ -576,6 +576,37 @@ body {
 	filter: grayscale(0.5);
 }
 
+/* NÚT RESET CHỈ CHỨA ICON NẰM CẠNH NÚT ĐẦU HÀNG */
+.btn-icon-square {
+	background: var(--sub-alt-color);
+	border: 1px solid var(--border-color);
+	color: var(--text-color);
+	width: 34px;
+	height: 34px;
+	border-radius: var(--border-radius-btn);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	cursor: pointer;
+	transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+	outline: none;
+}
+.btn-icon-square:hover:not(:disabled) {
+	background: var(--main-color);
+	border-color: var(--main-color);
+	color: var(--bg-color);
+	transform: rotate(180deg) scale(1.05);
+	box-shadow: 0 0 10px rgba(226, 183, 20, 0.4);
+}
+.btn-icon-square:active:not(:disabled) {
+	transform: rotate(270deg) scale(0.95);
+}
+.btn-icon-square:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
 .theme-btn,
 .font-btn {
 	color: var(--main-color) !important;
@@ -898,9 +929,7 @@ body {
 	font-size: 13px;
 }
 
-/* ========================================================== */
-/* 6.5. POPUP ĐẦU HÀNG: 2 BUTTON NẰM NGANG NHAU (SONG SONG)    */
-/* ========================================================== */
+/* 6.5. POPUP ĐẦU HÀNG */
 .surrender-popup-content {
 	max-width: 440px !important;
 	padding: 26px 24px !important;
@@ -1599,7 +1628,7 @@ body {
 }
 
 /* ========================================================== */
-/* 9.5. THANH CÔNG CỤ HUD CHẾ ĐỘ OUTPLAY YOURSELF (REDESIGNED) */
+/* 9.5. THANH CÔNG CỤ HUD CHẾ ĐỘ OUTPLAY YOURSELF             */
 /* ========================================================== */
 .outplay-hud-bar {
 	width: 100%;
@@ -1767,7 +1796,7 @@ body {
 .game-header-actions {
 	display: flex;
 	align-items: center;
-	gap: 14px;
+	gap: 12px;
 }
 .game-timer-badge {
 	font-family: var(--font-heading);
@@ -1871,7 +1900,7 @@ body {
 }
 
 /* ========================================================== */
-/* 11. MONKEYTYPE TYPING VIEWPORT & EXPANDED DISPLAY AREA     */
+/* 11. MONKEYTYPE TYPING VIEWPORT & SIDEBAR STATS CARD        */
 /* ========================================================== */
 #typing-area {
 	width: 100%;
@@ -1914,15 +1943,24 @@ body {
 	color: var(--sub-color);
 }
 
+/* BỐ CỤC KHUNG GÕ CHỮ KÈM BẢNG THỐNG KÊ PHỤ */
+.typing-workspace-container {
+	display: flex;
+	align-items: stretch;
+	gap: 14px;
+	width: 100%;
+	margin-bottom: 14px;
+}
+
 .words-display-viewport {
 	position: relative;
-	width: 100%;
+	flex: 1;
+	min-width: 0;
 	height: 185px;
 	overflow: hidden;
 	background: transparent;
 	border-radius: var(--border-radius-box);
 	border: 1px solid var(--border-color);
-	margin-bottom: 14px;
 	user-select: none;
 }
 
@@ -1939,6 +1977,83 @@ body {
 		var(--sub-alt-color) 100%
 	);
 	z-index: 15;
+}
+
+/* BẢNG NHỎ NẰM BÊN CẠNH KHUNG GÕ TRONG CHẾ ĐỘ OUTPLAY */
+.outplay-sidebar-card {
+	width: 130px;
+	flex-shrink: 0;
+	background: var(--input-bg);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-box);
+	padding: 12px 10px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	text-align: center;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+	user-select: none;
+}
+
+.sidebar-stat-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	width: 100%;
+}
+.sidebar-stat-label {
+	font-size: 10px;
+	font-weight: 800;
+	color: var(--sub-color);
+	font-family: var(--font-heading);
+	letter-spacing: 0.5px;
+	white-space: nowrap;
+}
+.sidebar-stat-val {
+	font-size: 26px;
+	font-weight: 800;
+	font-family: var(--font-heading);
+	line-height: 1.1;
+}
+.sidebar-stat-val.pb {
+	color: #00f0ff;
+	text-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+}
+.sidebar-stat-val.last {
+	color: var(--main-color);
+	text-shadow: 0 0 10px rgba(226, 183, 20, 0.35);
+}
+.sidebar-stat-unit {
+	font-size: 10px;
+	font-weight: 700;
+	color: var(--sub-color);
+	font-family: var(--font-heading);
+}
+.sidebar-stat-divider {
+	width: 80%;
+	height: 1px;
+	background: var(--border-color);
+	margin: 2px 0;
+}
+
+@media (max-width: 680px) {
+	.typing-workspace-container {
+		flex-direction: column;
+	}
+	.outplay-sidebar-card {
+		width: 100%;
+		flex-direction: row;
+		justify-content: space-around;
+		padding: 10px 14px;
+	}
+	.sidebar-stat-divider {
+		width: 1px;
+		height: 35px;
+		margin: 0;
+	}
 }
 
 .custom-caret {
@@ -1987,15 +2102,15 @@ body {
 	position: absolute;
 	width: 3.5px;
 	height: 38px;
-	background: var(--sub-color);
+	background: #00f0ff;
 	border-radius: 2px;
 	pointer-events: none;
 	z-index: 23;
 	top: 0;
 	left: 0;
-	opacity: 0.45;
+	opacity: 0.75;
 	will-change: left, top, height;
-	box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+	box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
 	transition:
 		left 0.12s linear,
 		top 0.12s linear,
@@ -2004,11 +2119,11 @@ body {
 .ghost-caret::after {
 	content: "👻";
 	position: absolute;
-	top: -18px;
-	left: -6px;
-	font-size: 12px;
-	opacity: 0.85;
-	filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+	top: -20px;
+	left: -7px;
+	font-size: 13px;
+	opacity: 0.95;
+	filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.9));
 }
 
 .words-display {
@@ -2323,7 +2438,7 @@ body {
 }
 
 /* ========================================================== */
-/* SMOKE BOMB ENGINE: BOM KHÓI MÙ ĐỘT NGỘT & LÀM MỜ TẬP TRUNG */
+/* SMOKE BOMB ENGINE: BOM KHÓI MÙ ĐỘT NGỘT                   */
 /* ========================================================== */
 .boss-smoke-layer {
 	position: absolute;
@@ -2985,15 +3100,17 @@ body {
 }
 .legend-dot.main {
 	background: var(--main-color);
+	box-shadow: 0 0 6px var(--main-color);
+}
+.legend-dot.ghost {
+	background: #00f0ff;
+	box-shadow: 0 0 6px #00f0ff;
 }
 .legend-dot.raw {
 	background: var(--sub-color);
 }
 .legend-dot.error {
 	background: var(--error-color);
-}
-.legend-dot.ghost {
-	background: rgba(255, 255, 255, 0.4);
 }
 
 #outplay-chart-canvas {

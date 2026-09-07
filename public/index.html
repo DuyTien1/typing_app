@@ -1082,10 +1082,18 @@
 				<div class="logo-hud">⚡ FASTTYPING</div>
 				<div id="status-box" class="game-status-indicator">ĐANG THI ĐẤU</div>
 				<div class="game-header-actions">
+					<!-- NÚT RESET CHỈ CHỨA ICON NẰM CẠNH NÚT ĐẦU HÀNG -->
+					<button
+						id="btn-quick-restart"
+						class="btn-icon-square btn-restart-style"
+						title="Đổi bộ từ mới (giữ nguyên tốc độ đã lưu)"
+					>
+						🔄
+					</button>
 					<button
 						id="btn-surrender"
 						class="btn-small btn-surrender-style"
-						title="Nhấn phím Esc để đầu hàng nhanh"
+						title="Nhấn phím Esc để đầu hàng"
 					>
 						🏳️ ĐẦU HÀNG (Esc)
 					</button>
@@ -1168,23 +1176,41 @@
 					<span id="doan-chu-hidden-count" class="doan-chu-hidden-count">KÝ TỰ ẨN: --</span>
 				</div>
 
-				<div id="words-display-viewport" class="words-display-viewport">
-					<!-- HỆ THỐNG HIỆU ỨNG BOM KHÓI MÙ (SMOKE BOMB) VẬT LÝ -->
-					<div id="boss-smoke-layer" class="boss-smoke-layer hidden">
-						<div class="smoke-bomb-flash"></div>
-						<div class="smoke-cloud smoke-cloud-1"></div>
-						<div class="smoke-cloud smoke-cloud-2"></div>
-						<div class="smoke-cloud smoke-cloud-3"></div>
-						<div class="smoke-cloud smoke-cloud-4"></div>
-						<div class="smoke-debris-ring"></div>
+				<!-- KHU VỰC HIỂN THỊ CHỮ KÈM BẢNG THỐNG KÊ TỐC ĐỘ OUTPLAY BÊN CẠNH -->
+				<div class="typing-workspace-container">
+					<div id="words-display-viewport" class="words-display-viewport">
+						<!-- HỆ THỐNG HIỆU ỨNG BOM KHÓI MÙ (SMOKE BOMB) VẬT LÝ -->
+						<div id="boss-smoke-layer" class="boss-smoke-layer hidden">
+							<div class="smoke-bomb-flash"></div>
+							<div class="smoke-cloud smoke-cloud-1"></div>
+							<div class="smoke-cloud smoke-cloud-2"></div>
+							<div class="smoke-cloud smoke-cloud-3"></div>
+							<div class="smoke-cloud smoke-cloud-4"></div>
+							<div class="smoke-debris-ring"></div>
+						</div>
+
+						<div id="words-display" class="words-display">
+							<!-- CON TRỎ LIVE CỦA NGƯỜI CHƠI -->
+							<div id="caret" class="custom-caret hidden"></div>
+							<!-- CON TRỎ QUÁ KHỨ (GHOST CARET) CHẾ ĐỘ OUTPLAY YOURSELF -->
+							<div id="ghost-caret" class="ghost-caret hidden"></div>
+						</div>
 					</div>
 
-					<div id="words-display" class="words-display">
-						<!-- CON TRỎ LIVE CỦA NGƯỜI CHƠI -->
-						<div id="caret" class="custom-caret hidden"></div>
-						<!-- CON TRỎ QUÁ KHỨ (GHOST CARET) CHẾ ĐỘ OUTPLAY YOURSELF -->
-						<div id="ghost-caret" class="ghost-caret hidden"></div>
-					</div>
+					<!-- BẢNG NHỎ NẰM BÊN CẠNH WORDS-DISPLAY: HIỂN THỊ TỐC ĐỘ CAO NHẤT & VÁN TRƯỚC -->
+					<aside id="outplay-stats-sidebar" class="outplay-sidebar-card hidden">
+						<div class="sidebar-stat-item">
+							<span class="sidebar-stat-label">👑 CAO NHẤT (PB)</span>
+							<span id="sidebar-pb-wpm" class="sidebar-stat-val pb">0</span>
+							<span class="sidebar-stat-unit">WPM</span>
+						</div>
+						<div class="sidebar-stat-divider"></div>
+						<div class="sidebar-stat-item">
+							<span class="sidebar-stat-label">🔄 VÁN TRƯỚC</span>
+							<span id="sidebar-last-wpm" class="sidebar-stat-val last">0</span>
+							<span class="sidebar-stat-unit">WPM</span>
+						</div>
+					</aside>
 				</div>
 
 				<input
@@ -1279,21 +1305,23 @@
 
 					<div class="outplay-chart-wrapper">
 						<div class="chart-legend-row">
-							<span class="legend-item"><span class="legend-dot main"></span> Net WPM</span>
+							<span class="legend-item"
+								><span class="legend-dot main"></span> Người chơi (Live WPM)</span
+							>
+							<span class="legend-item"
+								><span class="legend-dot ghost"></span> Bóng ma (Ghost Pace)</span
+							>
 							<span class="legend-item"><span class="legend-dot raw"></span> Raw WPM</span>
 							<span class="legend-item"><span class="legend-dot error"></span> ❌ Lỗi Gõ Sai</span>
-							<span class="legend-item"><span class="legend-dot ghost"></span> 👻 Ghost Pace</span>
 						</div>
 						<canvas id="outplay-chart-canvas" width="820" height="240"></canvas>
 					</div>
 
 					<div class="summary-actions-row outplay-actions-row">
 						<button id="btn-outplay-replay" class="cyber-btn btn-primary-style">
-							🔄 CHƠI TIẾP (LƯU TỐC ĐỘ)
+							🔄 CHƠI TIẾP
 						</button>
-						<button id="btn-outplay-reset" class="cyber-btn btn-surrender-style">
-							🗑️ RESET TỐC ĐỘ
-						</button>
+						<button id="btn-outplay-reset" class="cyber-btn btn-surrender-style">🗑️ RESET</button>
 						<button id="btn-outplay-home" class="cyber-btn btn-secondary-style">
 							🏠 TRANG CHỦ
 						</button>

@@ -379,13 +379,14 @@ const OutplaySession = {
 	ghostMode: "last", // 'last' | 'pb' | 'custom'
 	customWpm: 100,
 	hasStartedTyping: false,
-	lastRun: null, // { netWpm, rawWpm, accuracy, errors, timeline: [], errorMarkers: [] }
-	sessionPB: null,
+	// Lưu trữ kỷ lục (PB) và Ván trước (LastRun) theo khóa: `${mode}_${duration}`
+	recordsByConfig: {},
 	currentRun: {
 		netWpm: 0,
 		rawWpm: 0,
 		accuracy: 100,
 		errors: 0,
+		duration: 30,
 		timeline: [], // [{ second, netWpm, rawWpm, ghostWpm }]
 		errorMarkers: [], // [second1, second2...]
 		keystrokeTrace: [], // [{ timeMs, charIndex }]
@@ -774,22 +775,50 @@ function clearAllBossSkillEffects() {
 	$("boss-arena-box")?.classList.remove("boss-stunned");
 }
 
-// ==========================================
-// OUTPLAY YOURSELF (SOLO GHOST REPLAY & CHART ENGINE)
-// ==========================================
+// =========================================================================
+// OUTPLAY YOURSELF: SIDEBAR STATS & ENGINE (HỖ TRỢ THEO TỪNG CẤU HÌNH RIÊNG)
+// =========================================================================
+function getOutplayConfigKey() {
+	return `${OutplaySession.mode}_${OutplaySession.duration}`;
+}
+
+function getOutplayRecordForCurrentConfig() {
+	const key = getOutplayConfigKey();
+	if (!OutplaySession.recordsByConfig[key]) {
+		OutplaySession.recordsByConfig[key] = {
+			lastRun: null,
+			sessionPB: null,
+		};
+	}
+	return OutplaySession.recordsByConfig[key];
+}
+
+function updateOutplaySidebarStats() {
+	const pbEl = $("sidebar-pb-wpm");
+	const lastEl = $("sidebar-last-wpm");
+	const record = getOutplayRecordForCurrentConfig();
+
+	const pbVal = record.sessionPB ? record.sessionPB.netWpm : 0;
+	const lastVal = record.lastRun ? record.lastRun.netWpm : 0;
+
+	if (pbEl) pbEl.innerText = pbVal;
+	if (lastEl) lastEl.innerText = lastVal;
+}
+
 function setupOutplayToolbarEvents() {
 	$("outplay-select-mode")?.addEventListener("change", (e) => {
 		OutplaySession.mode = e.target.value;
+		updateOutplaySidebarStats();
 		initOutplayRound(false);
 	});
 
-	// KHI THAY ĐỔI THỜI GIAN: GIỮ NGUYÊN TEXT VÀ TỰ ĐỘNG FOCUS LẠI VÀO Ô GÕ PHÍM
+	// KHI THAY ĐỔI THỜI GIAN THI ĐẤU: CẬP NHẬT ĐÚNG STATS CỦA CẤU HÌNH MỚI
 	$("outplay-select-duration")?.addEventListener("change", (e) => {
 		OutplaySession.duration = parseInt(e.target.value) || 30;
+		updateOutplaySidebarStats();
 		if (!OutplaySession.hasStartedTyping) {
 			$("timer").innerText = OutplaySession.duration;
 		}
-		// Đảm bảo không bị mất focus vào ô nhập liệu
 		const input = $("type-input");
 		if (input && !input.disabled) {
 			input.focus();
@@ -809,16 +838,20 @@ function setupOutplayToolbarEvents() {
 		OutplaySession.customWpm = Math.max(20, Math.min(300, parseInt(e.target.value) || 100));
 	});
 
+	// CHƠI TIẾP: GIỮ NGUYÊN KHUNG WORDS-DISPLAY ĐỂ SO SÁNH TRỰC DIỆN
 	$("btn-outplay-replay")?.addEventListener("click", () => {
 		commitOutplayRunToSession();
 		$("summary-modal")?.classList.add("hidden");
 		$("game-container")?.classList.remove("hidden");
-		initOutplayRound(false);
+		initOutplayRound(true); // Giữ nguyên từ
 	});
 
+	// RESET TỐC ĐỘ: ĐẶT LẠI STATS ĐÃ LƯU CỦA ĐÚNG CẤU HÌNH HIỆN TẠI
 	$("btn-outplay-reset")?.addEventListener("click", () => {
-		OutplaySession.lastRun = null;
-		OutplaySession.sessionPB = null;
+		const record = getOutplayRecordForCurrentConfig();
+		record.lastRun = null;
+		record.sessionPB = null;
+		updateOutplaySidebarStats();
 		$("summary-modal")?.classList.add("hidden");
 		$("game-container")?.classList.remove("hidden");
 		initOutplayRound(false);
@@ -826,8 +859,7 @@ function setupOutplayToolbarEvents() {
 
 	$("btn-outplay-home")?.addEventListener("click", () => {
 		OutplaySession.isActive = false;
-		OutplaySession.lastRun = null;
-		OutplaySession.sessionPB = null;
+		OutplaySession.recordsByConfig = {};
 		stopGhostCaret();
 		clearInterval(OutplaySession.liveSecondInterval);
 
@@ -850,6 +882,7 @@ function startOutplaySoloDirect() {
 	$("ngau-hung-status")?.classList.add("hidden");
 	$("doan-chu-status")?.classList.add("hidden");
 	$("outplay-hud-toolbar")?.classList.remove("hidden");
+	$("outplay-stats-sidebar")?.classList.remove("hidden");
 
 	if ($("outplay-select-mode")) $("outplay-select-mode").value = OutplaySession.mode;
 	if ($("outplay-select-duration"))
@@ -863,6 +896,7 @@ function startOutplaySoloDirect() {
 		OutplaySession.ghostMode !== "custom",
 	);
 
+	updateOutplaySidebarStats();
 	initOutplayRound(false);
 }
 
@@ -884,11 +918,13 @@ function initOutplayRound(keepWords = false) {
 		rawWpm: 0,
 		accuracy: 100,
 		errors: 0,
+		duration: OutplaySession.duration,
 		timeline: [],
 		errorMarkers: [],
 		keystrokeTrace: [],
 	};
 
+	updateOutplaySidebarStats();
 	$("timer").innerText = OutplaySession.duration;
 	$("status-box").innerText = "GÕ KÝ TỰ ĐẦU TIÊN ĐỂ BẮT ĐẦU";
 
@@ -902,14 +938,17 @@ function initOutplayRound(keepWords = false) {
 	input.placeholder = "Bắt đầu gõ để kích hoạt đồng hồ...";
 	input.focus();
 
-	if (!keepWords) {
+	if (!keepWords || currentWords.length === 0) {
 		socket.emit("get_outplay_words", {
 			mode: OutplaySession.mode,
 			wordCount: 350,
 		});
 	} else {
 		renderWords();
-		requestAnimationFrame(() => updateCaretPosition(true));
+		requestAnimationFrame(() => {
+			updateCaretPosition(true);
+			input.focus();
+		});
 	}
 
 	$("ghost-caret")?.classList.add("hidden");
@@ -959,14 +998,23 @@ function startOutplayCountdowns() {
 		const minutes = secondsElapsed / 60;
 		const netWpm = Math.max(0, Math.round(correctChars / 5 / minutes));
 		const rawWpm = Math.max(0, Math.round(rawCharsCount / 5 / minutes));
+		const record = getOutplayRecordForCurrentConfig();
 
 		let ghostWpm = 0;
 		if (OutplaySession.ghostMode === "custom") {
 			ghostWpm = OutplaySession.customWpm;
-		} else if (OutplaySession.ghostMode === "pb" && OutplaySession.sessionPB) {
-			ghostWpm = OutplaySession.sessionPB.netWpm;
-		} else if (OutplaySession.ghostMode === "last" && OutplaySession.lastRun) {
-			ghostWpm = OutplaySession.lastRun.netWpm;
+		} else if (
+			OutplaySession.ghostMode === "pb" &&
+			record.sessionPB &&
+			record.sessionPB.netWpm > 0
+		) {
+			const ref = record.sessionPB;
+			const pt = ref.timeline?.find((t) => t.second === secondsElapsed);
+			ghostWpm = pt ? pt.netWpm : ref.netWpm;
+		} else if (OutplaySession.ghostMode === "last" && record.lastRun && record.lastRun.netWpm > 0) {
+			const ref = record.lastRun;
+			const pt = ref.timeline?.find((t) => t.second === secondsElapsed);
+			ghostWpm = pt ? pt.netWpm : ref.netWpm;
 		}
 
 		OutplaySession.currentRun.timeline.push({
@@ -978,28 +1026,58 @@ function startOutplayCountdowns() {
 	}, 1000);
 }
 
+// XỬ LÝ GHOST CARET: CHỈ HIỆN KHI ĐÃ CÓ DỮ LIỆU CỦA ĐÚNG CẤU HÌNH [KIỂU CHƠI + THỜI GIAN] ĐƯỢC CHỌN
 function startGhostCaretRunner() {
 	const ghostCaret = $("ghost-caret");
 	if (!ghostCaret) return;
 
 	let referenceTrace = null;
+	let referenceWpm = 0;
 	let constantPaceCharsPerMs = 0;
+	const record = getOutplayRecordForCurrentConfig();
 
 	if (OutplaySession.ghostMode === "custom") {
 		constantPaceCharsPerMs = (OutplaySession.customWpm * 5) / 60000;
-	} else if (OutplaySession.ghostMode === "pb" && OutplaySession.sessionPB) {
-		referenceTrace = OutplaySession.sessionPB.keystrokeTrace;
-	} else if (OutplaySession.ghostMode === "last" && OutplaySession.lastRun) {
-		referenceTrace = OutplaySession.lastRun.keystrokeTrace;
+	} else if (OutplaySession.ghostMode === "pb") {
+		// Chỉ khi có sessionPB và netWpm > 0 của đúng cấu hình hiện tại mới hiện bóng ma
+		if (!record.sessionPB || !record.sessionPB.netWpm || record.sessionPB.netWpm <= 0) {
+			ghostCaret.classList.add("hidden");
+			return;
+		}
+		referenceTrace = record.sessionPB.keystrokeTrace || [];
+		referenceWpm = record.sessionPB.netWpm;
+	} else if (OutplaySession.ghostMode === "last") {
+		// Chỉ khi có lastRun và netWpm > 0 của đúng cấu hình hiện tại mới hiện bóng ma
+		if (!record.lastRun || !record.lastRun.netWpm || record.lastRun.netWpm <= 0) {
+			ghostCaret.classList.add("hidden");
+			return;
+		}
+		referenceTrace = record.lastRun.keystrokeTrace || [];
+		referenceWpm = record.lastRun.netWpm;
 	}
 
-	if (OutplaySession.ghostMode !== "custom" && (!referenceTrace || referenceTrace.length === 0)) {
+	if (
+		OutplaySession.ghostMode !== "custom" &&
+		(!referenceTrace || referenceTrace.length === 0) &&
+		referenceWpm <= 0
+	) {
 		ghostCaret.classList.add("hidden");
 		return;
 	}
 
 	ghostCaret.classList.remove("hidden");
 	const ghostStartTime = performance.now();
+
+	// Tính toán điểm chặn thời gian tối đa của ván cũ nếu có
+	const maxTraceTimeMs =
+		referenceTrace && referenceTrace.length > 0
+			? referenceTrace[referenceTrace.length - 1].timeMs
+			: 0;
+	const maxTraceChars =
+		referenceTrace && referenceTrace.length > 0
+			? referenceTrace[referenceTrace.length - 1].charIndex
+			: 0;
+	const extrapolatedPaceCharsPerMs = (Math.max(20, referenceWpm) * 5) / 60000;
 
 	function ghostFrame(now) {
 		if (!isPlaying || !OutplaySession.isActive || !OutplaySession.hasStartedTyping) {
@@ -1012,13 +1090,22 @@ function startGhostCaretRunner() {
 
 		if (OutplaySession.ghostMode === "custom") {
 			targetCharIdx = Math.floor(elapsedMs * constantPaceCharsPerMs);
-		} else if (referenceTrace) {
-			for (let i = referenceTrace.length - 1; i >= 0; i--) {
-				if (elapsedMs >= referenceTrace[i].timeMs) {
-					targetCharIdx = referenceTrace[i].charIndex;
-					break;
+		} else if (referenceTrace && referenceTrace.length > 0) {
+			if (elapsedMs <= maxTraceTimeMs) {
+				// Đang trong khoảng thời gian có dữ liệu chi tiết của lượt cũ
+				for (let i = referenceTrace.length - 1; i >= 0; i--) {
+					if (elapsedMs >= referenceTrace[i].timeMs) {
+						targetCharIdx = referenceTrace[i].charIndex;
+						break;
+					}
 				}
+			} else {
+				// Khi thời gian thi đấu hiện tại dài hơn thời gian ván cũ: tiếp tục chạy theo tốc độ WPM của ván cũ
+				const extraMs = elapsedMs - maxTraceTimeMs;
+				targetCharIdx = maxTraceChars + Math.floor(extraMs * extrapolatedPaceCharsPerMs);
 			}
+		} else {
+			targetCharIdx = Math.floor(elapsedMs * extrapolatedPaceCharsPerMs);
 		}
 
 		positionGhostCaretAtGlobalChar(targetCharIdx);
@@ -1078,12 +1165,14 @@ function positionGhostCaretAtGlobalChar(globalCharIndex) {
 function commitOutplayRunToSession() {
 	if (!OutplaySession.currentRun) return;
 
+	const record = getOutplayRecordForCurrentConfig();
 	const runData = { ...OutplaySession.currentRun };
-	OutplaySession.lastRun = runData;
+	record.lastRun = runData;
 
-	if (!OutplaySession.sessionPB || runData.netWpm > OutplaySession.sessionPB.netWpm) {
-		OutplaySession.sessionPB = runData;
+	if (!record.sessionPB || runData.netWpm > record.sessionPB.netWpm) {
+		record.sessionPB = runData;
 	}
+	updateOutplaySidebarStats();
 }
 
 function finishOutplayGame() {
@@ -1108,6 +1197,7 @@ function finishOutplayGame() {
 	OutplaySession.currentRun.accuracy = accuracy;
 	OutplaySession.currentRun.errors = totalErrors;
 
+	commitOutplayRunToSession();
 	showOutplaySummaryView();
 }
 
@@ -1119,13 +1209,15 @@ function showOutplaySummaryView() {
 	$("outplay-summary-view")?.classList.remove("hidden");
 
 	const res = OutplaySession.currentRun;
+	const record = getOutplayRecordForCurrentConfig();
+
 	if ($("outplay-res-wpm")) $("outplay-res-wpm").innerText = res.netWpm;
 	if ($("outplay-res-raw")) $("outplay-res-raw").innerText = res.rawWpm;
 	if ($("outplay-res-acc")) $("outplay-res-acc").innerText = `${res.accuracy}%`;
 	if ($("outplay-res-errors")) $("outplay-res-errors").innerText = res.errors;
 
-	const currentPbWpm = OutplaySession.sessionPB
-		? Math.max(OutplaySession.sessionPB.netWpm, res.netWpm)
+	const currentPbWpm = record.sessionPB
+		? Math.max(record.sessionPB.netWpm, res.netWpm)
 		: res.netWpm;
 	if ($("outplay-res-pb")) $("outplay-res-pb").innerText = `${currentPbWpm} WPM`;
 
@@ -1134,6 +1226,9 @@ function showOutplaySummaryView() {
 	requestAnimationFrame(() => renderOutplayCanvasChart());
 }
 
+// ==========================================
+// VẼ BIỂU ĐỒ MONKEYTYPE HIỆU NĂNG CAO
+// ==========================================
 function renderOutplayCanvasChart() {
 	const canvas = $("outplay-chart-canvas");
 	if (!canvas) return;
@@ -1169,11 +1264,11 @@ function renderOutplayCanvasChart() {
 	const plotW = width - padLeft - padRight;
 	const plotH = height - padTop - padBottom;
 
-	// 1. Lưới ngang
-	ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+	// 1. Lưới ngang & Nhãn trục Y
+	ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
 	ctx.lineWidth = 1;
-	ctx.fillStyle = "rgba(150, 150, 150, 0.7)";
-	ctx.font = "10px Lexend, sans-serif";
+	ctx.fillStyle = "rgba(160, 160, 160, 0.75)";
+	ctx.font = "10.5px Lexend, sans-serif";
 	ctx.textAlign = "right";
 	ctx.textBaseline = "middle";
 
@@ -1188,7 +1283,7 @@ function renderOutplayCanvasChart() {
 		ctx.fillText(val.toString(), padLeft - 8, y);
 	}
 
-	// 2. Trục X
+	// 2. Trục X & Mốc thời gian
 	ctx.textAlign = "center";
 	ctx.textBaseline = "top";
 	const timeSteps = totalSeconds <= 30 ? 5 : totalSeconds <= 60 ? 10 : 15;
@@ -1200,12 +1295,14 @@ function renderOutplayCanvasChart() {
 	const getX = (sec) => padLeft + (sec / totalSeconds) * plotW;
 	const getY = (wpm) => padTop + plotH - (Math.min(maxWpm, wpm) / maxWpm) * plotH;
 
-	// 3. Ghost Pace
+	// 3. Đường Ghost Pace (Neon Cyan #00f0ff - Nét đứt rõ ràng)
 	if (timeline.some((t) => t.ghostWpm > 0)) {
 		ctx.save();
-		ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-		ctx.lineWidth = 2;
-		ctx.setLineDash([4, 4]);
+		ctx.strokeStyle = "#00f0ff";
+		ctx.lineWidth = 2.4;
+		ctx.setLineDash([6, 5]);
+		ctx.shadowColor = "rgba(0, 240, 255, 0.45)";
+		ctx.shadowBlur = 6;
 		ctx.beginPath();
 		timeline.forEach((t, idx) => {
 			const x = getX(t.second);
@@ -1217,11 +1314,11 @@ function renderOutplayCanvasChart() {
 		ctx.restore();
 	}
 
-	// 4. Raw WPM
+	// 4. Đường Raw WPM (Xám nét mảnh)
 	const subColor =
 		getComputedStyle(document.documentElement).getPropertyValue("--sub-color").trim() || "#646669";
 	ctx.strokeStyle = subColor;
-	ctx.lineWidth = 1.5;
+	ctx.lineWidth = 1.6;
 	ctx.beginPath();
 	timeline.forEach((t, idx) => {
 		const x = getX(t.second);
@@ -1231,12 +1328,15 @@ function renderOutplayCanvasChart() {
 	});
 	ctx.stroke();
 
-	// 5. Net WPM
+	// 5. Đường Live WPM của Người chơi (Vàng rực rỡ nét đậm)
 	const mainColor =
 		getComputedStyle(document.documentElement).getPropertyValue("--main-color").trim() || "#e2b714";
+	ctx.save();
 	ctx.strokeStyle = mainColor;
-	ctx.lineWidth = 2.8;
+	ctx.lineWidth = 3.2;
 	ctx.lineJoin = "round";
+	ctx.shadowColor = "rgba(226, 183, 20, 0.4)";
+	ctx.shadowBlur = 8;
 	ctx.beginPath();
 	timeline.forEach((t, idx) => {
 		const x = getX(t.second);
@@ -1245,12 +1345,14 @@ function renderOutplayCanvasChart() {
 		else ctx.lineTo(x, y);
 	});
 	ctx.stroke();
+	ctx.restore();
 
+	// Đổ bóng gradient mờ dưới đường Người chơi
 	if (timeline.length > 0) {
 		ctx.save();
 		const grad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
-		grad.addColorStop(0, "rgba(226, 183, 20, 0.2)");
-		grad.addColorStop(1, "rgba(226, 183, 20, 0)");
+		grad.addColorStop(0, "rgba(226, 183, 20, 0.22)");
+		grad.addColorStop(1, "rgba(226, 183, 20, 0.0)");
 		ctx.fillStyle = grad;
 		ctx.beginPath();
 		ctx.moveTo(getX(timeline[0].second), getY(timeline[0].netWpm));
@@ -1262,11 +1364,10 @@ function renderOutplayCanvasChart() {
 		ctx.restore();
 	}
 
-	// 6. Error Markers ❌
+	// 6. Điểm đánh dấu Lỗi Sai ❌
 	const errColor =
 		getComputedStyle(document.documentElement).getPropertyValue("--error-color").trim() ||
 		"#ca4754";
-	ctx.fillStyle = errColor;
 	ctx.font = "bold 13px Inter, sans-serif";
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
@@ -1278,10 +1379,10 @@ function renderOutplayCanvasChart() {
 
 		ctx.beginPath();
 		ctx.arc(x, y - 10, 8, 0, Math.PI * 2);
-		ctx.fillStyle = "rgba(202, 71, 84, 0.2)";
+		ctx.fillStyle = "rgba(202, 71, 84, 0.25)";
 		ctx.fill();
 		ctx.strokeStyle = errColor;
-		ctx.lineWidth = 1.2;
+		ctx.lineWidth = 1.4;
 		ctx.stroke();
 
 		ctx.fillStyle = errColor;
@@ -1450,6 +1551,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	$("start-game-now-btn")?.addEventListener("click", () => socket.emit("force_start_game"));
 
+	// NÚT RESET CHỈ CHỨA ICON: ĐỔI TỪ MỚI MÀ KHÔNG ẢNH HƯỞNG TỚI TỐC ĐỘ ĐÃ LƯU
+	$("btn-quick-restart")?.addEventListener("click", () => {
+		if (OutplaySession.isActive) {
+			initOutplayRound(false); // Sinh từ mới, giữ nguyên sessionPB và lastRun
+		} else if (isPlaying) {
+			surrenderGame(false);
+		}
+	});
+
 	// NÚT ĐẦU HÀNG TRÊN HEADER
 	$("btn-surrender")?.addEventListener("click", () => {
 		if (isPlaying) {
@@ -1483,6 +1593,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		clearAllBossSkillEffects();
 		$("caret")?.classList.add("hidden");
 		$("ghost-caret")?.classList.add("hidden");
+		$("outplay-stats-sidebar")?.classList.add("hidden");
 
 		if ($("user-icon-status")) $("user-icon-status").innerText = mySelectedIcon;
 		["lobby-screen", "game-container", "summary-modal"].forEach((id) =>
@@ -1580,7 +1691,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	setupAdminEvents();
 
 	// ==========================================================
-	// BẮT PHÍM TẮT TOÀN CỤC: ESC ĐẦU HÀNG Ở MỌI CHẾ ĐỘ & TAB CHƠI LẠI
+	// BẮT PHÍM TẮT TOÀN CỤC:
+	// ESC ĐẦU HÀNG; PHÍM TAB CHỈ FOCUS LẠI INPUT (KHÔNG LÀM ĐỔI TỪ)
 	// ==========================================================
 	window.addEventListener("keydown", (e) => {
 		if (e.key === "Escape") {
@@ -1600,18 +1712,24 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 
+		// KHI MẤT FOCUS VÀO INPUT: NHẤN TAB CHỈ CHUYỂN FOCUS LẠI VÀO INPUT, TUYỆT ĐỐI KHÔNG ĐỔI TỪ
+		if (e.key === "Tab") {
+			if (isPlaying && $("game-container") && !$("game-container").classList.contains("hidden")) {
+				e.preventDefault();
+				const input = $("type-input");
+				if (input && !input.disabled) {
+					input.focus();
+				}
+				return;
+			}
+		}
+
 		if (e.key === "F4" && isAdmin) {
 			e.preventDefault();
 			$("bot-config-popup")?.classList.remove("hidden");
 		} else if (e.key === "F8" && autoTyperActive) {
 			e.preventDefault();
 			stopAutoTyperBot();
-		} else if (e.key === "Tab" && OutplaySession.isActive) {
-			e.preventDefault();
-			commitOutplayRunToSession();
-			$("summary-modal")?.classList.add("hidden");
-			$("game-container")?.classList.remove("hidden");
-			initOutplayRound(false);
 		}
 	});
 });
@@ -2353,6 +2471,7 @@ socket.on("game_start", (data) => {
 		$(id).classList.remove("hidden"),
 	);
 	$("outplay-hud-toolbar")?.classList.add("hidden");
+	$("outplay-stats-sidebar")?.classList.add("hidden");
 	$("ghost-caret")?.classList.add("hidden");
 
 	clearAllBossSkillEffects();
@@ -3166,16 +3285,18 @@ function surrenderGame(isAFK = false) {
 	$("caret")?.classList.add("hidden");
 	$("ghost-caret")?.classList.add("hidden");
 
-	// NẾU LÀ CHẾ ĐỘ OUTPLAY: ĐẦU HÀNG COI NHƯ CHƠI LẠI, TỐC ĐỘ TRƯỚC ĐÓ ĐƯỢC CHO LÀ 0
+	// NẾU LÀ CHẾ ĐỘ OUTPLAY: ĐẦU HÀNG COI NHƯ CHƠI LẠI, VÁN VỪA RỒI ĐƯỢC RESET VỀ 0 NHƯNG PB CỦA CẤU HÌNH ĐÓ ĐƯỢC GIỮ NGUYÊN
 	if (OutplaySession.isActive) {
 		clearInterval(OutplaySession.liveSecondInterval);
 		stopGhostCaret();
 
-		OutplaySession.lastRun = {
+		const record = getOutplayRecordForCurrentConfig();
+		record.lastRun = {
 			netWpm: 0,
 			rawWpm: 0,
 			accuracy: 0,
 			errors: 0,
+			duration: OutplaySession.duration,
 			timeline: [],
 			errorMarkers: [],
 			keystrokeTrace: [],
